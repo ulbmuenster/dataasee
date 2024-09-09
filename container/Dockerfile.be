@@ -10,10 +10,10 @@ RUN wget https://github.com/redpanda-data/benthos/archive/refs/tags/v${VERSION}.
 
 WORKDIR /go/benthos-${VERSION}
 
-RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"\n\t_ \"github.com/redpanda-data/connect/v4/public/components/prometheus\"";next}1' cmd/benthos/main.go | tee cmd/benthos/main.go \
-  && GOSUMDB=off go get -u ./... \
-  && go mod tidy \
-  && go build -ldflags "-w -s -X github.com/redpanda-data/benthos/v4/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/benthos
+RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"\n\t_ \"github.com/redpanda-data/connect/v4/public/components/prometheus\"";next}1' cmd/benthos/main.go | tee cmd/benthos/main.go
+RUN go get -u ./...
+RUN go mod tidy
+RUN go build -ldflags "-w -s -X github.com/redpanda-data/benthos/v4/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/benthos
 
 ## Development Target
 
