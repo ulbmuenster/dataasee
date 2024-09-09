@@ -1,0 +1,22 @@
+@startuml metadata-endpoint
+
+interface endpoint [
+Endpoint
+]
+
+node backend [
+
+Backend
+
+]
+
+database database [
+
+Database
+
+]
+
+endpoint <<-->> backend : " HTTP Server (<b>/api/v1/metadata</b>)"
+backend -->> database : " HTTP Client (<b>/query</b>) \n HTTP Client (<b>/command</b>)"
+
+@enduml

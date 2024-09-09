@@ -1,0 +1,39 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Update Results
+id: "update_results"
+type: "SetState"
+params:
+  results_list:
+    _if:
+      test:
+        _gt:
+          - _array.length:
+              _request: "search_request.data.data"
+          - 0
+      then:
+        _array.map:
+          on:
+            _request: "search_request.data.data"
+          callback:
+            _function:
+              title:
+                __string.concat:
+                  - __if_none:
+                      - __args: "0.attributes.name"
+                      - __global: "unknown"
+                  - " ("
+                  - __if_none:
+                      - __args: "0.attributes.publicationYear"
+                      - __global: "unknown"
+                  - ") "
+                  - __if_none:
+                      - __args: "0.attributes.resourceType"
+                      - __global: "unknown"
+              href:
+                __string.concat:
+                  - "fetch?id="
+                  - __args: "0.attributes.recordId"
+      else:
+        - title: "No Results"
+          href: null

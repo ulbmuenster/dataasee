@@ -1,0 +1,28 @@
+@startuml ingest-endpoint
+
+database src as "DB" #line.dashed;
+
+interface endpoint [
+Endpoint
+]
+
+node backend [
+
+Backend
+
+]
+
+database database [
+
+Database
+
+]
+
+endpoint <<-->> backend : " HTTP Server (<b>/api/v1/ingest</b>)"
+
+backend -->> src : " HTTP / S3"
+backend -->> backend : " JSON Schema (<b>validate</b>) \n Protocol, Format, Normalize (<b>transform</b>)"
+backend -->> database : " HTTP Client (<b>/command</b>)"
+database -->> database : " Interconnect"
+
+@enduml

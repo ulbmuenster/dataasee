@@ -1,0 +1,12 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Footer
+blocks:
+  - id: "footer"
+    type: "Markdown"
+    properties:
+      content:
+        _string.concat:
+          - "[DatAasee](https://github.com/ulbmuenster/dataasee) (Version: **"
+          - _request: "ready_request.data.meta.version"
+          - "**)"

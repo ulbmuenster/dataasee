@@ -1,0 +1,83 @@
+# Language: Compose YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+name: "dataasee"
+
+networks:
+  "internal":
+
+services:
+
+## Database ####################################################################
+
+  "database":
+    build:
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        IMGREPO: ${ORIGIN:-}
+        VERSION: $DB_VERSION
+        DB_NAME: $DB_NAME
+      context: "."
+      dockerfile: "container/Dockerfile.db"
+      tags:
+        - "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+      target: "release"
+    image: "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+    init: true
+    networks:
+      - "internal"
+    restart: "unless-stopped"
+    stop_grace_period: "90s"
+
+## Backend #####################################################################
+
+  "backend":
+    build:
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        IMGREPO: ${ORIGIN:-}
+        VERSION: $BE_VERSION
+        DL_NAME: $DL_NAME
+        DL_VERSION: $DL_VERSION
+        DL_PORT: "8343"
+        DL_PATH: $DL_PATH
+        DB_TYPE: "ArcadeDB"
+        DB_HOST: "database"
+        DB_PORT: "2480"
+        DB_NAME: $DB_NAME
+      context: "."
+      dockerfile: "container/Dockerfile.be"
+      tags:
+        - "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
+      target: "release"
+    depends_on:
+      - "database"
+    image: "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "${DL_PORT-8343}:8343"
+    restart: "unless-stopped"
+
+## Frontend ####################################################################
+
+  "frontend":
+    build:
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        IMGREPO: ${ORIGIN:-}
+        VERSION: $FE_VERSION
+        DL_PATH: $DL_PATH
+      context: "."
+      dockerfile: "container/Dockerfile.fe"
+      no_cache: true
+      tags:
+        - "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
+      target: "release"
+    image: "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "${FE_PORT-8000}:3000"
+    restart: "unless-stopped"

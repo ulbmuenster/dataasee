@@ -1,0 +1,73 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Results Card
+id: "results_card"
+type: "Card"
+visible:
+  _gt:
+    - _array.length:
+        _state: "results_list"
+    - 0
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Results Title
+      - id: "results_title"
+        type: "Title"
+        properties:
+          content: "Results"
+          level: 2
+## Results List
+      - id: "results_list"
+        type: "List"
+        blocks:
+          - id: "results_list.$"
+            type: "Anchor"
+            properties:
+              href:
+                _state: "results_list.$.href"
+              strong: true
+              title:
+                _state: "results_list.$.title"
+            style:
+              padding: "0.5%"
+              background-color:
+                _string.concat:
+                  - _switch:
+                      branches:
+                        - if:
+                            _eq:
+                              - _string.toLowerCase:
+                                  _request: "search_request.data.data.$.attributes.metadataQuality"
+                              - "ok"
+                          then: "#faad14"  # Warning color
+                        - if:
+                            _eq:
+                              - _string.toLowerCase:
+                                  _request: "search_request.data.data.$.attributes.metadataQuality"
+                              - "good"
+                          then: "#52c41a"  # Success color
+                      default: "#f5222d"   # Error color
+                  - "40"                   # 75% Transparent
+          - id: "results_div.$"
+            type: "Divider"
+## Results Paging
+      - id: "results_paging"
+        type: "Pagination"
+        properties:
+          hideOnSinglePage: true
+          simple: true
+          total:
+            _sum:
+              - 1
+              - _state: "results_paging.skip"
+              - _array.length:
+                  _request: "search_request.data.data"
+          showTotal: ""
+        events:
+          onChange:
+            - id: "submit_query"
+              type: "Request"
+              params: "search_request"
+            - _ref: "templates/update.yaml"

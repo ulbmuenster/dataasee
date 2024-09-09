@@ -1,0 +1,285 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Filter Catalog
+id: "filter"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | Filter"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+layout:
+  contentJustify: "center"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "attributes_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/attributes"
+      method: "get"
+
+  - id: "search_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/metadata"
+      method: "get"
+      params:
+        category:
+          _payload: "category"
+        resourcetype:
+          _payload: "resourcetype"
+        language:
+          _payload: "language"
+        license:
+          _payload: "license"
+        from:
+          _payload: "from"
+        till:
+          _payload: "till"
+        newest:
+          _payload: "sort"
+        skip:
+          _payload: "results_paging.skip"
+
+events:
+  onInit:
+    - id: "attributes_enter"
+      type: "Request"
+      params: "attributes_request"
+
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+    - id: "set_sort"
+      type: "SetState"
+      params:
+        sort: true
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "heading"
+        type: "Title"
+        properties:
+          content: "Filter Search"
+          level: 1
+## General Filters Card
+      - id: "general_card"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+## Left Column
+              - id: "left"
+                type: "Box"
+                layout:
+                  span: 12
+                blocks:
+                  - id: "filter_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Select Filters"
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## General Filters:
+                          - id: "category"
+                            type: "Selector"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Categories"
+                              options:
+                                _request: "attributes_request.data.data.attributes.categories"
+                            events:
+                              _ref: "templates/clear.yaml"
+                          - id: "resourcetype"
+                            type: "Selector"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Resource Types"
+                              options:
+                                _request: "attributes_request.data.data.attributes.resourcetypes"
+                            events:
+                              _ref: "templates/clear.yaml"
+                          - id: "language"
+                            type: "Selector"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Languages"
+                              options:
+                                _request: "attributes_request.data.data.attributes.languages"
+                            events:
+                              _ref: "templates/clear.yaml"
+                          - id: "license"
+                            type: "Selector"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Licenses"
+                              options:
+                                _request: "attributes_request.data.data.attributes.licenses"
+                            events:
+                              _ref: "templates/clear.yaml"
+                          - id: "from"
+                            type: "NumberInput"
+                            properties:
+                              label:
+                                disabled: true
+                              min: -9999
+                              max: 9999
+                              precision: 0
+                              placeholder: "From Year"
+                            layout:
+                              span: 12
+                            events:
+                              _ref: "templates/clear.yaml"
+                          - id: "till"
+                            type: "NumberInput"
+                            properties:
+                              label:
+                                disabled: true
+                              min: -9999
+                              max: 9999
+                              precision: 0
+                              placeholder: "Till Year"
+                            events:
+                              _ref: "templates/clear.yaml"
+                            layout:
+                              span: 12
+## Sort Button
+                          - id: "sort"
+                            type: "ButtonSelector"
+                            properties:
+                              options:
+                                - disabled: false
+                                  label: "Newest First"
+                                  style:
+                                    width: "50%"
+                                    text-align: "center"
+                                  value: true
+                                - disabled: false
+                                  label: "Oldest First"
+                                  style:
+                                    width: "50%"
+                                    text-align: "center"
+                                  value: false
+                              inputStyle:
+                                width: "100%"
+                              label:
+                                colon: false
+                                disabled: true
+                            events:
+                              _ref: "templates/clear.yaml"
+## Submit Button
+                          - id: "enter_button"  # Do not change! This name is needed to trigger by pressing "Enter"
+                            type: "Button"
+                            properties:
+                              block: true
+                              size: "large"
+                              title: "Search"
+                              icon: "AiFillRocket"
+                            events:
+                              onClick:
+                                - id: "clear_results"
+                                  type: "SetState"
+                                  params:
+                                    results_list: []
+                                - id: "clear_paging"
+                                  type: "SetState"
+                                  params:
+                                    results_paging:
+                                      skip: 0
+                                - id: "submit_query"
+                                  type: "Request"
+                                  params: "search_request"
+                                - _ref: "templates/update.yaml"
+## Right Column
+              - id: "filter_help"
+                type: "Card"
+                layout:
+                  span: 12
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Filter Help"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "filter_md"
+                        type: "Markdown"
+                        properties:
+                          content: |
+                            The filter search returns a subset of metadata records determined by enumerated or numeric record properties.
+                            The background color of the result items indicate comprehensive (green), sufficient (yellow) or incomplete (red) metadata.
+
+                            * **Categories**: Filter by a controlled vocabulary of keywords.
+                            * **Resource Types**: Filter by the types from [DataCite](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/resourceTypeGeneral/).
+                            * **Languages**: Filter by the primary language.
+                            * **Licenses**: Filter by license ([SPDX identifier](https://spdx.org/licenses/)).
+                            * **From**: A number (-9999 ≤ x ≤ 9999) setting the minimal publication year.
+                            * **Till**: A number (-9999 ≤ x ≤ 9999) setting the maximal publication year.
+                            * **Newest First / Oldest First**: Sets the ordering of results from new to old (default), or old to new.
+
+                      - id: "filter_detail"
+                        type: "Collapse"
+                        properties:
+                          defaultActiveKey: "none"
+                          panels:
+                            - key: "technically"
+                              title: "Technically"
+                        areas:
+                          technically:
+                            blocks:
+                              - id: "technically"
+                                type: "Markdown"
+                                properties:
+                                  content: |
+                                    1. The filters "Categories", "Resource Types", "Languages", "Licenses" are filled by the GET request:
+
+                                        ```
+                                        /api/v1/attributes
+                                        ```
+                                    2. Clicking "Submit" sends the GET request:
+
+                                        ```
+                                        /api/v1/metadata?category=x&resourcetype=y&language=z&license=a&from=b&till=c&newest=true
+                                        ```
+                                       The server filters null or empty filters.
+
+                                    3. Paging forward or backwards in the results resends the GET request with an additional `skip` parameter:
+
+                                        ```
+                                        /api/v1/metadata?skip=10&category=x&resourcetype=y&language=z&license=a&from=b&till=c&newest=true
+                                        ```
+                                       The frontend has to keep count for the skip; which pagination controls typically provide.
+## Results Card
+      - _ref: "templates/results.yaml"
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

@@ -1,0 +1,321 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Dashboard
+id: "stats"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | Statistics"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "stats_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/stats"
+      method: "get"
+      timeout: 15000
+
+events:
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+    - id: "stats_enter"
+      type: "Request"
+      params: "stats_request"
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "heading"
+        type: "Title"
+        properties:
+          content: "Statistics Overview"
+          level: 1
+## Content Card
+      - id: "content"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+## Totals Card
+              - id: "shares_heading"
+                type: "Title"
+                properties:
+                  content:
+                    _string.concat:
+                      - "Total Metadata Records: "
+                      - _if_none:
+                          - _request: "stats_request.data.data.attributes.total"
+                          - "[ᴄᴏᴜɴᴛɪɴɢ]"
+                  level: 4
+## Top-10 Title
+              - id: "top10_card"
+                type: "Card"
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Top 10"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+## Top Downloads (Bar)
+                      - id: "bar_downloads"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Number of Downloads"
+                              left: "center"
+                            xAxis:
+                              type: "category"
+                              axisLabel:
+                                rotate: 60
+                              data:
+                                _array.map:
+                                  on:
+                                    _request: "stats_request.data.data.attributes.downloads"
+                                  callback:
+                                    _function:
+                                      __args: "0.name"
+                            yAxis:
+                              type: "value"
+                            series:
+                              - type: "bar"
+                                data:
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.downloads"
+                                    callback:
+                                      _function:
+                                        __args: "0.value"
+## Top Year (Bar)
+                      - id: "bar_years"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Publication Years"
+                              left: "center"
+                            xAxis:
+                              type: "category"
+                              axisLabel:
+                                rotate: 60
+                              data:
+                                _array.map:
+                                  on:
+                                    _request: "stats_request.data.data.attributes.years"
+                                  callback:
+                                    _function:
+                                      __args: "0.name"
+                            yAxis:
+                              type: "value"
+                            series:
+                              - type: "bar"
+                                data:
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.years"
+                                    callback:
+                                      _function:
+                                        __args: "0.value"
+
+## Top Keywords (Bar)
+                      - id: "bar_keywords"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Keywords"
+                              left: "center"
+                            xAxis:
+                              type: "category"
+                              axisLabel:
+                                rotate: 60
+                              data:
+                                _array.map:
+                                  on:
+                                    _request: "stats_request.data.data.attributes.keywords"
+                                  callback:
+                                    _function:
+                                      __args: "0.name"
+                            yAxis:
+                              type: "value"
+                            series:
+                              - type: "bar"
+                                data:
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.keywords"
+                                    callback:
+                                      _function:
+                                        __args: "0.value"
+## Shares Title
+              - id: "shares_card"
+                type: "Card"
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Shares By"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+## By Resource Type (Pie)
+                      - id: "pie_types"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Resource Types"
+                              left: "center"
+                            series:
+                              - type: "pie"
+                                minShowLabelAngle: 1
+                                animation: false
+                                emphasis:
+                                  scale: false
+                                data:
+                                  _request: "stats_request.data.data.attributes.resourceTypes"
+
+## By Categories (Pie)
+                      - id: "pie_categories"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Categories"
+                              left: "center"
+                            series:
+                              - type: "pie"
+                                minShowLabelAngle: 1
+                                animation: false
+                                emphasis:
+                                  scale: false
+                                data:
+                                  _request: "stats_request.data.data.attributes.categories"
+
+## By License (Pie)
+                      - id: "pie_licenses"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Licenses"
+                              left: "center"
+                            series:
+                              - type: "pie"
+                                minShowLabelAngle: 1
+                                animation: false
+                                emphasis:
+                                  scale: false
+                                data:
+                                  _request: "stats_request.data.data.attributes.licenses"
+
+## By Subject (Pie)
+                      - id: "pie_subjects"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Subjects"
+                              left: "center"
+                            series:
+                              - type: "pie"
+                                minShowLabelAngle: 1
+                                animation: false
+                                emphasis:
+                                  scale: false
+                                data:
+                                  _request: "stats_request.data.data.attributes.subjects"
+
+## By Language (Pie)
+                      - id: "pie_languages"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Languages"
+                              left: "center"
+                            series:
+                              - type: "pie"
+                                minShowLabelAngle: 1
+                                animation: false
+                                emphasis:
+                                  scale: false
+                                data:
+                                  _request: "stats_request.data.data.attributes.languages"
+
+## By Schemas (Pie)
+                      - id: "pie_schemas"
+                        type: "EChart"
+                        layout:
+                          span: 8
+                        properties:
+                          init:
+                            renderer: "svg"
+                          option:
+                            title:
+                              text: "Schemas"
+                              left: "center"
+                            series:
+                              - type: "pie"
+                                minShowLabelAngle: 1
+                                animation: false
+                                emphasis:
+                                  scale: false
+                                data:
+                                  _request: "stats_request.data.data.attributes.schemas"
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

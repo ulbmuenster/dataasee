@@ -1,0 +1,23 @@
+@startuml outside
+
+database src as "DB" #line.dashed;
+
+card dataasee [
+
+    DatAasee  
+
+]
+
+interface http as "Endpoints"
+
+card fe #line.dashed; [
+
+    Frontend  
+
+]
+
+src <<-[dashed]- dataasee
+dataasee <<-->> http
+http <<-[dashed]- fe
+
+@enduml

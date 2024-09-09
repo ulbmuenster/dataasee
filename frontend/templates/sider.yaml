@@ -1,0 +1,26 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Side Menu
+blocks:
+  - id: "ready_box"
+    type: "Box"
+    blocks:
+      - id: "ready_div"
+        type: "Divider"
+      - id: "ready_banner"
+        type: "Alert"
+        layout:
+          span: 22
+          offset: 1
+        properties:
+          _if:
+            test:
+              _if_none:
+                - _request: "ready_request.data.data.attributes.ready"
+                - false
+            then:
+              message: "Server Ready"
+              type: "success"
+            else:
+              message: "Server Problem"
+              type: "error"

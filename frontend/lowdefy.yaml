@@ -1,0 +1,99 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+lowdefy: "4.3.0"
+name: "DatAasee"
+
+global:
+  title: "DatAasee"
+  logo:
+    src: "logo-light-theme.png"
+    alt: "DatAasee"
+    style:
+      filter: "invert(19%) sepia(88%) saturate(2015%) hue-rotate(182deg) brightness(96%) contrast(102%)"
+  unknown: "[ᴇᴍᴘᴛʏ]"
+  schema: null
+
+# This enables using the Enter-key to click certain buttons
+app:
+  html:
+    appendBody: |
+      <script>
+        document.addEventListener("keypress", function(event) {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            document.getElementById("enter_button").click();
+          }
+        });
+      </script>
+
+connections:
+  - id: "datalake_api"
+    type: "AxiosHttp"
+    properties:
+      baseURL:
+        _build.env: "DL_INTERNAL"
+
+menus:
+  - id: "main"
+    links:
+      - id: "index"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillHome"
+          title: "Home"
+        pageId: "index"
+
+      - id: "filter"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillFilter"
+          title: "Filter"
+        pageId: "filter"
+
+      - id: "query"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillCode"
+          title: "Query"
+        pageId: "query"
+
+      - id: "stats"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillSignal"
+          title: "Statistics"
+        pageId: "stats"
+
+      - id: "about"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillApi"
+          title: "Interface"
+        pageId: "about"
+
+      - id: "insert"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillEdit"
+          title: "Insert"
+          danger: true
+        pageId: "insert"
+
+      - id: "admin"
+        type: "MenuLink"
+        properties:
+          icon: "AiFillControl"
+          title: "Admin"
+          danger: true
+        pageId: "admin"
+
+pages:
+  - _ref: "pages/index.yaml"
+  - _ref: "pages/filter.yaml"
+  - _ref: "pages/query.yaml"
+  - _ref: "pages/insert.yaml"
+  - _ref: "pages/stats.yaml"
+  - _ref: "pages/about.yaml"
+  - _ref: "pages/fetch.yaml"
+  - _ref: "pages/admin.yaml"
+

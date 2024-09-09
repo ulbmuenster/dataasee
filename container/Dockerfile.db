@@ -1,0 +1,48 @@
+ARG IMGREPO
+
+## Development Target
+
+FROM ${IMGREPO}ubuntu:24.04 AS develop
+
+LABEL maintainer="Christian Himpe (University of Münster)"
+
+RUN apt-get update && apt-get upgrade -y && apt-get -y --no-install-recommends install tzdata wget openjdk-17-jre-headless && rm -rf /var/lib/apt/lists/*
+
+RUN useradd -m arcadedb
+
+RUN mkdir /backup && chown arcadedb:arcadedb /backup
+
+WORKDIR /home/arcadedb
+
+USER arcadedb
+
+VOLUME /backup
+
+COPY --chown=arcadedb database/init.sh ./
+
+COPY --chown=arcadedb database/*.sql ./
+
+ARG VERSION
+
+RUN wget -q https://github.com/ArcadeData/arcadedb/releases/download/$VERSION/arcadedb-$VERSION.tar.gz && tar -xf arcadedb-$VERSION.tar.gz && mv arcadedb-$VERSION/* . && rm arcadedb-$VERSION.tar.gz && rm -Rf arcadedb-$VERSION && chmod +x ./bin/*.sh
+
+ARG DB_NAME
+ENV DB_NAME=$DB_NAME
+
+RUN ./bin/console.sh -b "CREATE DATABASE $DB_NAME; BEGIN; LOAD schema.sql; LOAD preload.sql; COMMIT;"
+
+ENV ARCADEDB_PID="/tmp/arcadedb.pid"
+
+ENV ARCADEDB_OPTS_MEMORY="-XX:InitialRAMPercentage=50.0 -XX:MaxRAMPercentage=75.0"
+
+ENV JAVA_OPTS="$JAVA_OPTS -Darcadedb.server.backupDirectory=/backup -Darcadedb.command.warningsEvery=1000"
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 http://localhost:2480/api/v1/ready || exit 1
+
+CMD ["./init.sh"]
+
+## Release Target:
+
+FROM develop AS release
+
+ENV JAVA_OPTS="$JAVA_OPTS -Darcadedb.server.mode=production"

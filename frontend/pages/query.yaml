@@ -1,0 +1,293 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Custom Query
+id: "query"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | Query"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+layout:
+  contentJustify: "center"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "schema_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/schema"
+      method: "get"
+
+  - id: "query_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/metadata"
+      method: "get"
+      params:
+        language:
+          _if_none:
+            - _payload: "language"
+            - "sql"
+        query:
+          _payload: "query_text"
+
+events:
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+    - id: "schema_enter"
+      type: "Request"
+      params: "schema_request"
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "heading"
+        type: "Title"
+        properties:
+          content: "Custom Query"
+          level: 1
+## Query Card
+      - id: "query_card"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+## Left Column
+              - id: "left"
+                type: "Box"
+                layout:
+                  span: 12
+                blocks:
+                  - id: "query_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Enter Query"
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## Query Language
+                          - id: "language"
+                            type: "Selector"
+                            properties:
+                              placeholder: "Language (Default: SQL)"
+                              label:
+                                disabled: true
+                              options:
+                                - label: "ArcadeDB SQL - Structured Query Language (<a href='https://docs.arcadedb.com/#SQL'>Help</a>)"
+                                  value: "sql"
+                                - label: "Cypher Query Language (<a href='https://neo4j.com/docs/cypher-manual/current/'>Help</a>)"
+                                  value: "cypher"
+                                - label: "Gremlin Query Language (<a href='https://kelvinlawrence.net/book/PracticalGremlin.html'>Help</a>)"
+                                  value: "gremlin"
+                                - label: "GraphQL - Graph Query Language (<a href='https://graphql.org/learn/'>Help</a>)"
+                                  value: "graphql"
+                                - label: "MQL - MongoDB Query Language (<a href='https://www.mongodb.com/docs/manual/tutorial/query-documents/'>Help</a>)"
+                                  value: "mongo"
+                                # - label: "SPARQL - SPARQL Protocol and RDF Query Language (<a href='https://www.w3.org/TR/sparql11-query/'>Help</a>)"
+                                #   value: sparql
+## Schema Info
+                          - id: "schema_info"
+                            type: "Markdown"
+                            properties:
+                              content:
+                                _string.concat:
+                                  - "> "
+                                  - _request: "schema_request.data.data.attributes.comment"
+## Query Text
+                          - id: "query_text"
+                            type: "TextArea"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "-- here goes the query"
+                              autoSize: true
+                              maxLength: 4096
+                              rows: 7
+## Submit Button
+                          - id: "enter_button"  # Do not change! This name is needed to trigger by pressing "Enter"
+                            type: "Button"
+                            properties:
+                              block: true
+                              size: "large"
+                              title: "Submit"
+                              icon: "AiFillRocket"
+                            events:
+                              onClick:
+                                - id: "validate_query"
+                                  type: "Validate"
+                                  params:
+                                    - "language"
+                                - id: "clear_table"
+                                  type: "SetState"
+                                  params:
+                                    table: []
+                                - id: "submit_query"
+                                  type: "Request"
+                                  params: "query_request"
+                                - id: "set_language"
+                                  type: "SetState"
+                                  params:
+                                    language:
+                                      _if_none:
+                                        - _state: "language"
+                                        - "sql"
+                                - id: "update_table"
+                                  type: "SetState"
+                                  params:
+                                    table:
+                                      _array.concat:
+                                        - - _array.reduce:
+                                              on:
+                                                _object.keys:
+                                                  _request: "query_request.data.data.attributes.result"
+                                              callback:
+                                                _function:
+                                                  __object.defineProperty:
+                                                    on:
+                                                      __args: 0
+                                                    key:
+                                                      __args: 1
+                                                    descriptor:
+                                                      value:
+                                                        __args: 1
+                                              initialValue: {}
+                                        - _request: "query_request.data.data.attributes.result"
+## Right Column
+              - id: "query_help"
+                type: "Card"
+                layout:
+                  span: 12
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Query Help"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "query_md"
+                        type: "Markdown"
+                        properties:
+                          content: |
+                            The custom query allows to submit a read-only query in a selected query language to the backend database.
+
+                            * **Language**: One of: SQL, Cypher, Gremlin, GraphQL, or MQL.
+                            * **Comment**: The self-description of the database schema.
+                            * **Query**: A query with maximum length 4096 characters.
+
+                      - id: "query_detail"
+                        type: "Collapse"
+                        properties:
+                          defaultActiveKey: "none"
+                          panels:
+                            - key: "technically"
+                              title: "Technically"
+                        areas:
+                          technically:
+                            blocks:
+                              - id: "technically"
+                                type: "Markdown"
+                                properties:
+                                  content: |
+                                    1. The database comment is retrieved by a GET request to:
+
+                                        ```
+                                        /api/v1/schema
+                                        ```
+                                    2. Clicking "Submit" sends a GET request to:
+
+                                        ```
+                                        /api/v1/metadata?language=x&query=y
+                                        ```
+                                       The server filters null or empty filters.
+## Results
+      - id: "results_wrapper"
+        type: "Card"
+        visible:
+          _ne:
+            - _request: "query_request.data.data"
+            - null
+        areas:
+          content:
+            gutter: 16
+            blocks:
+              - id: "results_heading"
+                type: "Title"
+                properties:
+                  content: "Results"
+                  level: 2
+              - id: "table"
+                type: "AgGridAlpine"
+                properties:
+                  rowData:
+                    _request: "query_request.data.data.attributes.result"
+                  columnDefs:
+                    _array.map:
+                      on:
+                        _object.keys:
+                          _request: "query_request.data.data.attributes.result.0"
+                      callback:
+                        _function:
+                          headerName:
+                            __args: 0
+                          field:
+                            __args: 0
+                          useValueFormatterForExport: true
+                          valueFormatter:
+                            __function:
+                              ___if:
+                                test:
+                                  ___or:
+                                    - ___type:
+                                        type: "array"
+                                        on:
+                                          ___args: "0.value"
+                                    - ___type:
+                                        type: "object"
+                                        on:
+                                          ___args: "0.value"
+                                then:
+                                  ___json.stringify:
+                                    on:
+                                      ___args: "0.value"
+                                    options:
+                                      space: 0
+                                else:
+                                  ___args: "0.value"
+              - id: "csv_export"
+                type: "Button"
+                properties:
+                  title: "Export Current Results as CSV"
+                events:
+                  onClick:
+                    - id: "trigger_export"
+                      type: "CallMethod"
+                      params:
+                        blockId: "table"
+                        method: "exportDataAsCsv"
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

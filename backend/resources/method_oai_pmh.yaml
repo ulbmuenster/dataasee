@@ -1,0 +1,76 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'oai_pmh'
+    while:
+      at_least_once: true
+      max_loops: 0
+      check: 'metadata("resumptionToken").type() != "null"'
+      processors:
+        - try:
+            - http:
+                url: '${! metadata("source") + "?verb=ListRecords" + metadata("resumptionToken").or("&metadataPrefix=" + metadata("format")) }'
+                verb: 'GET'
+                timeout: '15s'
+                retries: 10
+                rate_limit: 'rl__oai_pmh'
+
+            - xml:
+                operator: 'to_json'
+
+            - mapping: |
+                meta resumptionToken  = match this."OAI-PMH".ListRecords.resumptionToken."#text" {
+                                          this.type() == "null" => null,
+                                                              _ => "&resumptionToken=" + this }
+                root = this."OAI-PMH".ListRecords.with("record").values().flatten().filter(x -> x.exists("metadata"))
+
+            - unarchive:
+                format: 'json_array'
+
+            - try:
+                - mapping: 'meta sourceid = this.header.identifier'
+
+                - mapping: 'root = this.metadata'
+
+                - resource: 'formats'
+
+                - resource: 'normalize'
+
+                - resource: 'process'
+
+            - catch:
+                - log:
+                    message: |
+                      ${! error() + " : " + this.with("raw").format_json(no_indent: true).string().replace_all("\"","'") }
+
+            - archive:
+                format: 'json_array'
+
+            - mapping: |
+                meta count = metadata("count") + this.length()
+                root = this
+
+            - arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'command'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sqlscript"
+                  root.command = this.fold("",x -> x.tally + "UPDATE metadata MERGE %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
+                response: |
+                  root = {}
+
+        - catch:
+            - log:
+                message: |
+                  ${! error() + " : " + metadata("source") + "?verb=ListRecords" + metadata("resumptionToken").or("&metadataPrefix=" + metadata("format")) }
+
+rate_limit_resources:
+  - label: 'rl__oai_pmh'
+    local:
+      count: 2000
+      interval: '1m'
+

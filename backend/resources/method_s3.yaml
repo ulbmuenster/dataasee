@@ -1,0 +1,76 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 's3'
+    try:
+      - s3get:
+          url: 'source'
+          get: 'bucket'
+          access: 'user'
+          secret: 'pass'
+
+      - xml:
+          operator: 'to_json'
+
+      - mapping: |
+          root = this.ListBucketResult.with("Contents").values().flatten().map_each(x -> x.Key)
+
+      - unarchive:
+          format: 'json_array'
+
+      - split:
+          size: 1
+
+      - try:
+          - mapping: |
+              root.object = this.string()
+              meta object = metadata("source") + "/" + root.object
+
+          - s3get:
+              url: 'object'
+              get: 'object'
+              access: 'user'
+              secret: 'pass'
+
+          - xml:
+              operator: 'to_json'
+
+          - mapping: 'root = this.collection.explode("record")'
+
+          - while:
+              check: 'this.length() > 0'
+              processors:
+                - mapping: 'meta block = [50,this.length()].min()'
+
+                - branch:
+                    request_map: 'root = this.slice(0,metadata("block"))'
+
+                    processors:
+                      - unarchive:
+                          format: 'json_array'
+
+                      - resource: 'formats'
+
+                      - resource: 'normalize'
+
+                      - resource: 'process'
+
+                      - archive:
+                          format: 'json_array'
+
+                      - arcadedb:
+                          host: '${DB_HOST}'
+                          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                          endpoint: 'command'
+                          database: '${DB_NAME}'
+                          username: '${DB_USER}'
+                          password: '${DB_PASS}'
+                          request: |
+                            root.language = "sqlscript"
+                            root.command = this.fold("",x -> x.tally + "UPDATE metadata MERGE %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
+                          response: |
+                            root = this
+
+                    result_map: |
+                      root = root.slice(metadata("block"))
+                      meta count = metadata("count") + metadata("block")

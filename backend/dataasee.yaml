@@ -1,0 +1,742 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+logger:
+  static_fields:
+    '@service': '${DL_NAME} ${DL_VERSION}'
+
+metrics:
+  prometheus: {}
+  mapping: ""
+
+input:
+  label: 'api_server'
+  http_server:
+    address: '0.0.0.0:${DL_PORT}'
+    path: '/${DL_PATH}/{endpoint}'
+    allowed_verbs:
+      - 'GET'
+      - 'POST'
+    cors:
+      enabled: true
+      allowed_origins:
+        - '*'
+    timeout: '10s'
+    sync_response:
+      status: '${! metadata("status").or("200") }'
+      headers:
+        Content-Type: 'application/json'
+        WWW-Authenticate: '${! metadata("method") }'
+
+  processors:
+    - switch:
+
+## Basic Authentication Challenge (All POST requests need authentication!)
+        - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization") == null'
+          processors:
+            - label: 'post_request__no_authorization'
+              mapping: |
+                meta status = "401"
+                meta method = "Basic"
+
+## Basic Authentication for POST Requests
+        - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization").string().trim_prefix("Basic ").decode("base64").catch("") != env("DL_USER").string() + ":" + file(env("DL_PASS")).string()'
+          processors:
+            - label: 'post_request__invalid_authentication'
+              mapping: |
+                meta status = "403"
+                root.errors =  [ { "title": "Request error", "detail": "Invalid Credentials." } ]
+
+## Ensure JSON is accepted
+        - check: 'metadata("Accept") != null && !metadata("Accept").re_match(".*((application\\/json)|(application\\/vnd.api\\+json)|(\\*\\/\\*)).*")'
+          processors:
+            - label: 'any_request__non_json_content_type'
+              mapping: |
+                meta status = "406"
+                root.errors = [ { "title": "Not acceptable", "detail": "Requested response content-type not acceptable, must be \"application/json\"." } ]
+
+## API Endpoint
+        - check: 'metadata("endpoint") == "api" && metadata("http_server_verb") == "GET"'
+          processors:
+            - switch:
+                - check: 'metadata("request") == null && metadata("response") == null'
+                  processors:
+                    - label: 'api_endpoint__cached_openapi_definition'
+                      cached:
+                        cache: 'global_cache'
+                        key: 'api'
+                        processors:
+                          - label: 'api_endpoint__openapi_definition'
+                            mapping: |
+                              root.data = file("/schemas/openapi.yaml").parse_yaml()
+
+                - check: '["ingest","insert"].contains(metadata("request"))'
+                  processors:
+                    - label: 'api_endpoint__request_schema'
+                      mapping: |
+                        root.data = file("/schemas/request/" + metadata("request").string() + ".json").parse_json()
+
+                - check: '["api","attributes","backup","error","health","ingest","insert","metadata","ready","schema","stats"].contains(metadata("response"))'
+                  processors:
+                    - label: 'api_endpoint__response_schema'
+                      mapping: |
+                        root.data = file("/schemas/response/" + metadata("response").string() + ".json").parse_json()
+
+                - processors:
+                    - label: 'api_endpoint__request_error'
+                      mapping: |
+                        meta status = "400"
+                        root.errors = [ { "title": "Request error", "detail": "Parameter value is not an endpoint or has no request schema." } ]
+
+            - label: 'api_endpoint__server_error'
+              catch:
+                - log:
+                    message: '[/api] ${! error() }'
+
+                - mapping: |
+                    meta status = "500"
+                    root.errors = [ { "title": "Server error", "detail": "Schema read error." } ]
+
+## Attributes Endpoint
+        - check: 'metadata("endpoint") == "attributes" && metadata("http_server_verb") == "GET"'
+          processors:
+            - switch:
+                - check: 'metadata("type") == null'
+                  processors:
+                    - label: 'attributes_endpoint__cached_all_types'
+                      cached:
+                        cache: 'global_cache'
+                        key: 'attributes'
+                        processors:
+                          - label: 'attributes_endpoint__all_types'
+                            arcadedb:
+                              host: '${DB_HOST}'
+                              port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                              endpoint: 'query'
+                              database: '${DB_NAME}'
+                              username: '${DB_USER}'
+                              password: '${DB_PASS}'
+                              request: |
+                                root.language = "sql"
+                                root.command = """SELECT $resourceTypes.name AS resourcetypes, $languages.name AS languages, $licenses.name AS licenses, $synonyms.name AS synonyms, $externalItems.name AS externalitems, $categories.name as categories, $schemas.name AS schemas, $relations.name AS relations
+                                                  LET $resourceTypes = (SELECT name FROM BUCKET:resourcetypes ORDER BY name),
+                                                      $languages = (SELECT name FROM BUCKET:languages ORDER BY name),
+                                                      $licenses = (SELECT name FROM BUCKET:licenses ORDER BY name),
+                                                      $synonyms = (SELECT name FROM BUCKET:synonyms ORDER BY name),
+                                                      $externalItems = (SELECT name FROM BUCKET:externalitems ORDER BY name),
+                                                      $categories = (SELECT name FROM BUCKET:categories ORDER BY name),
+                                                      $schemas = (SELECT name FROM BUCKET:schemas ORDER BY name),
+                                                      $relations = (SELECT name FROM schema:types WHERE type = 'edge' ORDER BY name);"""
+                              response: |
+                                root.data.type = "metadata"
+                                root.data.id = timestamp_unix().string()
+                                root.data.attributes = this.result.0
+
+                - check: '["resourcetypes","languages","licenses","synonyms","externalitems","categories","schemas"].contains(metadata("type").lowercase())'
+                  processors:
+                    - label: 'attributes_endpoint__single_type'
+                      arcadedb:
+                        host: '${DB_HOST}'
+                        port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                        endpoint: 'query'
+                        database: '${DB_NAME}'
+                        username: '${DB_USER}'
+                        password: '${DB_PASS}'
+                        request: |
+                          root.language = "sql"
+                          root.command = "SELECT unionall(name) AS name FROM (SELECT name FROM BUCKET:%s ORDER BY name)".format(metadata("type").lowercase())
+                        response: |
+                          root.data.type = "metadata"
+                          root.data.id = timestamp_unix().string()
+                          root.data.attributes = { metadata("type").lowercase(): this.result.0.name }
+
+                - check: 'metadata("type").lowercase() == "relations"'
+                  processors:
+                    - label: 'attributes_endpoint__relations_type'
+                      arcadedb:
+                        host: '${DB_HOST}'
+                        port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                        endpoint: 'query'
+                        database: '${DB_NAME}'
+                        username: '${DB_USER}'
+                        password: '${DB_PASS}'
+                        request: |
+                          root.language = "sql"
+                          root.command = "SELECT unionall(name) AS name FROM (SELECT name FROM schema:types WHERE type = 'edge' ORDER BY name)"
+                        response: |
+                          root.data.type = "metadata"
+                          root.data.id = timestamp_unix().string()
+                          root.data.attributes = { "relations": this.result.0.name }
+
+                - processors:
+                    - label: 'attributes_endpoint__request_error'
+                      mapping: |
+                        meta status = "400"
+                        root.errors = [ { "title": "Request error", "detail": "Invalid attribute type." } ]
+
+            - label: 'attributes_endpoint__server_error'
+              catch:
+                - log:
+                    message: '[/attributes] ${! error() }'
+
+                - mapping: |
+                    meta status = "500"
+                    root.errors = [ { "title": "Server error", "detail": "Database error." } ]
+
+## Backup Endpoint
+        - check: 'metadata("endpoint") == "backup" && metadata("http_server_verb") == "POST"'
+          processors:
+            - label: 'backup_endpoint__database_backup'
+              arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'command'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sql"
+                  root.command = "BACKUP DATABASE;"
+                response: |
+                  root.data.type = "system"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes.completed = true
+
+            - label: 'backup_endpoint__server_error'
+              catch:
+                - log:
+                    message: '[/backup] ${! error() }'
+
+                - mapping: |
+                    meta status = "500"
+                    root.errors = [ { "title": "Server error", "detail": "Database error." } ]
+
+## Health Endpoint
+        - check: 'metadata("endpoint") == "health" && metadata("http_server_verb") == "POST"'
+          processors:
+            - label: 'health_endpoint__database_health'
+              branch:
+                processors:
+                  - arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'command'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      request: |
+                        root.language = "sqlscript"
+                        root.command = """LET $a = CHECK DATABASE;
+                                          SELECT version() AS version, { "warnings": $a.warnings[0].size(), "errors": $a.totalErrors[0], "corrupted": $a.corruptedRecords[0].size(), "invalid": $a.invalidLinks[0] } AS units;"""
+                      response: |
+                        root.version = this.result.0.version.re_find_object("^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)").0
+                        root.units = this.result.0.units
+                        root.healthy = true
+
+                  - catch:
+                      - mapping: 'root.healthy = false'
+
+                result_map: |
+                  root.database.name = env("DB_TYPE")
+                  root.database.version = this.version
+                  root.database.units = this.units
+                  root.database.healthy = this.healthy
+
+            - label: 'health_endpoint__processor_health'
+              branch:
+                processors:
+                  - try:
+                      - http:
+                          url: 'http://localhost:4195/version'
+                          verb: 'GET'
+
+                      - mapping: |
+                          root.version = this.version.re_find_object("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)").0
+                          root.healthy = true
+
+                  - catch:
+                      - mapping: 'root.healthy = false'
+
+                result_map: |
+                  root.processor.name = "Benthos"
+                  root.processor.version = this.version
+                  root.processor.healthy = this.healthy
+
+            - label: 'health_endpoint__overall_health'
+              switch:
+                - check: 'this.database.healthy && this.processor.healthy'
+                  processors:
+                    - mapping: |
+                        root.data.type = "system"
+                        root.data.id = timestamp_unix().string()
+                        root.data.attributes.database = this.database
+                        root.data.attributes.processor = this.processor
+
+                - processors:
+                    - mapping: |
+                        meta status = "500"
+                        root.errors = [{ "title": "Internal Server Error", "detail": "Service not healthy." }]
+
+## Ingest Endpoint
+        - check: 'metadata("endpoint") == "ingest" && metadata("http_server_verb") == "POST"'
+          processors:
+            - label: 'ingest_endpoint__check_lock'
+              cache:
+                resource: 'global_cache'
+                operator: 'get'
+                key: 'ingesting'
+
+            - switch:
+                - check: 'errored()'
+                  processors:
+                    - catch: []
+
+                    - try:
+                        - label: 'ingest_endpoint__filter_request_body'
+                          mapping: 'root = this.with("source","method","format","steward","username","password").filter(x -> x.value != null && x.value != [] && x.value != {})'
+
+                        - label: 'ingest_endpoint__validate_request_body'
+                          json_schema:
+                            schema_path: 'file:///schemas/request/ingest.json'
+
+                        - label: 'ingest_endpoint__preserve_request_body'
+                          mapping: |
+                            meta source = this.source
+                            meta method = this.method
+                            meta format = this.format
+                            meta steward = this.steward
+                            meta user = this.username
+                            meta pass = this.password
+
+                        - label: 'ingest_endpoint__set_lock'
+                          cache:
+                            resource: 'global_cache'
+                            operator: 'set'
+                            key: 'ingesting'
+
+                        - mapping: |
+                            meta ingest = true
+
+                            meta status = "202"
+                            root.data.type = "system"
+                            root.data.id = timestamp_unix().string()
+                            root.data.attributes.started = true
+
+                    - label: 'ingest_endpoint__request_error'
+                      catch:
+                        - log:
+                            message: '[/ingest] ${! error() }'
+
+                        - mapping: |
+                            meta status = "400"
+                            root.errors = [ { "title": "Request error", "detail": "Invalid request, see ${DL_BASE}/${DL_PATH}/api?request=ingest" } ]
+
+                - processors:
+                    - log:
+                        message: '[/ingest] ${! "Already ingesting." }'
+
+                    - mapping: |
+                        meta status = "503"
+                        root.errors = [ { "title": "Server error", "detail": "Already ingesting." } ]
+
+## Insert Endpoint
+        - check: 'metadata("endpoint") == "insert" && metadata("http_server_verb") == "POST"'
+          processors:
+            - label: 'insert_endpoint__filter_request_body'
+              mapping: 'root = this.with("categories","keywords","name","creators","dataSteward","publisher","publicationYear","resourceType","identifiers","synonyms","language","subjects","version","license","rights","project","fundings","description","message","externalItems").filter(x -> x.value != null && x.value != [] && x.value != {})'
+
+            - label: 'insert_endpoint__validate_request_body'
+              json_schema:
+                schema_path: 'file:///schemas/request/insert.json'
+
+            - switch:
+                - check: '!errored()'
+                  processors:
+                    - try:
+                        - resource: 'normalize'
+
+                        - label: 'insert_endpoint__process_metadata'
+                          mapping: |
+                            root = this
+                            root.source = "dataasee"
+                            root.recordId = (root.source.string() + "/" + this.name + "/" + this.publicationYear.string() + "/" + this.publisher.string() + "/" + this.version.string()).hash("xxhash64").encode("base64rawurl")
+                            root.metadataQuality = if this.with("name","creators","publicationYear","publisher","resourceType").values().any(x -> x.type() == "null" || x == "") { "Incomplete" } else { "OK" }
+
+                        - label: 'insert_endpoint__database_update'
+                          arcadedb:
+                            host: '${DB_HOST}'
+                            port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                            endpoint: 'command'
+                            database: '${DB_NAME}'
+                            username: '${DB_USER}'
+                            password: '${DB_PASS}'
+                            request: |
+                              root.language = "sql"
+                              root.command = "UPDATE metadata MERGE %s UPSERT RETURN AFTER recordId WHERE recordId == '%s';".format(this.string(),this.recordId)
+                            response: |
+                              meta status = "201"
+                              root = {}
+                              root.data.type = "data"
+                              root.data.id = timestamp_unix().string()
+                              root.data.attributes.recordId = this.result.0.recordId
+
+                    - label: 'insert_endpoint__server_error'
+                      catch:
+                        - log:
+                            message: '[/insert] ${! error() }'
+
+                        - mapping: |
+                            meta status = "500"
+                            root.errors = [ { "title": "Server error", "detail": "Database error." } ]
+
+                - processors:
+                    - label: 'insert_endpoint__request_error'
+                      catch:
+                        - mapping: |
+                            meta status = "400"
+                            root.errors = [ { "title": "Request error", "detail": "Invalid request, see ${DL_BASE}/${DL_PATH}/api?request=insert" } ]
+
+## Metadata Endpoint
+        - check: 'metadata("endpoint") == "metadata" && metadata("http_server_verb") == "GET"'
+          processors:
+            - switch:
+                - check: '["id","search","language","license","resourcetype","category","from","till"].any(x -> metadata(x).or("").length() > 256) || metadata("query").or("").length() > 4096'
+                  processors:
+                    - label: 'metadata_endpoint__request_error'
+                      mapping: |
+                        meta status = "400"
+                        root.errors = [ { "title": "Request error", "detail": "Query argument too long." } ]
+
+                - processors:
+                    - try:
+                        - switch:
+                            - check: 'metadata("id") != null'  # TODO: refactor this case
+                              processors:
+                                - label: 'metadata_endpoint__single_record'
+                                  arcadedb:
+                                    host: '${DB_HOST}'
+                                    port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                                    endpoint: 'query'
+                                    database: '${DB_NAME}'
+                                    username: '${DB_USER}'
+                                    password: '${DB_PASS}'
+                                    request: |
+                                      root.language = "sql"
+                                      root.command = """SELECT schemaVersion, recordId, metadataQuality, dataSteward, source, createdAt, updatedAt,
+                                                               sizeBytes, fileFormat,
+                                                               numberDownloads, keywords, categories.transform('asRID').name AS categories,
+                                                               name, creators, publisher, publicationYear, resourceType.name AS resourceType, identifiers,
+                                                               synonyms, language.name AS language, subjects, version, license:{name,data} AS license, rights, project, fundings, description, message, externalItems,
+                                                               rawType, raw, rawChecksum,
+                                                               outE():{@type AS type, false AS isOut, inV().recordId AS recordId, inV().name AS name, inV().publicationYear AS publicationYear, inV().resourceType.name AS resourceType} AS irelations,
+                                                               inE():{@type AS type, true AS isOut, outV().recordId AS recordId, outV().name AS name, outV().publicationYear AS publicationYear, outV().resourceType.name AS resourceType} AS orelations,
+                                                               @rid
+                                                        FROM metadata
+                                                        WHERE recordId = '%s';""".format(metadata("id").string())
+                                    response: |
+                                      if this.result.length() == 1 {
+                                        root = this.result.0.without("irelations","orelations")
+                                        root.relations = this.result.0.irelations.concat(this.result.0.orelations)  # TODO: move into projections once fixed in ArcadeDB
+                                      } else {
+                                        meta status = "404"
+                                        root.errors = [ { "title": "Request error", "detail": "Not found." } ]
+                                      }
+
+                                - branch:
+                                    request_map: 'root = if this."@rid" != null { { "rid": this."@rid" } } else { deleted() }'
+                                    processors:
+                                      - arcadedb:
+                                          host: '${DB_HOST}'
+                                          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                                          endpoint: 'command'
+                                          database: '${DB_NAME}'
+                                          username: '${DB_USER}'
+                                          password: '${DB_PASS}'
+                                          request: |
+                                            root.language = "sql"
+                                            root.command = "UPDATE %s SET numberDownloads += 1".format(this.rid)
+
+                            - check: '["sql","mongo","gremlin","cypher","graphql"].contains(metadata("language").or("").lowercase())'
+                              processors:
+                                - label: 'metadata_endpoint__custom_query'
+                                  arcadedb:
+                                    host: '${DB_HOST}'
+                                    port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                                    endpoint: 'query'
+                                    database: '${DB_NAME}'
+                                    username: '${DB_USER}'
+                                    password: '${DB_PASS}'
+                                    request: |
+                                      root.language = metadata("language")
+                                      root.command = metadata("query").not_null().not_empty().catch("SELECT FROM metadata")
+                                      root.limit = 100
+                                    response: |
+                                      root.result = this.result.array().slice(0,100)
+
+                            - processors:
+                                - label: 'metadata_endpoint__standard_query'
+                                  arcadedb:
+                                    host: '${DB_HOST}'
+                                    port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                                    endpoint: 'query'
+                                    database: '${DB_NAME}'
+                                    username: '${DB_USER}'
+                                    password: '${DB_PASS}'
+                                    request: |
+                                      map prep_string {
+                                        root = this.or("").string().trim().replace_all("'","\\'")
+                                      }
+
+                                      let resourcetype = metadata("resourcetype").apply("prep_string")
+                                      let language = metadata("language").apply("prep_string")
+                                      let license = metadata("license").apply("prep_string")
+                                      let category = metadata("category").apply("prep_string")
+                                      let from = if metadata("from").type() != "null" { metadata("from").number().string() } else { "" }
+                                      let till = if metadata("till").type() != "null" { metadata("till").number().string() } else { "" }
+                                      let search = metadata("search").apply("prep_string").not_empty().split(" ").map_each(x -> "(?=.*" + x.replace_all_many(["*",".*","_","\\\\s"]) + ")").join("").catch("")
+
+                                      let filter = "true "
+                                      let filter = if $resourcetype != "" { $filter + " AND (resourceType.name ILIKE '%s')".format($resourcetype) }
+                                      let filter = if $language != "" { $filter + " AND (language.name + language.also ILIKE '%%%s%%')".format($language) }
+                                      let filter = if $license != "" { $filter + " AND (license.name ILIKE '%s')".format($license) }
+                                      let filter = if $category != "" { $filter + " AND (ifnull(categories,[]).transform('asRID') CONTAINS (name ILIKE '%s'))".format($category) }
+                                      let filter = if $from != "" { $filter + " AND (publicationYear >= %s)".format($from) }
+                                      let filter = if $till != "" { $filter + " AND (publicationYear <= %s)".format($till) }
+                                      let filter = if $search != "" { $filter + " AND ((name MATCHES '(?i)%s.*') OR (keywords MATCHES '(?i)%s.*') OR (description MATCHES '(?i)%s.*'))".format($search,$search,$search) }
+
+                                      let newest = if metadata("newest").or(true).bool() { "DESC" } else { "ASC" }
+
+                                      let skip = metadata("skip").number(0).string()
+
+                                      root.language = "sql"
+                                      # TODO: `as publicationyear` is only part of the projection as temporary fix for an index bug producing duplicates; remove if fixed.
+                                      root.command = """SELECT recordId, name, publicationYear as publicationyear, resourceType.name AS resourceType, metadataQuality
+                                                        FROM metadata WHERE %s ORDER BY publicationYear %s SKIP %s LIMIT 10;""".format($filter,$newest,$skip)
+                                    response: |
+                                      root = this.result.map_each(x -> x.without("publicationyear").assign({ "publicationYear": x.publicationyear }))
+
+                        - label: 'metadata_endpoint__clean_results'
+                          mapping: |
+                            map remove_atprops {
+                              root = match {
+                                this.type() == "object" => this.filter(x -> !x.key.has_prefix("@")).map_each(y -> y.value.apply("remove_atprops")),
+                                this.type() == "array" => this.map_each(z -> z.apply("remove_atprops")),
+                                _ => this,
+                              }
+                            }
+
+                            map add_wrapper {
+                              root = match {
+                                this.type() == "object" => { "type": "data", "id": timestamp_unix().string(), "attributes": this }
+                                this.type() == "array" => this.map_each(z -> z.apply("add_wrapper"))
+                              }
+                            }
+
+                            root = if this.errors == null { { "data": this.apply("remove_atprops").apply("add_wrapper") } } else { this }
+
+                    - label: 'metadata_endpoint__server_error'
+                      catch:
+                        - log:
+                            message: '[/metadata] ${! error() }'
+
+                        - mapping: |
+                            meta status = "500"
+                            root.errors = [ { "title": "Server error", "detail": "Database error." } ]
+
+## Ready Endpoint
+        - check: 'metadata("endpoint") == "ready" && metadata("http_server_verb") == "GET"'
+          processors:
+            - label: 'ready_endpoint__database_ready'
+              branch:
+                processors:
+                  - try:
+                      - http:
+                          url: 'http://${DB_HOST}:${DB_PORT}/api/v1/ready'
+                          verb: 'GET'
+
+                      - mapping: 'root.ready = true'
+
+                  - catch:
+                      - mapping: 'root.ready = false'
+
+                result_map: 'root.database = this.ready'
+
+            - label: 'ready_endpoint__processor_ready'
+              branch:
+                processors:
+                  - try:
+                      - http:
+                          url: 'http://localhost:4195/ready'
+                          verb: 'GET'
+
+                      - mapping: 'root.ready = true'
+
+                  - catch:
+                      - mapping: 'root.ready = false'
+
+                result_map: 'root.processor = this.ready'
+
+            - label: 'ready_endpoint__overall_ready'
+              switch:
+                - check: 'this.database && this.processor'
+                  processors:
+                    - mapping: |
+                        root.data.type = "system"
+                        root.data.id = timestamp_unix().string()
+                        root.data.attributes.ready = this.database && this.processor
+
+                - processors:
+                    - label: 'ready_endpoint__server_error'
+                      mapping: |
+                        meta status = "503"
+                        root.errors = [{ "title": "Service Unavailable", "detail": "Service not ready." }]
+
+## Schema Endpoint
+        - check: 'metadata("endpoint") == "schema" && metadata("http_server_verb") == "GET"'
+          processors:
+            - label: 'schema_endpoint__cached_schema'
+              cached:
+                cache: 'global_cache'
+                key: 'schema'
+                processors:
+                  - label: 'schema_endpoint__schema'
+                    arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'query'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      request: |
+                        root.language = "sql"
+                        root.command = """SELECT $edges.edges AS relations, $props.props AS metadata, first($infos.comment) AS comment
+                                          LET $props = (SELECT map(name, custom) AS props FROM (SELECT expand(properties) FROM schema:types WHERE name = 'metadata')),
+                                              $edges = (SELECT map(name, custom) AS edges FROM (SELECT name, custom FROM schema:types WHERE type = 'edge')),
+                                              $infos = (SELECT custom.comment AS comment FROM schema:types WHERE name = 'metadata')"""
+                      response: |
+                        root.data.type = "metadata"
+                        root.data.id = timestamp_unix().string()
+                        root.data.attributes = this.result.0.metadata.fold({},x -> x.tally.merge(x.value)).merge(this.result.0.with("comment")).merge(this.result.0.relations.fold({},x -> x.tally.merge(x.value)))
+
+            - label: 'schema_endpoint__server_error'
+              catch:
+                - log:
+                    message: '[/schema] ${! error() }'
+
+                - mapping: |
+                    meta status = "500"
+                    root.errors = [ { "title": "Server error", "detail": "Database error." } ]
+
+## Stats Endpoint
+        - check: 'metadata("endpoint") == "stats" && metadata("http_server_verb") == "GET"'
+          processors:
+            - label: 'stats_endpoint__cached_statistics'
+              cached:
+                cache: 'global_cache'
+                key: 'stats'
+                ttl: '1m'
+                processors:
+                  - label: 'stats_endpoint__statistics'
+                    arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'query'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      request: |
+                        root.language = "sql"
+                        root.command = """SELECT $total[0].count AS total, $resourceTypes AS resourceTypes, $licenses AS licenses, $languages AS languages, $categories AS categories, $subjects AS subjects, $downloads AS downloads, $keywords AS keywords, $years AS years, $schemas AS schemas
+                                          LET $total = (SELECT count(name) AS count FROM metadata),
+                                              $resourceTypes = (SELECT ifnull(resourceType.name,'Unknown') AS name,count(*) AS value FROM metadata GROUP BY resourceType ORDER BY value DESC LIMIT 100),
+                                              $licenses = (SELECT ifnull(license.name,'Unknown') AS name, count(*) AS value FROM metadata GROUP BY license ORDER BY value DESC LIMIT 100),
+                                              $languages = (SELECT ifnull(language.name,'Unknown') AS name, count(*) AS value FROM metadata GROUP BY language ORDER BY value DESC LIMIT 100),
+                                              $categories = (SELECT ifnull(categories.asRID().name,'None') AS name, count(*) AS value FROM (SELECT categories FROM metadata UNWIND categories) GROUP BY categories ORDER BY value DESC LIMIT 100),
+                                              $subjects = (SELECT ifnull(subjects.name,'Unknown') AS name, count(*) AS value FROM (SELECT subjects FROM metadata UNWIND subjects) GROUP BY subjects ORDER BY value DESC LIMIT 100),
+                                              $downloads = (SELECT recordId AS name, numberDownloads AS value FROM metadata ORDER BY value DESC LIMIT 10),
+                                              $keywords = (SELECT keywords AS name, count(*) AS value FROM (SELECT keywords.toLowerCase().split(',').transform('trim') AS keywords FROM metadata WHERE keywords != "" UNWIND keywords) GROUP BY keywords ORDER BY value DESC LIMIT 10),
+                                              $years = (SELECT ifnull(publicationYear.asString(),'Unknown') AS name, count(*) AS value FROM metadata GROUP BY publicationYear ORDER BY value DESC LIMIT 10),
+                                              $schemas = (SELECT ifnull(rawType,'None') AS name, count() AS value FROM metadata GROUP BY name ORDER BY value DESC LIMIT 100);"""
+                      response: |
+                        root.data.type = "data"
+                        root.data.id = timestamp_unix().string()
+                        root.data.attributes = this.result.0
+
+            - label: 'stats_endpoint__server_error'
+              catch:
+                - log:
+                    message: '[/stats] ${! error() }'
+
+                - mapping: |
+                    meta status = "500"
+                    root.errors = [ { "title": "Server error", "detail": "Database error." } ]
+
+## Unknown Endpoint
+        - processors:
+            - label: 'unknown_endpoint__request_error'
+              mapping: |
+                meta status = "404"
+                root.errors = [ { "title": "Request error", "detail": "Unknown endpoint." } ]
+
+    - switch:
+        - check: '(metadata("Authorization") == null && metadata("status") == "401") || metadata("endpoint") == null'
+          processors:
+            - label: 'post_request__authentication_challenge'
+              noop: {}
+
+        - check: 'metadata("endpoint") == "api" && !this.exists("errors")'
+          processors:
+            - label: 'api_endpoint__direct'
+              mapping: |
+                root = this.data
+
+        - processors:
+            - label: 'any_request__json_api_wrapper'
+              mapping: |
+                root.errors = if this.exists("errors") { this.errors } else { deleted() }
+                root.data = if this.exists("data") && !this.exists("errors") { this.data } else { deleted() }
+                root.meta.name = "${DL_NAME}"
+                root.meta.version = "${DL_VERSION}"
+                root.links.self = if metadata("endpoint") == "metadata" || metadata("status") != "404" { "${DL_BASE}/${DL_PATH}/" + metadata("endpoint") }
+                root.links.describedby = "${DL_BASE}/${DL_PATH}/api?response=" +  (if metadata("status").number(200) < 400 { metadata("endpoint") } else { "error" })
+
+    - sync_response: {}
+
+buffer:
+  memory: {}
+
+output:
+  label: 'async_ingest'
+  processors:
+    - switch:
+        - check: 'metadata("ingest") == true && metadata("source") != null && metadata("method") != null && metadata("format") != null'
+          processors:
+            - log:
+                message: 'Starting ingest from ${! metadata("source") } via ${! metadata("method") } as ${! metadata("format") }.'
+
+            - mapping: |
+                meta timer_start = timestamp_unix()
+                meta count = 0
+
+            - resource: 'methods'
+
+            - resource: 'interconnect'
+
+            - mapping: 'root.runtime = (timestamp_unix() - metadata("timer_start")) / 3600.0'
+
+            - label: 'async_ingest__clear_lock_after_finish'
+              cache:
+                resource: 'global_cache'
+                operator: 'delete'
+                key: 'ingesting'
+
+            - log:
+                message: 'Completed ingest of ${! metadata("count").string() } records from ${! metadata("source") } after ${! "%.1f".format(this.runtime) }h.'
+
+  drop: {}
+
+
+cache_resources:
+  - label: 'global_cache'
+    memory:
+      default_ttl: '12h'
+      compaction_interval: '1h'

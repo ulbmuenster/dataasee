@@ -1,0 +1,53 @@
+# Dev-Env Manual Testing Helper
+
+GET http://localhost:8343/api/v1/api
+
+###
+
+GET http://localhost:8343/api/v1/api?request=ingest
+
+###
+
+GET http://localhost:8343/api/v1/api?response=api
+
+###
+
+GET http://localhost:8343/api/v1/ready
+
+###
+
+GET http://localhost:8343/api/v1/schema
+
+###
+
+GET http://localhost:8343/api/v1/attributes
+
+###
+
+GET http://localhost:8343/api/v1/attributes?type=languages
+
+###
+
+GET http://localhost:8343/api/v1/stats
+
+###
+
+GET http://localhost:8343/api/v1/metadata?id=
+
+###
+
+GET http://localhost:8343/api/v1/metadata?language=sql&query=SELECT%201
+
+###
+
+GET http://localhost:8343/api/v1/metadata?search=test
+
+###
+
+POST http://localhost:8343/api/v1/health
+Authorization: Basic admin:password
+
+###
+
+POST http://localhost:8343/api/v1/backup
+Authorization: Basic admin:password

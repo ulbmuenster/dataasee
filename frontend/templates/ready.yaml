@@ -1,0 +1,9 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Ready Request
+id: "ready_request"
+type: "AxiosHttp"
+connectionId: "datalake_api"
+properties:
+  url: "/ready"
+  method: "get"

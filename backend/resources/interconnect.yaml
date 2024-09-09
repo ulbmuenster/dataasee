@@ -1,0 +1,59 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'interconnect'
+    arcadedb:
+      host: '${DB_HOST}'
+      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+      endpoint: 'command'
+      database: '${DB_NAME}'
+      username: '${DB_USER}'
+      password: '${DB_PASS}'
+      request: |
+        root.language = "sqlscript"
+        root.awaitResponse = "false"
+        root.command = """
+          CONSOLE.output '\nInterconnect Started!';
+          LET $progress = 0;
+          LET $marker = #-1:-1;
+          WHILE( $marker IS NOT NULL ) {
+            LET $block = SELECT @rid, identifiers, related FROM metadata WHERE (@rid > $marker) AND (related IS NOT NULL) LIMIT 100;
+            LET $marker = last($block.@rid);
+            BEGIN;
+            FOREACH( $src IN $block ) {
+              LET $rid = $src.@rid;
+              LET $related = $src.related[data <> 'null'];
+              LET $identifiers = $src.identifiers;
+              IF( 'isRelatedTo' IN $related.name ) {
+                CREATE EDGE isRelatedTo FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isRelatedTo'].data)) IF NOT EXISTS;
+              }
+              IF( 'isNewVersionOf' IN $related.name ) {
+                CREATE EDGE isNewVersionOf FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isNewVersionOf'].data)) IF NOT EXISTS;
+              }
+              IF( 'isDerivedFrom' IN $related.name ) {
+                CREATE EDGE isDerivedFrom FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isDerivedFrom'].data)) IF NOT EXISTS;
+              }
+              IF( 'isPartOf' IN $related.name ) {
+                CREATE EDGE isPartOf FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isPartOf'].data)) IF NOT EXISTS;
+              }
+              IF( 'isSameExpressionAs' IN $related.name ) {
+                CREATE EDGE isSameExpressionAs FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isSameExpressionAs'].data)) IF NOT EXISTS;
+              }
+              IF( $identifiers IS NOT NULL ) {
+                CREATE EDGE isSameManifestationAs FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $identifiers.data) AND (@rid <> $rid)) IF NOT EXISTS;
+              }
+            }
+            COMMIT;
+            LET $progress = $progress + $block.size();
+            CONSOLE.output $progress + ' Done!';
+          }
+          BEGIN;
+          UPDATE metadata REMOVE related WHERE related IS NOT NULL;
+          COMMIT;
+          SLEEP 5000;
+          BACKUP DATABASE;
+          CONSOLE.output 'Interconnect Completed!';"""
+
+      response: |
+        root = {}
+

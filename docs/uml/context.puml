@@ -1,0 +1,48 @@
+@startuml context
+
+card dataasee #pink [
+
+DatAasee
+
+]
+
+cloud services [
+
+Services
+
+]
+
+database sources [
+
+Sources
+
+]
+
+cloud consumers [
+
+Consumers
+
+]
+frame frontend [
+
+Frontend
+
+]
+
+person admin [
+
+Admin
+
+]
+
+dataasee-->>services : Forward (HTTP)
+
+dataasee-->>sources : Import (HTTP)
+
+consumers-->>dataasee : Interact (HTTP)
+
+frontend-->>dataasee : Search (HTTP)
+
+admin-->>dataasee : Control (HTTP)
+
+@enduml

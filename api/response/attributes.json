@@ -1,0 +1,31 @@
+
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataasee:api?response=attributes",
+
+  "title": "DatAasee Attributes Endpoint Response", "type": "object", "required": ["data", "meta", "links"], "properties": {
+
+    "data": { "type": "object", "description": "See: https://jsonapi.org/format/#document-resource-objects", "required": ["type", "id", "attributes"], "properties": {
+    
+      "type": { "type": "string", "const": "metadata" },
+
+      "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
+
+      "attributes": { "type": "object", "title": "Payload", "properties": {
+
+        "additionalProperties": { "type": "array", "uniqueItems": true,
+
+          "items": { "type": "string", "maxLength": 255 } } } } } },
+
+    "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
+
+      "name": { "type": "string", "const": "DatAasee" },
+
+      "version": { "type": "string", "pattern": "^[1-9]*0?\\.[0-9]+" } } },
+
+    "links": { "type": "object", "description": "See: https://jsonapi.org/format/#document-links", "required": ["self", "describedby"], "properties": {
+
+      "self": { "type": "string" },
+
+      "describedby": { "type": "string" } } } }
+}

@@ -1,0 +1,20 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'formats'
+    switch:
+      - check: 'metadata("format") == "datacite" || metadata("format") == "oai_datacite"'
+        processors:
+          - resource: 'datacite'
+
+      - check: 'metadata("format") == "dc" || metadata("format") == "oai_dc"'
+        processors:
+          - resource: 'dc'
+
+      - check: 'metadata("format") == "marc21" || metadata("format") == "marcxml"'
+        processors:
+          - resource: 'marc'
+
+      - check: 'metadata("format") == "mods" || metadata("format") == "rawmods"'
+        processors:
+          - resource: 'mods'

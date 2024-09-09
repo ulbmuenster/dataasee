@@ -1,0 +1,23 @@
+@startuml ready-endpoint
+
+interface endpoint [
+Endpoint
+]
+
+node backend [
+
+Backend
+
+]
+
+database database [
+
+Database
+
+]
+
+endpoint <<-->> backend : " HTTP Server (<b>api/v1/ready</b>)"
+backend -->> backend : " HTTP Client (<b>/ready</b>)"
+backend -->> database : " HTTP Client (<b>/ready</b>)"
+
+@enduml

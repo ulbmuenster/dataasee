@@ -1,0 +1,618 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Admin Panel
+id: "admin"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | Admin"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "ingest_schema_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/api?request=ingest"
+      method: "get"
+
+  - id: "health_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/health"
+      method: "post"
+      auth:
+        username:
+          _payload: "username"
+        password:
+          _payload: "password"
+
+  - id: "backup_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/backup"
+      method: "post"
+      timeout: 10000
+      auth:
+        username:
+          _payload: "username"
+        password:
+          _payload: "password"
+
+  - id: "ingest_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/ingest"
+      method: "post"
+      auth:
+        username:
+          _payload: "username"
+        password:
+          _payload: "password"
+      data:
+        source:
+          _payload: "ingest_source"
+        method:
+          _payload: "ingest_method"
+        format:
+          _payload: "ingest_format"
+        steward:
+          _payload: "ingest_steward"
+        username:
+          _payload: "ingest_username"
+        password:
+          _payload: "ingest_password"
+
+events:
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+    - id: "ingest_enter"
+      type: "Request"
+      params: "ingest_schema_request"
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "heading"
+        type: "Title"
+        properties:
+          content: "Admin Controls"
+          level: 1
+
+## Admin Card
+      - id: "admin_card"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+## Left Column
+              - id: "left"
+                type: "Box"
+                layout:
+                  span: 12
+                blocks:
+## Backup Card
+                  - id: "backup_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Backup Database"
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## Backup Button
+                          - id: "backup_button"
+                            type: "Button"
+                            layout:
+                              span: 13
+                            properties:
+                              block: true
+                              title: "Backup"
+                              icon: "AiFillWarning"
+                            events:
+                              onClick:
+                                - id: "ask_credentials"
+                                  type: "CallMethod"
+                                  params:
+                                    blockId: "credentials_modal"
+                                    method: "toggleOpen"
+                                - id: "backup_click"
+                                  type: "SetState"
+                                  params:
+                                    operation: "backup_request"
+                                - id: "backup_stamp"
+                                  type: "SetState"
+                                  params:
+                                    backup_timestamp:
+                                      _string.concat:
+                                        - "Last Backup: "
+                                        - _date.toISOString:
+                                            _date: "now"
+## Backup Banner
+                          - id: "backup_banner"
+                            type: "Alert"
+                            properties:
+                              _if:
+                                test:
+                                  _request: "backup_request.data.data.attributes.completed"
+                                then:
+                                  type: "success"
+                                  message: "Backup Complete"
+                                else:
+                                  type: "error"
+                                  message: "Error"
+                            visible:
+                              _if_none:
+                                - _request: "backup_request.data.data.attributes.completed"
+                                - false
+## Backup Time-Stamp
+                          - id: "backup_timestamp"
+                            type: "TextInput"
+                            properties:
+                              bordered: false
+                              label:
+                                disabled: true
+                            visible:
+                              _if_none:
+                                - _request: "backup_request.data.data.attributes.completed"
+                                - false
+## Ingest Card
+                  - id: "ingest_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Ingest Source"
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## Ingest Source
+                          - id: "ingest_source"
+                            type: "TextInput"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Source URL"
+                              label:
+                                colon: false
+                                disabled: true
+## Ingest Steward
+                          - id: "ingest_steward"
+                            type: "TextInput"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Data Steward"
+                              label:
+                                colon: false
+                                disabled: true
+## Ingest Method
+                          - id: "ingest_method"
+                            type: "Selector"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Method"
+                              options:
+                                _request: "ingest_schema_request.data.properties.method.enum"
+## Ingest Format
+                          - id: "ingest_format"
+                            type: "Selector"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Format"
+                              options:
+                                _request: "ingest_schema_request.data.properties.format.enum"
+## Ingest Credentials
+                          - id: "ingest_username"
+                            type: "PasswordInput"
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Username / Access Key"
+                              label:
+                                colon: false
+                                disabled: true
+                          - id: "ingest_password"
+                            type: "PasswordInput"
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Password / Secret Key"
+                              label:
+                                colon: false
+                                disabled: true
+## Ingest Button
+                          - id: "ingest_button"
+                            type: "Button"
+                            layout:
+                              span: 13
+                            properties:
+                              block: true
+                              title: "Ingest"
+                              icon: "AiFillWarning"
+                            events:
+                              onClick:
+                                - id: "ingest_validate"
+                                  type: "Validate"
+                                  params:
+                                    - "ingest_source"
+                                    - "ingest_method"
+                                    - "ingest_format"
+                                    - "ingest_steward"
+                                    - "ingest_username"
+                                    - "ingest_password"
+                                - id: "ask_credentials"
+                                  type: "CallMethod"
+                                  params:
+                                    blockId: "credentials_modal"
+                                    method: "toggleOpen"
+                                - id: "ingest_click"
+                                  type: "SetState"
+                                  params:
+                                    operation: "ingest_request"
+                                - id: "ingest_stamp"
+                                  type: "SetState"
+                                  params:
+                                    ingest_timestamp:
+                                      _string.concat:
+                                        - "Lastest Ingest: "
+                                        - _date.toISOString:
+                                            _date: "now"
+## Ingest Banner
+                          - id: "ingest_banner"
+                            type: "Alert"
+                            properties:
+                              type: "warning"
+                              message: "Ingest Started"
+                            visible:
+                              _if_none:
+                                - _request: "ingest_request.data.data.attributes.started"
+                                - false
+## Ingest Time-Stamp
+                          - id: "ingest_timestamp"
+                            type: "TextInput"
+                            properties:
+                              bordered: false
+                              label:
+                                disabled: true
+                            visible:
+                              _if_none:
+                                - _request: "ingest_request.data.data.attributes.started"
+                                - false
+## Health Card
+                  - id: "health_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Health Check"
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## Health Button
+                          - id: "health_button"
+                            type: "Button"
+                            layout:
+                              span: 13
+                            properties:
+                              block: true
+                              title: "Health"
+                              icon: "AiFillWarning"
+                            events:
+                              onClick:
+                                - id: "ask_credentials"
+                                  type: "CallMethod"
+                                  params:
+                                    blockId: "credentials_modal"
+                                    method: "toggleOpen"
+                                - id: "health_click"
+                                  type: "SetState"
+                                  params:
+                                    operation: "health_request"
+                                - id: "health_stamp"
+                                  type: "SetState"
+                                  params:
+                                    health_timestamp:
+                                      _string.concat:
+                                        - "Last Health Check: "
+                                        - _date.toISOString:
+                                            _date: "now"
+## Processor Banner
+                          - id: "processor_banner"
+                            type: "Alert"
+                            properties:
+                              _if:
+                                test:
+                                  _and:
+                                    - _ne:
+                                        - _request: "health_request.data.data.attributes.processor.version"
+                                        - null
+                                    - _request: "health_request.data.data.attributes.processor.healthy"
+                                then:
+                                  type: "success"
+                                  message:
+                                    _string.concat:
+                                      - "Processor ("
+                                      - _request: "health_request.data.data.attributes.processor.name"
+                                      - " "
+                                      - _request: "health_request.data.data.attributes.processor.version"
+                                      - ")"
+                                else:
+                                  type: "error"
+                                  message: "No Response"
+                            visible:
+                              _not:
+                                _type:
+                                  type: "null"
+                                  on:
+                                    _request: "health_request.data"
+## Database Banner
+                          - id: "database_banner"
+                            type: "Alert"
+                            properties:
+                              _if:
+                                test:
+                                  _and:
+                                    - _ne:
+                                        - _request: "health_request.data.data.attributes.database.version"
+                                        - null
+                                    - _request: "health_request.data.data.attributes.database.healthy"
+                                then:
+                                  type: "success"
+                                  message:
+                                    _string.concat:
+                                      - "Database ("
+                                      - _request: "health_request.data.data.attributes.database.name"
+                                      - " "
+                                      - _request: "health_request.data.data.attributes.database.version"
+                                      - ")"
+                                else:
+                                  type: "error"
+                                  message: "No Response"
+                            visible:
+                              _not:
+                                _type:
+                                  type: "null"
+                                  on:
+                                    _request: "health_request.data"
+## Database Listing
+                          - id: "database_listing"
+                            type: "Descriptions"
+                            properties:
+                              bordered: true
+                              column: 1
+                              itemOptions: []
+                              items:
+                                _array.map:
+                                  on:
+                                    _object.entries:
+                                      _request: "health_request.data.data.attributes.database.units"
+                                  callback:
+                                    _function:
+                                      label:
+                                        __get:
+                                          from:
+                                            __args: 0
+                                          key: 0
+                                      value:
+                                        __get:
+                                          from:
+                                            __args: 0
+                                          key: 1
+                            visible:
+                              _not:
+                                _type:
+                                  type: "null"
+                                  on:
+                                    _request: "health_request.data"
+## Health Time-Stamp
+                          - id: "health_timestamp"
+                            type: "TextInput"
+                            properties:
+                              bordered: false
+                              label:
+                                disabled: true
+                            visible:
+                              _not:
+                                _type:
+                                  type: "null"
+                                  on:
+                                    _request: "health_request.data"
+
+## Right Column
+              - id: "right"
+                type: "Box"
+                layout:
+                  span: 12
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "admin_help"
+                        type: "Card"
+                        properties:
+                          bordered: false
+                          size: "small"
+                          title: "Admin Help"
+                        blocks:
+                          - id: "admin_md"
+                            type: "Markdown"
+                            properties:
+                              content: |
+                                The admin panel enables triggering maintenance tasks, each requiring authorization via a modal input box, such as:
+
+                                * **Backup**; returns successfully if backup was completed.
+                                * **Ingest**; returns succesfully if ingest was started, using:
+                                    - **Source URL** is a URL of maximal 4095 characters (required).
+                                    - **Data Steward** is of maximal 4095 characters (required).
+                                    - **Method** is protocol to be used for ingestion (required).
+                                    - **Format** is the file format of the ingested metadata (required).
+                                    - **Username** or (access key) for the source (if needed).
+                                    - **Password** or (secret key) for the source (if needed).
+                                * **Health**; returns processor and database liveness, as well as database health stats.
+
+                      - id: "admin_detail"
+                        type: "Collapse"
+                        properties:
+                          defaultActiveKey: "none"
+                          panels:
+                            - key: "technically"
+                              title: "Technically"
+                        areas:
+                          technically:
+                            blocks:
+                              - id: "technically"
+                                type: "Markdown"
+                                properties:
+                                  content: |
+                                    * A backup is triggered by a POST request to:
+
+                                      ```
+                                      /api/v1/backup
+                                      ```
+
+                                    * An ingest is triggered by a POST request to:
+
+                                      ```
+                                      /api/v1/ingest
+                                      ```
+                                      With the `source`, `steward`, `method`, `format`, `username`, `password` arguments in the (JSON) body.
+
+                                    * A health check is triggered by a POST request to:
+
+                                      ```
+                                      /api/v1/health
+                                      ```
+
+      - id: "credentials_modal"
+        type: "Modal"
+        properties:
+          title: "DatAasee Authorization"
+          okText: "Submit"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+              - id: "operation"
+                type: "Selector"
+                layout:
+                  span: 16
+                properties:
+                  showArrow: false
+                  label:
+                    inline: true
+                    title: "for"
+                  disabled: true
+                  options:
+                    - label: "Backup"
+                      value: "backup_request"
+                    - label: "Ingest"
+                      value: "ingest_request"
+                    - label: "Health"
+                      value: "health_request"
+## Credentials
+              - id: "username"
+                type: "TextInput"
+                required: true
+                layout:
+                  span: 16
+                properties:
+                  placeholder: "Username"
+                  label:
+                    colon: false
+                    disabled: true
+                  autoFocus: true
+              - id: "password"
+                type: "PasswordInput"
+                required: true
+                layout:
+                  span: 16
+                properties:
+                  placeholder: "Password"
+                  label:
+                    colon: false
+                    disabled: true
+          footer:
+            gutter: 16
+            blocks:
+              - id: "enter_button"  # Do not change! This name is needed to trigger by pressing "Enter"
+                type: "Button"
+                properties:
+                  title: "Execute"
+                  icon: "AiFillWarning"
+                events:
+                  onClick:
+                    try:
+                      - id: "modal_validate"
+                        type: "Validate"
+                        params:
+                          - "username"
+                          - "password"
+                      - id: "modal_send"
+                        type: "Request"
+                        params:
+                          _state: "operation"
+                      - id: "modal_clear"
+                        type: "SetState"
+                        params:
+                          username: ""
+                          password: ""
+                          ingest_username: ""
+                          ingest_password: ""
+                      - id: "ask_credentials"
+                        type: "CallMethod"
+                        params:
+                          blockId: "credentials_modal"
+                          method: "toggleOpen"
+                    catch:
+                      - id: "modal_clear_e"
+                        type: "SetState"
+                        params:
+                          username: ""
+                          password: ""
+                          ingest_username: ""
+                          ingest_password: ""
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"
+

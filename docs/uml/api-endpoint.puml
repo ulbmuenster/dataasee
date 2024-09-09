@@ -1,0 +1,16 @@
+@startuml api-endpoint
+
+interface endpoint [
+Endpoint
+]
+
+node backend [
+
+Backend
+
+]
+
+endpoint <<-->> backend : " HTTP Server (<b>api/v1/api</b>)"
+backend -->> backend : " Load File"
+
+@enduml

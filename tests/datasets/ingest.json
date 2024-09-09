@@ -1,0 +1,6 @@
+{
+  "source": "http://abc",
+  "method": "oai-pmh",
+  "format": "datacite",
+  "steward": "http://xyz"
+}

@@ -1,0 +1,269 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: "mods"
+    try:
+      - label: 'format_mods__get_payload'
+        mapping: 'root = this.mods'
+
+      - label: 'format_mods__patch_sourceid'
+        mapping: 'meta sourceid = if metadata("sourceid") == null { this.recordInfo.recordIdentifier."#text".catch(deleted()) }'
+
+      - label: 'format_mods__explode_dates'
+        mapping: 'root = if this.originInfo.type() == "array" { this.explode("originInfo") } else { [this] }'
+
+      - label: 'format_mods__split_array'
+        unarchive:
+          format: 'json_array'
+
+      - label: 'format_mods__parser_workflow'
+        workflow:
+          meta_path: ''
+          order:
+            - - 'raw'
+              - 'dataLocation'
+              - 'name'
+              - 'creators'
+              - 'publisher'
+              - 'publicationYear'
+              - 'resourceType'
+              - 'identifiers'
+              - 'synonyms'
+              - 'language'
+              - 'subjects'
+              - 'version'
+              - 'license'
+              - 'description'
+              - 'message'
+              - 'externalItems'
+              - 'related'
+            - - 'name_1'
+              - 'creators_1'
+              - 'publicationYear_1'
+              - 'resourceType_1'
+              - 'identifiers_1'
+            - - 'publicationYear_2'
+            - - 'gather'
+          branches:
+            'raw':
+              request_map: 'root = this.without("dataasee")'
+              processors:
+                - mapping: |
+                    root.raw = this.format_xml(no_indent: true).string()
+              result_map: 'root.dataasee.raw = this.raw'
+
+            'dataLocation':
+              request_map: 'root = this.location.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.dataLocation = this.filter(x -> x.url."#text".string().has_prefix("http")).0.url."#text".string()
+              result_map: 'root.dataasee.dataLocation = this.dataLocation'
+
+            'name':  # TODO: # prefix "nonSort"?
+              request_map: 'root = this.titleInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let title = this.filter(x -> x.exists("title") && !x.exists("-type")).append(this.0).0.title
+
+                    let partnumber = this.filter(x -> x.exists("partNumber")).map_each(x -> x.partNumber."#text" | x.partNumber.string())
+
+                    let partname = this.filter(x -> x.exists("partName")).map_each(x -> x.partName."#text" | x.partName.string())
+
+                    root.name = ($title."#text" | $title.string().catch("")) + $partnumber.concat($partname).not_empty().join(", ").catch("")
+              result_map: 'root.dataasee.name = this.name.not_empty().catch(null)'
+
+            'creators':
+              request_map: 'root = this.name.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.creators = this.map_each(x -> { "name": x.displayForm."text" | x.displayForm.string() | x.namePart."#text" | x.namePart.fold("",y -> match { this.type == "family" => y.value."#text" + y.tally,
+                                                                                                                                                                      this.type == "given"  => y.tally + ", " + y.value,
+                                                                                                                                                                      _                     => y.tally }),
+                                                         "data": x.nameIdentifier."#text" | x."-valueURI" | deleted() })
+              result_map: 'root.dataasee.creators = this.creators'
+
+            'publisher':
+              request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.publisher = match { this.0.publisher.type() == "object" => this.0.publisher."#text",
+                                             this.0.publisher.type() == "string" => this.0.publisher,
+                                             this.0.publisher.type() == "array"  => this.0.publisher.unique().join("; ") }
+              result_map: 'root.dataasee.publisher = this.publisher'
+
+            'publicationYear':
+              request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.publicationYear = match { this.0.dateIssued.type() == "array"    => this.0.dateIssued.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text") }),
+                                                   this.0.dateIssued.type() == "object"   => this.0.dateIssued."#text",
+                                                   this.0.dateIssued.type() == "string"   => this.0.dateIssued,
+                                                   this.0.dateCreated.type() == "array"   => this.0.dateCreated.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text") }),
+                                                   this.0.dateCreated.type() == "object"  => this.0.dateCreated."#text",
+                                                   this.0.dateCreated.type() == "string"  => this.0.dateCreated,
+                                                   this.0.dateCaptured.type() == "array"  => this.0.dateCaptured.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text") }),
+                                                   this.0.dateCaptured.type() == "object" => this.0.dateCaptured."#text",
+                                                   this.0.dateCaptured.type() == "string" => this.0.dateCaptured,
+                                                   this.0.dateOther.type() == "array"     => this.0.dateOther.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text") }),
+                                                   this.0.dateOther.type() == "object"    => this.0.dateOther."#text",
+                                                   this.0.dateOther.type() == "string"    => this.0.dateOther,
+                                                   _                                      => null }
+              result_map: 'root.dataasee.publicationYear = this.publicationYear | deleted()'
+
+            'resourceType':
+              request_map: 'root = this.typeOfResource.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.resourceType = this.0."#text" | this.0
+              result_map: 'root.dataasee.resourceType = this.resourceType | deleted()'
+
+            'identifiers':
+              request_map: 'root = this.identifier.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.identifiers = this.map_each(x -> { "name": x."-type",
+                                                            "data": x."#text" | x.string() })
+              result_map: 'root.dataasee.identifiers = this.identifiers'
+
+            'synonyms':
+              request_map: 'root = this.titleInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let subtitle = this.filter(x -> x.exists("subTitle")).map_each(x -> { "name": "subtitle",
+                                                                                          "data": x.subTitle })
+
+                    root.synonyms = this.filter(x -> x.exists("-type")).map_each(x -> { "name": x."-type",
+                                                                                        "data": x.title }).concat($subtitle)
+
+              result_map: 'root.dataasee.synonyms = this.synonyms.not_empty().catch(deleted())'
+
+            'language':
+              request_map: 'root = this.language.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.language = this.0.languageTerm."#text" | this.0.languageTerm
+              result_map: 'root.dataasee.language = this.language | deleted()'
+
+            'subjects':
+              request_map: 'root = this.subject.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.subjects = this.map_each(x -> x.filter(y -> y.key.re_match("^(?i)(topic|geographic|temporal|genre|occupation)$")).values()).flatten().flatten().map_each(x -> { "name": x."#text" | x.string(),
+                                                                                                                                                                                         "data": if x.exists("-valueURI") { x."-valueURI" } else { deleted() } }).unique(x -> x.name)
+              result_map: 'root.dataasee.subjects = this.subjects'
+
+            'version':
+              request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.version = this.0.edition."#text" | this.0.edition
+              result_map: 'root.dataasee.version = this.version | deleted()'
+
+            'license':
+              request_map: 'root = this.accessCondition.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.license = this.filter(x -> x.exists("-href")).0."-href"
+              result_map: 'root.dataasee.license = this.license'
+
+            'description':
+              request_map: 'root = this.abstract.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = "\n\n"
+                    root.description = this.fold("",x -> x.tally + x.value."#text" | x.value.string() + $sep).trim_suffix($sep)
+              result_map: 'root.dataasee.description = this.description'
+
+            'message':
+              request_map: 'root = this.note.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = "\n\n"
+                    root.message = this.fold("",x -> x.tally + x.value."#text" | x.value.string() + $sep).trim_suffix($sep)
+              result_map: 'root.dataasee.message = this.message'
+
+            'externalItems':  # TODO: add filter for urn
+              request_map: 'root = this.identifier.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.externalItems = this.map_each(x -> { "name": x."-type",
+                                                              "data": "https://nbn-resolving.org/" + x."#text" }).unique(x -> x.data)
+              result_map: 'root.dataasee.externalItems = this.externalItems'
+
+            'related':
+              request_map: 'root = this.relatedItem.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.related = this.map_each(x -> { "name": match x."-type" { "host"         => "isPartOf",
+                                                                                  "preceding"    => "isNewVersionOf",
+                                                                                  "original"     => "isDerivedFrom",
+                                                                                  "otherVersion" => "isDerivedFrom",
+                                                                                  "otherFormat"  => "isSameExpressionAs",
+                                                                                  _              => "isRelatedTo" },
+                                                        "data": x.recordInfo.recordIdentifier."#text" | x.recordInfo.recordIdentifier.string() })
+              result_map: 'root.dataasee.related = this.related'
+
+            'name_1':  # TODO: add title from host if only number or even null
+              request_map: 'root = if !this.dataasee.exists("name") && this.exists("part") { this } else { deleted() }'
+              processors:
+                - mapping: |
+                    root.name = this.part.text | this.part.text."#text" | this.part.detail.title | this.part.detail.title."#text" | this.part.detail.caption | this.part.detail.caption."#text"
+              result_map: 'root.dataasee.name = this.name | deleted()'
+
+            'creators_1':
+              request_map: 'root = if !this.dataasee.exists("creators") { this.relatedItem.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
+              processors:
+                - mapping: |
+                    let host = this.filter(x -> x."-type" == "host")
+
+                    let otherFormat = this.filter(x -> x."-type" == "otherFormat")
+
+                    let related = match { $host != []        => $host.0.name.array(),
+                                          $otherFormat != [] => $otherFormat.0.name.array(),
+                                          _                  => [] }
+
+                    root.creators = $related.map_each(x -> { "name": x.displayForm | x.namePart | "?",
+                                                             "data": x.nameIdentifier."#text" | x."-valueURI" | deleted() })
+              result_map: 'root.dataasee.creators = this.creators'
+
+            'publicationYear_1':
+              request_map: 'root = if !this.dataasee.exists("publicationYear") && this.exists("part") { this } else { deleted() }'
+              processors:
+                - mapping: |
+                    let date = match this.part.date { this.type() == "object" => this."#text",
+                                                      this.type() == "string" => this,
+                                                      _ => null }
+                    root.publicationYear = if $date.type() == "string" && $date.slice(0,4).re_match("^-?[1-9]\\d{0,3}$") { $date.slice(0,4).number() } else { null }
+              result_map: 'root.dataasee.publicationYear = this.publicationYear'
+
+            'resourceType_1':
+              request_map: 'root = if !this.dataasee.exists("resourceType") { this.genre.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
+              processors:
+                - mapping: |
+                    root.resourceType = this.0."#text" | this.0
+              result_map: 'root.dataasee.resourceType = this.resourceType | deleted()'
+
+            'identifiers_1':
+              request_map: 'root = this.recordInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.identifiers = this.map_each(x -> { "name": x.recordIdentifier."-source" | "recordIdentifier",
+                                                            "data": x.recordIdentifier."#text" | x.recordIdentifier.string() })
+              result_map: 'root.dataasee.identifiers = root.dataasee.identifiers.or([]).concat(this.identifiers)'
+
+            'publicationYear_2':
+              request_map: 'root = if !this.dataasee.exists("publicationYear") && this.exists("recordInfo") { this } else { deleted() }'
+              processors:
+                - mapping: |
+                    let date = match this.recordInfo.recordCreationDate { this.type() == "object" => this."#text",
+                                                                          this.type() == "string" => this,
+                                                                          _                       => null }
+
+                    root.publicationYear = if $date.type() == "string" && $date.slice(0,4).re_match("^-?[1-9]\\d{0,3}$") { $date.slice(0,4).number() } else { null }
+              result_map: 'root.dataasee.publicationYear = this.publicationYear'
+
+            'gather':
+              request_map: 'root = this'
+              processors:
+                - noop: {}
+              result_map: 'root = this.dataasee'

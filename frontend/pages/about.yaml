@@ -1,0 +1,310 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# API Panel
+id: "about"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | About"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "endpoints_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/api"
+      method: "get"
+
+  - id: "schema_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      schema:
+        _global: "schema"
+    properties:
+      url:
+        _payload: "schema"
+      method: "get"
+
+events:
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+  onInitAsync:
+    - id: "endpoints_enter"
+      type: "Request"
+      params: "endpoints_request"
+
+    - id: "endpoint_state"
+      type: "SetState"
+      params:
+        endpoints:
+          _array.map:
+            on:
+              _object.values:
+                _request: "endpoints_request.data.paths"
+            callback:
+              _function:
+                method:
+                  __string.toUpperCase:
+                    __get:
+                      from:
+                        __object.keys:
+                          __args: 0
+                      key: 0
+                path:
+                  __get:
+                    from:
+                      __object.keys:
+                        _request: "endpoints_request.data.paths"
+                    key:
+                      __args: 1
+                summary:
+                  __get:
+                    from:
+                      __object.values:
+                        __args: 0
+                    key: "0.summary"
+                request:
+                  __get:
+                    from:
+                      __object.values:
+                        __args: 0
+                    key: "0.requestBody.content.application/json.schema.externalDocs.url"
+                response:
+                  __if_none:
+                    - __get:
+                        from:
+                          __object.values:
+                            __args: 0
+                        key: "0.responses.200.content.application/json.schema.externalDocs.url"
+                    - __if_none:
+                        - __get:
+                            from:
+                              __object.values:
+                                __args: 0
+                            key: "0.responses.201.content.application/json.schema.externalDocs.url"
+                        - __get:
+                            from:
+                              __object.values:
+                                __args: 0
+                            key: "0.responses.202.content.application/json.schema.externalDocs.url"
+                secured:
+                  __not:
+                    __not:
+                      __get:
+                        from:
+                          __object.values:
+                            __args: 0
+                        key: "0.security"
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "heading"
+        type: "Title"
+        properties:
+          content: "Interface Summary"
+          level: 1
+## About Card
+      - id: "about_card"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+              - id: "endpoints_card"
+                type: "Card"
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Endpoints"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "endpoints"
+                        type: "List"
+                        layout:
+                          contentGutter: 16
+                        blocks:
+                          - id: "endpoints.$"
+                            type: "Box"
+                            style:
+                              margin: "1ex"
+                              border-radius: "2ex"
+                              padding-top: "2ex"
+                              background-color:
+                                _switch:
+                                  branches:
+                                    - if:
+                                        _eq:
+                                          - _state: "endpoints.$.method"
+                                          - "GET"
+                                      then: "#85c1e9"
+                                    - if:
+                                        _eq:
+                                          - _state: "endpoints.$.method"
+                                          - "POST"
+                                      then: "#82e0aa"
+                                  default: "#C0C0C0"
+                            blocks:
+                              - id: "method.$"
+                                type: "Title"
+                                style:
+                                  text-align: "center"
+                                layout:
+                                  span: 2
+                                properties:
+                                  color: "white"
+                                  level: 3
+                                  content:
+                                    _state: "endpoints.$.method"
+                              - id: "path.$"
+                                type: "Title"
+                                layout:
+                                  span: 5
+                                style:
+                                  padding-left: "2em"
+                                  font-family: "monospace"
+                                properties:
+                                  level: 4
+                                  content:
+                                    _state: "endpoints.$.path"
+                              - id: "summary.$"
+                                type: "Span"
+                                layout:
+                                  span: 10
+                                properties:
+                                  style:
+                                    font-size: "large"
+                                  content:
+                                    _state: "endpoints.$.summary"
+                              - id: "request.$"
+                                type: "Anchor"
+                                layout:
+                                  span: 3
+                                properties:
+                                  disabled:
+                                    _type:
+                                      type: "none"
+                                      on:
+                                        _state: "endpoints.$.request"
+                                  strong: true
+                                  title: "JSON Request Schema"
+                                  style:
+                                    color: "white"
+                                    cursor: "pointer"
+                                events:
+                                  onClick:
+                                    - id: "select_request_schema"
+                                      type: "SetGlobal"
+                                      params:
+                                        schema:
+                                          _state: "endpoints.$.request"
+                                    - id: "get_request_schema"
+                                      type: "Request"
+                                      params: "schema_request"
+                                    - id: "refer_request_schema"
+                                      type: "Link"
+                                      params:
+                                        newTab: true
+                                        url:
+                                          _string.concat:
+                                            - "data:application/json,"
+                                            - _uri.encode:
+                                                _json.stringify:
+                                                  on:
+                                                    _request: "schema_request.data"
+                              - id: "response.$"
+                                type: "Anchor"
+                                layout:
+                                  span: 3
+                                properties:
+                                  disabled:
+                                    _type:
+                                      type: "none"
+                                      on:
+                                        _state: "endpoints.$.response"
+                                  strong: true
+                                  title: "JSON Response Schema"
+                                  style:
+                                    color: "white"
+                                    cursor: "pointer"
+                                events:
+                                  onClick:
+                                    - id: "select_response_schema"
+                                      type: "SetGlobal"
+                                      params:
+                                        schema:
+                                          _state: "endpoints.$.response"
+                                    - id: "get_response_schema"
+                                      type: "Request"
+                                      params: "schema_request"
+                                    - id: "refer_response_schema"
+                                      type: "Link"
+                                      params:
+                                        newTab: true
+                                        url:
+                                          _string.concat:
+                                            - "data:application/json,"
+                                            - _uri.encode:
+                                                _json.stringify:
+                                                  on:
+                                                    _request: "schema_request.data"
+                              - id: "secure.$"
+                                type: "Icon"
+                                style:
+                                  text-align: "center"
+                                layout:
+                                  span: 1
+                                properties:
+                                  size: 24
+                                  name:
+                                    _if:
+                                      test:
+                                        _state: "endpoints.$.secured"
+                                      then: "AiFillLock"
+                                      else: "AiFillUnlock"
+
+              - id: "openapi_card"
+                type: "Card"
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Specification"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "openapi_link"
+                        type: "Anchor"
+                        properties:
+                          newTab: true
+                          title: "OpenAPI"
+                          url:
+                            _string.concat:
+                              - "data:application/json,"
+                              - _uri.encode:
+                                  _json.stringify:
+                                    on:
+                                      _request: "endpoints_request.data"
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

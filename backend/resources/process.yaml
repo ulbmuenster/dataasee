@@ -1,0 +1,12 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'process'
+    mapping: |
+      root = this
+      root.rawType = metadata("format")
+      root.rawChecksum = this.raw.hash("md5")
+      root.recordId = (metadata("source").string() + "/" + metadata("sourceid").string() + "/" + this.publicationYear.string() + "/" + this.publisher.string() + "/" + this.version.string()).hash("xxhash64").encode("base64rawurl")
+      root.source = metadata("source")
+      root.dataSteward = metadata("steward")
+      root.metadataQuality = if this.with("name","creators","publicationYear","publisher","resourceType").values().any(x -> x.type() == "null") { "Incomplete" } else { "OK" }

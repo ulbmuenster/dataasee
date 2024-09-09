@@ -1,0 +1,108 @@
+# DatAasee 0.2
+# ============
+#
+# Infos: https://github.com/ulbmuenster/dataasee
+#
+# Setup:
+#   $ mkdir -p backup
+#   $ wget https://raw.githubusercontent.com/ulbmuenster/dataasee/0.2/compose.yaml
+#   $ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && docker compose up -d; rm -f dl_pass db_pass; history -d $(history 1)
+
+name: "dataasee"
+
+networks:
+  "internal":
+
+secrets:
+  "database":
+    file: "db_pass"
+  "datalake":
+    file: "dl_pass"
+
+volumes:
+  "backup":
+    driver: "local"
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${DL_BACKUP-./backup}"
+
+services:
+
+## Database ####################################################################
+
+  "database":
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "4G"
+        reservations:
+          cpus: "2.0"
+          memory: "2G"
+    environment:
+      TZ: "CET"
+      DB_PASS: "/run/secrets/database"
+    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.2}"
+    init: true
+    networks:
+      - "internal"
+    ports: []
+    restart: "unless-stopped"
+    secrets:
+      - "database"
+    stop_grace_period: "180s"
+    volumes:
+      - "backup:/backup"
+
+## Backend #####################################################################
+
+  "backend":
+    depends_on:
+      - "database"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+        reservations:
+          cpus: "1.0"
+          memory: "1G"
+    environment:
+      TZ: "CET"
+      DL_BASE: ${DL_BASE-}
+      DL_USER: ${DL_USER-admin}
+      DL_PASS: "/run/secrets/datalake"
+      DB_PASS: "/run/secrets/database"
+    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.2}"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "${DL_PORT-8343}:8343"
+    restart: "unless-stopped"
+    secrets:
+      - "database"
+      - "datalake"
+
+## Frontend ####################################################################
+
+  "frontend":
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+        reservations:
+          cpus: "1.0"
+          memory: "1G"
+    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.2}"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "${FE_PORT-80}:3000"
+    restart: "unless-stopped"

@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataasee:api?request=insert",
+
+  "title": "DatAasee Insert Endpoint Request", "type": "object", "required": ["name", "creators", "publisher", "publicationYear", "resourceType", "identifiers"], "properties": {
+
+    "categories": { "type": "array", "title": "Controlled keywords classifying this record.", "maxItems": 4, "uniqueItems": true,
+
+      "items": { "type": "string", "title": "Category", "maxLength": 255 } },
+
+    "keywords": { "type": "string", "title": "Custom keywords classifying this record (separated by commas)", "maxLength": 255 },
+
+    "name": { "type": ["string","null"],  "title": "Short phrase describing this record.", "minLength": 1, "maxLength": 255 },
+
+    "creators": { "type": ["array","null"], "title": "Name and optional URI identifier of the persons contributing.", "minItems": 0, "maxItems": 255, "uniqueItems": true,
+
+      "items": { "type": "object", "required": ["name"], "properties": {
+
+        "name": { "type": "string", "title": "Name", "maxLength": 255 },
+
+        "data": { "type": ["string","null"], "title": "Identifier", "maxLength": 4095, "format": "uri" } } } },
+
+    "publisher": { "type": ["string","null"], "title": "Institution or company responsible for first publishing.", "minLength": 1, "maxLength": 255 },
+
+    "publicationYear": { "type": ["integer","null"], "title": "First year of publication denoted by up to four digits.", "minimum": -9999, "maximum": 9999 },
+
+    "resourceType": { "type": ["string","null"], "title": "Primary type of resource.", "minLength": 1, "maxLength": 255 },
+
+    "identifiers": { "type": ["array","null"], "title": "Type and URI of identifiers.", "minItems": 0, "maxItems": 255, "uniqueItems": true,
+
+      "items": { "type": "object", "required": ["name", "data"], "properties": {
+
+        "name": { "type": "string", "title": "Type", "maxLength": 255 },
+
+        "data": { "type": "string", "title": "Identifier", "maxLength": 4095 } } } },
+
+    "synonyms": { "type": "array", "title": "Type and title of synonym titles.", "maxItems": 31,
+
+      "items": { "type": "object", "required": ["name", "data"], "properties": {
+
+        "name": { "type": "string", "title":"Type", "maxLength": 255 },
+
+        "data": { "type": "string",  "title":"Synonym", "maxLength": 4095 } } } },
+
+    "language": { "type": "string", "title": "Primary content language.", "maxLength": 255 },
+
+    "subjects": { "type": "array", "title": "Classifier and URI identifier of subjects.", "maxItems": 15, "uniqueItems": true,
+
+      "items": { "type": "object", "required": ["name"], "properties": {
+
+        "name": { "type": "string", "title": "Classifier", "maxLength": 255 },
+
+        "data": { "type": ["string","null"], "title": "Identifier", "maxLength": 4095, "format": "uri" } } } },
+
+    "version": { "type": "string",  "title": "Short identifier fixing the state.", "maxLength": 255 },
+
+    "license": { "type": "string", "title": "SPDX short name of license.", "maxLength": 255 },
+
+    "rights": { "type": "string", "title": "Additional rights agreements.", "maxLength": 65535 },
+
+    "project": { "type": "object", "title": "Name and website of overarching project", "required": ["name"], "properties": {
+
+      "name": { "type": "string", "title": "Name", "maxLength": 255 },
+
+      "data": { "type": ["string","null"], "title": "Website", "maxLength": 4095, "format": "uri" } } },
+
+    "fundings": { "type": "array", "title": "Award identifier and optional funder of fundings.", "maxItems": 15,
+
+      "items": { "type": "object", "required": ["name"], "properties": {
+
+        "name": { "type": "string", "title": "Award", "maxLength": 255 },
+
+        "data": { "type": ["string","null"], "title": "Funder", "maxLength": 4095 } } } },
+
+    "description": { "type": "string", "title": "Summary of contents and purpose.", "maxLength": 65535 },
+
+    "message": { "type": "string", "title": "Note about this record.", "maxLength": 65535 },
+
+    "externalItems": { "type": "array", "title": "Type and URI identifier of external related links", "maxItems": 255, "uniqueItems": true,
+
+      "items": { "type": "object", "required": ["name", "data"], "properties": {
+
+        "name": { "type": "string", "title": "Type", "maxLength": 255 },
+
+        "data": { "type": "string", "title": "Link", "maxLength": 4095, "format": "uri" } } } } }
+}

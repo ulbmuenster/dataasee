@@ -1,0 +1,153 @@
+# Language: Compose YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+name: "dataasee"
+
+networks:
+  "internal":
+
+secrets:
+  "database":
+    file: "secrets/db_pass"
+  "datalake":
+    file: "secrets/dl_pass"
+
+volumes:
+  "backup":
+    driver: "local"
+    driver_opts:
+      type: "none"
+      o: "bind"
+      device: "${DL_BACKUP-./backup}"
+
+services:
+
+## Database ####################################################################
+
+  "database":
+    build:
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        IMGREPO: ${ORIGIN:-}
+        VERSION: $DB_VERSION
+        DB_NAME: $DB_NAME
+      cache_from:
+        - "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+      context: "."
+      dockerfile: "container/Dockerfile.db"
+      tags:
+        - "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+      target: "develop"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "4G"
+        reservations:
+          cpus: "2.0"
+          memory: "2G"
+    environment:
+      TZ: "CET"
+      DB_PASS: "/run/secrets/database"
+    image: "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "2480:2480"
+      - "9999:9999"
+    restart: "unless-stopped"
+    secrets:
+      - "database"
+    stop_grace_period: "180s"
+    volumes:
+      - "backup:/backup"
+
+## Backend #####################################################################
+
+  "backend":
+    build:
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        IMGREPO: ${ORIGIN:-}
+        VERSION: $BE_VERSION
+        DL_NAME: $DL_NAME
+        DL_VERSION: $DL_VERSION
+        DL_PORT: "8343"
+        DL_PATH: $DL_PATH
+        DB_TYPE: "ArcadeDB"
+        DB_HOST: "database"
+        DB_PORT: "2480"
+        DB_NAME: $DB_NAME
+      cache_from:
+        - "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
+      context: "."
+      dockerfile: "container/Dockerfile.be"
+      tags:
+        - "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
+      target: "develop"
+    depends_on:
+      - "database"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+        reservations:
+          cpus: "1.0"
+          memory: "1G"
+    environment:
+      TZ: "CET"
+      DL_BASE: ${DL_BASE-}
+      DL_USER: ${DL_USER-admin}
+      DL_PASS: "/run/secrets/datalake"
+      DB_PASS: "/run/secrets/database"
+    image: "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "${DL_PORT-8343}:8343"
+    restart: "unless-stopped"
+    secrets:
+      - "database"
+      - "datalake"
+    volumes:
+      - "./backend:/yaml:ro"
+      - "./api:/schemas:ro"
+
+## Frontend ####################################################################
+
+  "frontend":
+    build:
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+        IMGREPO: ${ORIGIN:-}
+        VERSION: $FE_VERSION
+        DL_PATH: $DL_PATH
+      cache_from:
+        - "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
+      context: "."
+      dockerfile: "container/Dockerfile.fe"
+      tags:
+        - "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
+      target: "develop"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: "2G"
+        reservations:
+          cpus: "1.0"
+          memory: "1G"
+    image: "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
+    init: true
+    networks:
+      - "internal"
+    ports:
+      - "${FE_PORT-8000}:3000"
+    restart: "unless-stopped"
+    volumes:
+      - "./frontend:/yaml:ro"

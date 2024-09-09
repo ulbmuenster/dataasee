@@ -1,0 +1,12 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'methods'
+    switch:
+      - check: 'metadata("method") == "oai-pmh"'
+        processors:
+          - resource: 'oai_pmh'
+
+      - check: 'metadata("method") == "s3"'
+        processors:
+          - resource: 's3'

@@ -1,0 +1,917 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Submit Dataset
+id: "insert"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | Insert"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+layout:
+  contentJustify: "center"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "schema_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/schema"
+      method: "get"
+
+  - id: "attributes_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/attributes"
+      method: "get"
+
+  - id: "submit_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/insert"
+      method: "post"
+      auth:
+        username:
+          _payload: "username"
+        password:
+          _payload: "password"
+      data:
+## Mandatory Metadata
+        name:
+          _payload: "title"
+        creators:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _payload: "creators_name"
+                callback:
+                  _function:
+                    __ne:
+                      - __args: 0
+                      - null
+            callback:
+              _function:
+                name:
+                  __args: 0
+                data:
+                  __get:
+                    from:
+                      __payload: "creators_uri"
+                    key:
+                      __args: 1
+        publisher:
+          _payload: "publisher"
+        publicationYear:
+          _payload: "published"
+        resourceType:
+          _payload: "resourcetype"
+        identifiers:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _payload: "identifiers_name"  # TODO: selection box
+                callback:
+                  _function:
+                    __ne:
+                      - __args: 0
+                      - null
+            callback:
+              _function:
+                name:
+                  __args: 0
+                data:
+                  __get:
+                    from:
+                      __payload: "identifiers_uri"
+                    key:
+                      __args: 1
+## Optional Metadata
+        synonyms:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _payload: "synonyms_type"
+                callback:
+                  _function:
+                    __ne:
+                      - __args: 0
+                      - null
+            callback:
+              _function:
+                name:
+                  __args: 0
+                data:
+                  __get:
+                    from:
+                      __payload: "synonyms_name"
+                    key:
+                      __args: 1
+        language:
+          _payload: "language"
+        subjects:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _payload: "subjects_name"
+                callback:
+                  _function:
+                    __ne:
+                      - __args: 0
+                      - null
+            callback:
+              _function:
+                name:
+                  __args: 0
+                data:
+                  __get:
+                    from:
+                      __payload: "subjects_uri"
+                    key:
+                      __args: 1
+        version:
+          _payload: "version"
+        license:
+          _payload: "license"
+        rights:
+          _payload: "rights"
+        project:
+          _if:
+            test:
+              _ne:
+                - _payload: "project_name"
+                - null
+            then:
+              name:
+                _payload: "project_name"
+              data:
+                _payload: "project_uri"
+            else: null
+        fundings:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _payload: "funders_award"
+                callback:
+                  _function:
+                    - __ne:
+                        - __args: 0
+                        - null
+            callback:
+              _function:
+                name:
+                  __args: 0
+                data:
+                  __get:
+                    from:
+                      __payload: "funders_name"
+                    key:
+                      __args: 1
+        description:
+          _payload: "description"
+        message:
+          _payload: "message"
+        externalItems:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _payload: "links_type"
+                callback:
+                  _function:
+                    __and:
+                      - __ne:
+                          - __args: 0
+                          - null
+                      - __ne:
+                          - __get:
+                              from:
+                                __payload: "links_uri"
+                              key:
+                                __args: 1
+                          - null
+            callback:
+              _function:
+                name:
+                  __args: 0
+                data:
+                  __get:
+                    from:
+                      __payload: "links_uri"
+                    key:
+                      __args: 1
+## Categories
+        categories:
+          _payload: "categories"
+## Keywords
+        keywords:
+          _payload: "keywords"
+
+events:
+  onInit:
+    - id: "schema_enter"
+      type: "Request"
+      params: "schema_request"
+
+    - id: "attributes_enter"
+      type: "Request"
+      params: "attributes_request"
+
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "page_h2"
+        type: "Title"
+        properties:
+          content: "Insert Record"
+          level: 1
+## Metadata Card
+      - id: "metadata"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+
+## Left Column
+              - id: "left"
+                type: "Box"
+                layout:
+                  span: 12
+                blocks:
+                  - id: "mandatory"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Mandatory Metadata"
+                    blocks:
+## Title Textbox
+                      - id: "title"
+                        type: "TextInput"
+                        required: true
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.name.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.name.comment"
+                            extraStyle:
+                              text-align: "right"
+## Creators
+                      - id: "creators"
+                        type: "Label"
+                        required: true
+                        properties:
+                          title:
+                            _request: "schema_request.data.data.attributes.creators.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.creators.comment"
+                          extraStyle:
+                            text-align: "right"
+                          align: "right"
+                          span: 4
+                        blocks:
+                          - id: "creators_list"
+                            type: "ControlledList"
+                            properties:
+                              size: "small"
+                              noDataTitle: "None"
+                              addItemButton:
+                                title: "Add"
+                            blocks:
+                              - id: "creators_name.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 11
+                                properties:
+                                  label:
+                                    disabled: true
+                              - id: "creators_span_2.$"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "creators_uri.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  placeholder: "https://"
+                                  label:
+                                    disabled: true
+## Publisher Textbox
+                      - id: "publisher"
+                        type: "TextInput"
+                        required: true
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.publisher.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.publisher.comment"
+                            extraStyle:
+                              text-align: "right"
+## Published Textbox
+                      - id: "published"
+                        type: "NumberInput"
+                        required: true
+                        properties:
+                          precision: 0
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.publicationYear.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.publicationYear.comment"
+                            extraStyle:
+                              text-align: "right"
+## Resource Type Select
+                      - id: "resourcetype"
+                        type: "Selector"
+                        required: true
+                        properties:
+                          allowClear: false
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.resourceType.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.resourceType.comment"
+                            extraStyle:
+                              text-align: "right"
+                          placeholder: "Select"
+                          options:
+                            _request: "attributes_request.data.data.attributes.resourcetypes"
+## Identifiers
+                      - id: "identifiers"
+                        type: "Label"
+                        required: true
+                        properties:
+                          title:
+                            _request: "schema_request.data.data.attributes.identifiers.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.identifiers.comment"
+                          extraStyle:
+                            text-align: "right"
+                          align: "right"
+                          span: 4
+                        blocks:
+                          - id: "identifiers_list"
+                            type: "ControlledList"
+                            properties:
+                              size: "small"
+                              noDataTitle: "None"
+                              addItemButton:
+                                title: "Add"
+                            blocks:
+                              - id: "identifiers_name.$"
+                                type: "AutoComplete"
+                                layout:
+                                  span: 11
+                                properties:
+                                  options:
+                                    - "doi"
+                                    - "ark"
+                                    - "arxiv"
+                                    - "hdl"
+                                    - "isbn"
+                                    - "url"
+                                    - "uri"
+                                    - "purl"
+                                    - "urn"
+                                    - "pmid"
+                                    - "wos"
+                                  label:
+                                    disabled: true
+                              - id: "identifiers_span_2.$"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "identifiers_uri.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  placeholder: ""
+                                  label:
+                                    disabled: true
+
+## Optional Card
+                  - id: "optional"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Optional Metadata"
+                    blocks:
+## Alternative Titles
+                      - id: "synonyms_wrapper"
+                        type: "Label"
+                        required: false
+                        properties:
+                          title:
+                            _request: "schema_request.data.data.attributes.synonyms.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.synonyms.comment"
+                          extraStyle:
+                            text-align: "right"
+                          align: "right"
+                          span: 4
+                        blocks:
+                          - id: "synonyms"
+                            type: "ControlledList"
+                            properties:
+                              size: "small"
+                              noDataTitle: "None"
+                              addItemButton:
+                                title: "Add"
+                            blocks:
+                              - id: "synonyms_type.$"
+                                type: "AutoComplete"
+                                layout:
+                                  span: 11
+                                properties:
+                                  placeholder: "Select or type"
+                                  label:
+                                    disabled: true
+                                  options:
+                                    _request: "attributes_request.data.data.attributes.synonyms"
+                              - id: "synonyms_span.$"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "synonyms_name.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  label:
+                                    disabled: true
+## Subjects Select
+                      - id: "subjects_wrapper"
+                        type: "Label"
+                        required: false
+                        properties:
+                          title:
+                            _request: "schema_request.data.data.attributes.subjects.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.subjects.comment"
+                          extraStyle:
+                            text-align: "right"
+                          align: "right"
+                          span: 4
+                        blocks:
+                          - id: "subjects"
+                            type: "ControlledList"
+                            properties:
+                              size: "small"
+                              noDataTitle: "None"
+                              addItemButton:
+                                title: "Add"
+                            blocks:
+                              - id: "subjects_name.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 11
+                                properties:
+                                  label:
+                                    disabled: true
+                              - id: "subjects_span.$"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "subjects_uri.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  placeholder: "https://"
+                                  label:
+                                    disabled: true
+## Language Select
+                      - id: "language"
+                        type: "Selector"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.language.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.language.comment"
+                            extraStyle:
+                              text-align: "right"
+                          placeholder: "Select"
+                          options:
+                            _request: "attributes_request.data.data.attributes.languages"
+## Version Textbox
+                      - id: "version"
+                        type: "TextInput"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.version.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.version.comment"
+                            extraStyle:
+                              text-align: "right"
+## License Select
+                      - id: "license"
+                        type: "Selector"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.license.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.license.comment"
+                            extraStyle:
+                              text-align: "right"
+                          placeholder: "Select"
+                          options:
+                            _request: "attributes_request.data.data.attributes.licenses"
+## Rights Identity
+                      - id: "rights"
+                        type: "TextArea"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.rights.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.rights.comment"
+                            extraStyle:
+                              text-align: "right"
+## Project Identity
+                      - id: "project_wrapper"
+                        type: "Label"
+                        required: false
+                        properties:
+                          align: "right"
+                          span: 4
+                          title:
+                            _request: "schema_request.data.data.attributes.project.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.project.comment"
+                          extraStyle:
+                            text-align: "right"
+                        blocks:
+                          - id: "project_identity"
+                            type: "Card"
+                            blocks:
+                              - id: "project_name"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  label:
+                                    disabled: true
+                              - id: "project_span"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "project_uri"
+                                type: "TextInput"
+                                layout:
+                                  span: 11
+                                properties:
+                                  placeholder: "https://"
+                                  label:
+                                    disabled: true
+## Fundings
+                      - id: "fundings"
+                        type: "Label"
+                        properties:
+                          title:
+                            _request: "schema_request.data.data.attributes.fundings.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.fundings.comment"
+                          extraStyle:
+                            text-align: "right"
+                          align: "right"
+                          span: 4
+                        blocks:
+                          - id: "funders_list"
+                            type: "ControlledList"
+                            properties:
+                              size: "small"
+                              noDataTitle: "None"
+                              addItemButton:
+                                title: "Add"
+                            blocks:
+                              - id: "funders_award.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 11
+                                properties:
+                                  label:
+                                    disabled: true
+                              - id: "funders_span_1.$"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "funders_name.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  placeholder: "https://"
+                                  label:
+                                    disabled: true
+## Description Textbox
+                      - id: "description"
+                        type: "TextArea"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.description.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.description.comment"
+                            extraStyle:
+                              text-align: "right"
+## Message Textbox
+                      - id: "message"
+                        type: "TextArea"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.message.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.message.comment"
+                            extraStyle:
+                              text-align: "right"
+## External Links
+                      - id: "links_wrapper"
+                        type: "Label"
+                        required: false
+                        properties:
+                          align: "right"
+                          span: 4
+                          title:
+                            _request: "schema_request.data.data.attributes.externalItems.label"
+                          extra:
+                            _request: "schema_request.data.data.attributes.externalItems.comment"
+                          extraStyle:
+                            text-align: "right"
+                        blocks:
+                          - id: "links"
+                            type: "ControlledList"
+                            properties:
+                              size: "small"
+                              noDataTitle: "None"
+                              addItemButton:
+                                title: "Add"
+                            blocks:
+                              - id: "links_type.$"
+                                type: "AutoComplete"
+                                layout:
+                                  span: 11
+                                properties:
+                                  label:
+                                    disabled: true
+                                  options:
+                                    _request: "attributes_request.data.data.attributes.externalitems"
+                              - id: "links_span.$"
+                                type: "Span"
+                                layout:
+                                  span: 1
+                              - id: "links_uri.$"
+                                type: "TextInput"
+                                layout:
+                                  span: 12
+                                properties:
+                                  placeholder: "https://"
+                                  label:
+                                    disabled: true
+
+## Social Card
+                  - id: "social"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Social Metadata"
+                    blocks:
+## Categories
+                      - id: "categories"
+                        type: "MultipleSelector"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.categories.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.categories.comment"
+                            extraStyle:
+                              text-align: "right"
+                          placeholder: "Select"
+                          options:
+                            _request: "attributes_request.data.data.attributes.categories"
+## Keywords
+                      - id: "keywords"
+                        type: "TextInput"
+                        required: false
+                        properties:
+                          label:
+                            span: 4
+                            align: "right"
+                            title:
+                              _request: "schema_request.data.data.attributes.keywords.label"
+                            extra:
+                              _request: "schema_request.data.data.attributes.keywords.comment"
+                            extraStyle:
+                              text-align: "right"
+
+## Submit Card
+                  - id: "submit_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: ""
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## Credentials
+                          - id: "username"
+                            type: "TextInput"
+                            required: true
+                            layout:
+                              span: 8
+                            properties:
+                              placeholder: "Username"
+                              label:
+                                colon: false
+                                disabled: true
+                          - id: "password"
+                            type: "PasswordInput"
+                            required: true
+                            layout:
+                              span: 8
+                            properties:
+                              placeholder: "Password"
+                              label:
+                                colon: false
+                                disabled: true
+## Submit Button
+                          - id: "submit_button"
+                            type: "Button"
+                            properties:
+                              block: true
+                              title: "Submit"
+                              icon: "AiFillWarning"
+                            layout:
+                              span: 8
+                            events:
+                              onClick:
+                                try:
+                                  - id: "submit_form"
+                                    type: "Request"
+                                    params: "submit_request"
+                                  - id: "submit_clear"
+                                    type: "Reset"
+                                catch:
+                                  - id: "submit_clear_e"
+                                    type: "SetState"
+                                    params:
+                                      username: ""
+                                      password: ""
+                                  - id: "submit_reset_e"
+                                    type: "Reset"
+## Feedback Banner
+                          - id: "feedback_banner"
+                            type: "Alert"
+                            properties:
+                              type: "success"
+                              message:
+                                _string.concat:
+                                  - "Inserted; recordId: "
+                                  - _request: "submit_request.data.data.attributes.recordId"
+                            visible:
+                              _if_none:
+                                - _request: "submit_request.data.data.attributes.recordId"
+                                - false
+
+## Right Column
+              - id: "insert_help"
+                type: "Card"
+                layout:
+                  span: 12
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Insert Help"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "insert_md"
+                        type: "Markdown"
+                        properties:
+                          content: |
+                            The insert record form allows adding a metadata record to the metadata-lake.
+
+                            * **Mandatory Metadata** is the minimally required set of properties which needs to be provided.
+                              - **Title** (required).
+                              - **Creator(s)**, a list of pairs of the full display name and an optional identifier URL (required).
+                              - **Publisher** (required).
+                              - **Published** (required).
+                              - **Resource Type**, a selection of the types from [DataCite](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/resourceTypeGeneral/) (required).
+                              - **Identifiers**, a list of pairs of identifier types and identifiers (required).
+                            * **Optional Metadata** is a set of additional set of properties which can be provided.
+                              - **Synonym(s)**, a list of pairs of the synonym title type and the alternative title.
+                              - **Subject(s)**, a list of pairs of subject label and an optional label identifier URL.
+                              - **Language**
+                              - **Version**
+                              - **License**, a selection of a license ([SPDX identifier](https://spdx.org/licenses/)).
+                              - **Rights**
+                              - **Project**, a pair of associated projection name and an optional website URL.
+                              - **Fundings**, a list of pairs of award identifier and funder name.
+                              - **Description**
+                              - **Message**
+                              - **Link(s)**, a list of pairs of label and associated URL.
+                            * **Social Metadata** is a set of properties which can beprovided to improve classification or findability.
+                              - **Category(s)**, a selection of categories from a controlled vocabulary.
+                              - **Keyword(s)**, a comma-separated list of uncontrolled keywords.
+
+                      - id: "insert_detail"
+                        type: "Collapse"
+                        properties:
+                          defaultActiveKey: "none"
+                          panels:
+                            - key: "technically"
+                              title: "Technically"
+                        areas:
+                          technically:
+                            blocks:
+                              - id: "insert_technically"
+                                type: "Markdown"
+                                properties:
+                                  content: |
+                                    1. The field labels and comments are retrieved via the database schema by a GET request to:
+
+                                        ```
+                                        /api/v1/schema
+                                        ```
+                                    2. The property enumerations are retrieved by a GET request to:
+
+                                        ```
+                                        /api/v1/attributes
+                                        ```
+                                    3. Clicking "Submit" sends a POST request to:
+
+                                        ```
+                                        /api/v1/insert
+                                        ```
+                                       The form fields are send in (JSON) body.
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

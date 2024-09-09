@@ -1,0 +1,24 @@
+@startuml inside
+
+database src as "DB" #line.dashed;
+
+card ctr_db as "CTR: Database" {
+    database db as "ArcadeDB"
+}
+
+card ctr_be as "CTR: Backend" {
+    agent be as "Benthos"
+}
+
+circle http as "Endpoints"
+
+card ctr_fe as "CTR: Frontend" #line.dotted; {
+    frame fe as "Lowdefy" #line.dotted;
+}
+
+ctr_be -[dashed]->> src 
+ctr_db <<-->> ctr_be
+ctr_be <<-->> http
+http <<-[dotted]->> ctr_fe
+
+@enduml

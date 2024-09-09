@@ -1,0 +1,89 @@
+ARG IMGREPO
+
+FROM ${IMGREPO}node:20-alpine AS base
+
+LABEL maintainer="Christian Himpe (University of Münster)"
+
+RUN apk --no-cache upgrade
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 --spider http://frontend:3000 || exit 1
+
+ENV PORT 3000
+
+## Development Target:
+
+FROM base AS develop
+
+RUN corepack enable
+
+USER node
+
+WORKDIR /lowdefy
+
+ARG VERSION
+
+RUN pnpm add lowdefy@${VERSION}
+
+RUN pnpm add @lowdefy/server-dev@${VERSION}
+
+RUN mkdir -p .lowdefy/dev
+
+RUN mv node_modules/@lowdefy/server-dev/* .lowdefy/dev
+
+RUN cd .lowdefy/dev && pnpm install --no-frozen-lockfile
+
+ARG DL_PATH
+ENV DL_PATH=$DL_PATH
+
+ENV DL_INTERNAL=http://backend:8343/${DL_PATH}
+
+COPY assets/dataasee.svg public/icon.svg
+COPY assets/dataasee-32x32.png public/icon-32.png
+COPY assets/dataasee-512x512.png public/icon-512.png
+COPY assets/dataasee-180x180.png public/apple-touch-icon.png
+COPY assets/dataasee-250x72.png public/logo-light-theme.png
+COPY assets/dataasee-125x125.png public/logo-square-light-theme.png
+
+COPY assets/colors.less public/styles.less
+
+RUN ln -s /yaml/lowdefy.yaml lowdefy.yaml
+RUN ln -s /yaml/templates templates
+RUN ln -s /yaml/pages pages
+
+CMD pnpm exec lowdefy dev --watch /yaml
+
+
+## Build Target:
+
+FROM develop AS build
+
+ENV LOWDEFY_BUILD_OUTPUT_STANDALONE=1
+
+RUN pnpm update
+
+RUN --mount=type=bind,source=./frontend,target=/yaml pnpx lowdefy@${VERSION} build --log-level=debug --community-edition
+
+
+## Release Target:
+
+FROM base AS release
+
+USER root
+
+RUN apk --no-cache upgrade
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 lowdefy
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+WORKDIR /lowdefy
+
+COPY --from=build --chown=lowdefy:nodejs /lowdefy/.lowdefy/server/public ./public
+COPY --from=build --chown=lowdefy:nodejs /lowdefy/.lowdefy/server/.next/standalone ./
+COPY --from=build --chown=lowdefy:nodejs /lowdefy/.lowdefy/server/.next/static ./.next/static
+
+USER lowdefy
+
+CMD node server.js

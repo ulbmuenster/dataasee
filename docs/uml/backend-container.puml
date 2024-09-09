@@ -1,0 +1,14 @@
+@startuml backend
+
+card ctr_be as "CTR: Backend" {
+  agent be as "Benthos"
+  card be0 as "API"
+  collections be1 as "Templates"
+  collections be2 as "Resources"
+}
+
+be -->> be0
+be -->> be1
+be -->> be2
+
+@enduml

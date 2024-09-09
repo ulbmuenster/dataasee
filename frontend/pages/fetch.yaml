@@ -1,0 +1,1051 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Record Panel
+id: "fetch"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | Display"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "schema_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/schema"
+      method: "get"
+
+  - id: "record_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _url_query: true
+    properties:
+      url: "/metadata"
+      method: "get"
+      params:
+        id:
+          _payload: "id"
+
+events:
+  onInit:
+    - id: "schema_enter"
+      type: "Request"
+      params: "schema_request"
+
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+  onMountAsync:
+    - id: "record_enter"
+      type: "Request"
+      params: "record_request"
+
+    - id: "update_creators"
+      type: "SetState"
+      params:
+        creators_list:
+          _request: "record_request.data.data.attributes.creators"
+
+    - id: "update_identifiers"
+      type: "SetState"
+      params:
+        identifiers_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.identifiers"
+            - - null
+
+    - id: "update_categories"
+      type: "SetState"
+      params:
+        categories_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.categories"
+            - - null
+
+    - id: "update_subjects"
+      type: "SetState"
+      params:
+        subjects_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.subjects"
+            - - null
+
+    - id: "update_fundings"
+      type: "SetState"
+      params:
+        fundings_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.fundings"
+            - - null
+
+    - id: "update_links"
+      type: "SetState"
+      params:
+        links_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.externalItems"
+            - - null
+
+    - id: "update_synonyms"
+      type: "SetState"
+      params:
+        synonyms_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.synonyms"
+            - - null
+
+    - id: "update_relations"
+      type: "SetState"
+      params:
+        relations_list:
+          _if_none:
+            - _request: "record_request.data.data.attributes.relations"
+            - - null
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "page_h2"
+        type: "Title"
+        properties:
+          content: "Display Record"
+          level: 1
+## Metadata Card
+      - id: "metadata"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+
+## Left Column
+              - id: "left"
+                type: "Box"
+                layout:
+                  span: 12
+                blocks:
+## Mandatory
+                  - id: "mandatory"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Mandatory Metadata"
+                    blocks:
+## Title
+                      - id: "title_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.name.label"
+                        blocks:
+                          - id: "title_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.name"
+                                  - _global: "unknown"
+                              strong: true
+## Creators
+                      - id: "creators_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.creators.label"
+                        blocks:
+                          - id: "creators_list"
+                            type: "List"
+                            blocks:
+                              - id: "creators_text.$"
+                                type: "Html"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  html:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "creators_list.$.data"
+                                          - null
+                                      then:
+                                        _state: "creators_list.$.name"
+                                      else:
+                                        _string.concat:
+                                          - "<a href='"
+                                          - _state: "creators_list.$.data"
+                                          - "'>"
+                                          - _state: "creators_list.$.name"
+                                          - "</a>"
+## Publisher
+                      - id: "publisher_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.publisher.label"
+                        blocks:
+                          - id: "publisher_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.publisher"
+                                  - _global: "unknown"
+## Publication Year
+                      - id: "published_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.publicationYear.label"
+                        blocks:
+                          - id: "published_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.publicationYear"
+                                  - _global: "unknown"
+## Resource Type
+                      - id: "resourcetype_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.resourceType.label"
+                        blocks:
+                          - id: "resourcetype_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.resourceType"
+                                  - _global: "unknown"
+## Identifiers TODO: fix
+                      - id: "identifiers_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.identifiers.label"
+                        blocks:
+                          - id: "identifiers_list"
+                            type: "List"
+                            blocks:
+                              - id: "identifiers_text.$"
+                                type: "Paragraph"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  content:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "identifiers_list.$"
+                                          - null
+                                      then:
+                                        _global: "unknown"
+                                      else:
+                                        _string.concat:
+                                          - _state: "identifiers_list.$.name"
+                                          - ": "
+                                          - _state: "identifiers_list.$.data"
+## Optional
+                  - id: "optional"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Optional Metadata"
+                    blocks:
+## Synonyms
+                      - id: "synonyms_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.synonyms.label"
+                        blocks:
+                          - id: "synonyms_list"
+                            type: "List"
+                            blocks:
+                              - id: "synonyms_text.$"
+                                type: "Html"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  html:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "synonyms_list.$"
+                                          - null
+                                      then:
+                                        _global: "unknown"
+                                      else:
+                                        _string.concat:
+                                          - _state: "synonyms_list.$.data"
+                                          - " ("
+                                          - _state: "synonyms_list.$.name"
+                                          - ")"
+## Language
+                      - id: "language_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.language.label"
+                        blocks:
+                          - id: "language_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.language"
+                                  - _global: "unknown"
+## Subjects
+                      - id: "subjects_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.subjects.label"
+                        blocks:
+                          - id: "subjects_list"
+                            type: "List"
+                            blocks:
+                              - id: "subjects_text.$"
+                                type: "Html"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  html:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "subjects_list.$"
+                                          - null
+                                      then:
+                                        _global: "unknown"
+                                      else:
+                                        _if:
+                                          test:
+                                            _eq:
+                                              - _state: "subjects_list.$.data"
+                                              - null
+                                          then:
+                                            _state: "subjects_list.$.name"
+                                          else:
+                                            _string.concat:
+                                              - "<a href='"
+                                              - _state: "subjects_list.$.data"
+                                              - "'>"
+                                              - _state: "subjects_list.$.name"
+                                              - "</a>"
+## Version
+                      - id: "version_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.version.label"
+                        blocks:
+                          - id: "version_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.version"
+                                  - _global: "unknown"
+## License
+                      - id: "license_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.license.label"
+                        blocks:
+                          - id: "license_text"
+                            type: "Html"
+                            style:
+                              font-size: "large"
+                            properties:
+                              html:
+                                _if:
+                                  test:
+                                    _eq:
+                                      - _request: "record_request.data.data.attributes.license"
+                                      - null
+                                  then:
+                                    _global: "unknown"
+                                  else:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _request: "record_request.data.data.attributes.license.data"
+                                          - null
+                                      then:
+                                        _request: "record_request.data.data.attributes.license.name"
+                                      else:
+                                        _string.concat:
+                                          - "<a href='"
+                                          - _request: "record_request.data.data.attributes.license.data"
+                                          - "'>"
+                                          - _request: "record_request.data.data.attributes.license.name"
+                                          - "</a>"
+## Rights
+                      - id: "rights_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.rights.label"
+                        blocks:
+                          - id: "rights_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "medium"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.rights"
+                                  - _global: "unknown"
+## Project
+                      - id: "project_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.project.label"
+                        blocks:
+                          - id: "project_text"
+                            type: "Html"
+                            style:
+                              font-size: "large"
+                            properties:
+                              html:
+                                _if:
+                                  test:
+                                    _eq:
+                                      - _request: "record_request.data.data.attributes.project"
+                                      - null
+                                  then:
+                                    _global: "unknown"
+                                  else:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _request: "record_request.data.data.attributes.project.data"
+                                          - null
+                                      then:
+                                        _request: "record_request.data.data.attributes.project.name"
+                                      else:
+                                        _string.concat:
+                                          - "<a href='"
+                                          - _request: "record_request.data.data.attributes.project.data"
+                                          - "'>"
+                                          - _request: "record_request.data.data.attributes.project.name"
+                                          - "</a>"
+## Fundings
+                      - id: "fundings_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.fundings.label"
+                        blocks:
+                          - id: "fundings_list"
+                            type: "List"
+                            blocks:
+                              - id: "fundings_text.$"
+                                type: "Html"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  html:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "fundings_list.$"
+                                          - null
+                                      then:
+                                        _global: "unknown"
+                                      else:
+                                        _if:
+                                          test:
+                                            _eq:
+                                              - _state: "fundings_list.$.data"
+                                              - null
+                                          then:
+                                            - _state: "fundings_list.$.name"
+                                          else:
+                                            _string.concat:
+                                              - _state: "fundings_list.$.name"
+                                              - " ("
+                                              - _state: "fundings_list.$.data"
+                                              - ")"
+## Description
+                      - id: "description_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.description.label"
+                        blocks:
+                          - id: "description_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "medium"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.description"
+                                  - _global: "unknown"
+## Message
+                      - id: "message_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.message.label"
+                        blocks:
+                          - id: "message_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "medium"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.message"
+                                  - _global: "unknown"
+## Links
+                      - id: "links_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.externalItems.label"
+                        blocks:
+                          - id: "links_list"
+                            type: "List"
+                            blocks:
+                              - id: "links_text.$"
+                                type: "Html"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  html:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "links_list.$"
+                                          - null
+                                      then:
+                                        _global: "unknown"
+                                      else:
+                                        _string.concat:
+                                          - "<a href='"
+                                          - _state: "links_list.$.data"
+                                          - "'>"
+                                          - _state: "links_list.$.name"
+                                          - "</a>"
+
+## Relations TODO:
+                  - id: "relations_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Relationsships"
+                    blocks:
+                      - id: "relations_list"
+                        type: "List"
+                        blocks:
+                          - id: "relations_label.$"
+                            type: "Label"
+                            properties:
+                              span: 4
+                              align: "right"
+                              title:
+                                _get:
+                                  from:
+                                    _get:
+                                      from:
+                                        _request: "schema_request.data.data.attributes"
+                                      key:
+                                        _state: "relations_list.$.type"
+                                  key:
+                                    _if:
+                                      test:
+                                        _state: "relations_list.$.isOut"
+                                      then: "olabel"
+                                      else: "ilabel"
+                            blocks:
+                              - id: "relations_link.$"
+                                type: "Anchor"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  href:
+                                    _string.concat:
+                                      - "fetch?id="
+                                      - _state: "relations_list.$.recordId"
+                                  title:
+                                    _string.concat:
+                                      - _if_none:
+                                          - _state: "relations_list.$.name"
+                                          - _global: "unknown"
+                                      - " ("
+                                      - _if_none:
+                                          - _state: "relations_list.$.publicationYear"
+                                          - _global: "unknown"
+                                      - ") "
+                                      - _if_none:
+                                          - _state: "relations_list.$.resourceType"
+                                          - _global: "unknown"
+
+## Social
+                  - id: "social"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Social Metadata"
+                    blocks:
+## Categories
+                      - id: "categories_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.categories.label"
+                        blocks:
+                          - id: "categories_list"
+                            type: "List"
+                            blocks:
+                              - id: "categories_text.$"
+                                type: "Paragraph"
+                                style:
+                                  font-size: "large"
+                                properties:
+                                  content:
+                                    _if_none:
+                                      - _state: "categories_list.$"
+                                      - _global: "unknown"
+## Keywords
+                      - id: "keywords_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.keywords.label"
+                        blocks:
+                          - id: "keywords_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if:
+                                  test:
+                                    _not:
+                                      _request: "record_request.data.data.attributes.keywords"
+                                  then:
+                                    _global: "unknown"
+                                  else:
+                                    _request: "record_request.data.data.attributes.keywords"
+## Views
+                      - id: "views_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.numberDownloads.label"
+                        blocks:
+                          - id: "views_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _request: "record_request.data.data.attributes.numberDownloads"
+## Process
+                  - id: "process"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Process Metadata"
+                    blocks:
+## Schema Version
+                      - id: "schema_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.schemaVersion.label"
+                        blocks:
+                          - id: "schema_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.schemaVersion"
+                                  - _global: "unknown"
+## Record Id
+                      - id: "recordid_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.recordId.label"
+                        blocks:
+                          - id: "recordid_text"
+                            type: "Anchor"
+                            style:
+                              font-size: "large"
+                            properties:
+                              href:
+                                _string.concat:
+                                  - "fetch?id="
+                                  - _request: "record_request.data.data.attributes.recordId"
+                              title:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.recordId"
+                                  - _global: "unknown"
+## Quality
+                      - id: "quality_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.metadataQuality.label"
+                        blocks:
+                          - id: "quality_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.metadataQuality"
+                                  - _global: "unknown"
+## Data Steward
+                      - id: "datasteward_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.dataSteward.label"
+                        blocks:
+                          - id: "datasteward_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                              font-type: "monospace"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.dataSteward"
+                                  - _global: "unknown"
+## Source
+                      - id: "source_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.source.label"
+                        blocks:
+                          - id: "source_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.source"
+                                  - _global: "unknown"
+## Created
+                      - id: "created_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.createdAt.label"
+                        blocks:
+                          - id: "created_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.createdAt"
+                                  - _global: "unknown"
+## Updated
+                      - id: "updated_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.updatedAt.label"
+                        blocks:
+                          - id: "updated_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.updatedAt"
+                                  - _global: "unknown"
+
+## Technical
+                  - id: "technical"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Technical Metadata"
+                    blocks:
+## Size
+                      - id: "size_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.sizeBytes.label"
+                        blocks:
+                          - id: "size_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.sizeBytes"
+                                  - _global: "unknown"
+## Format
+                      - id: "format_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.fileFormat.label"
+                        blocks:
+                          - id: "format_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.fileFormat"
+                                  - _global: "unknown"
+## Location
+                      - id: "location_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.dataLocation.label"
+                        blocks:
+                          - id: "format_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.dataLocation"
+                                  - _global: "unknown"
+## Raw Card
+                  - id: "schemas"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Original Metadata"
+                    blocks:
+## Raw Type
+                      - id: "rawtype_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.rawType.label"
+                        blocks:
+                          - id: "rawtype_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.rawType"
+                                  - _global: "unknown"
+## Raw Metadata
+                      - id: "raw_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.raw.label"
+                        blocks:
+                          - id: "raw_paragraph"
+                            type: "MarkdownWithCode"
+                            properties:
+                              content:
+                                _if:
+                                  test:
+                                    _eq:
+                                      - _request: "record_request.data.data.attributes.raw"
+                                      - ""
+                                  then:
+                                    _global: "unknown"
+                                  else:
+                                    _string.concat:
+                                      - "```xml\n"
+                                      - _request: "record_request.data.data.attributes.raw"
+                                      - "\n```"
+## Raw Checksum
+                      - id: "rawchecksum_label"
+                        type: "Label"
+                        properties:
+                          span: 4
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.rawChecksum.label"
+                        blocks:
+                          - id: "rawchecksum_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.rawChecksum"
+                                  - _global: "unknown"
+
+## Right Column
+              - id: "fetch_help"
+                type: "Card"
+                layout:
+                  span: 12
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "Display Help"
+                blocks:
+                  - id: "fetch_md"
+                    type: "Markdown"
+                    properties:
+                      content: |
+                        The display record site gives an overview about a record in the metadata-lake.
+
+                        * **Mandatory Metadata**, core properties, typically set for all records.
+                        * **Optional Metadata**, extra properties, sometimes set for records.
+                        * **Relationships**, labeled links to other records.
+                        * **Social Metadata**, properties relating to classification and findability.
+                        * **Process Metadata**, properties relating to ingestion and parsing of this record.
+                        * **Technical Metadata**, properties relating to the underlying data-set.
+                        * **Original Metadata**, the original ingested metadata record.
+
+                        A value of `[ᴇᴍᴘᴛʏ]` corresponds to `NULL`.
+
+                  - id: "fetch_detail"
+                    type: "Collapse"
+                    properties:
+                      defaultActiveKey: "none"
+                      panels:
+                        - key: "technically"
+                          title: "Technically"
+                    areas:
+                      technically:
+                        blocks:
+                          - id: "fetch_technically"
+                            type: "Markdown"
+                            properties:
+                              content: |
+                                1. The field labels are retrieved via the database schema by a GET request to:
+
+                                    ```
+                                    /api/v1/schema
+                                    ```
+                                2. The record data is retrieved by a GET request to:
+
+                                    ```
+                                    /api/v1/metadata?id=x
+                                    ```
+
+# TODO: export as here (JSON,Wikidata,...) dynamically for extras (ie BibTeX)
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"
+

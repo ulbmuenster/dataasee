@@ -1,0 +1,14 @@
+@startuml database
+
+card ctr_db as "CTR: Database" {
+  database db as "ArcadeDB"
+  card db0 as "Init Script"
+  card db1 as "Schema" #line.dotted;
+  card db2 as "Preload" #line.dotted;
+}
+
+db <<-- db0
+db -[dotted]->> db1
+db -[dotted]->> db2
+
+@enduml

@@ -1,0 +1,493 @@
+# Language: OpenAPI YAML, Project: DatAasee, License: CC-BY, Author: Christian Himpe
+
+openapi: "3.0.3"
+
+info:
+  title: "DatAasee API"
+  description: "Public and protected API of the DatAasee metadata lake."
+  termsOfService: "http://dataasee.uni-muenster.de"
+  contact:
+    name: "DatAasee Support"
+    url: "http://dataasee.uni-muenster.de"
+  license:
+    name: "MIT License"
+    url: "https://spdx.org/licenses/MIT.html"
+  version: "v1"
+
+servers:
+  - url: "http://dataasee.uni-muenster.de:8343/api/v1"
+    description: "Production Server"
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: "http"
+      scheme: "basic"
+
+paths:
+
+  "/ready":
+    get:
+      operationId: "dataasee-ready"
+      summary: "Returns boolean answering if service is ready."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=ready"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "503":
+          description: "Service not ready."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/api":
+    get:
+      operationId: "dataasee-api"
+      summary: "Returns OpenAPI specification if no parameter is given, otherwise returns a request or response schema."
+      parameters:
+        - name: "request"
+          in: "query"
+          description: "Optional; if provided, a request schema for the endpoint in the parameter value is returned."
+          required: false
+          schema:
+            type: "string"
+            enum:
+              - "ingest"
+              - "insert"
+        - name: "response"
+          in: "query"
+          description: "Optional; if provided, a response schema for the endpoint in the parameter value is returned."
+          required: false
+          schema:
+            type: "string"
+            enum:
+              - "api"
+              - "attributes"
+              - "backup"
+              - "error"
+              - "health"
+              - "ingest"
+              - "insert"
+              - "metadata"
+              - "ready"
+              - "schema"
+              - "stats"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=api"
+        "400":
+          description: "Parameter value is not an endpoint or has no request schema."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/schema":
+    get:
+      operationId: "dataasee-schema"
+      summary: "Returns internal metadata schema."
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=schema"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Database error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/attributes":
+    get:
+      operationId: "dataasee-attributes"
+      summary: "Returns list of enumerated attribute values."
+      parameters:
+        - name: "type"
+          in: "query"
+          description: "Optional; if provided only selected attribute type is returned."
+          required: false
+          schema:
+            type: "string"
+            enum:
+              - "resourcetypes"
+              - "languages"
+              - "licenses"
+              - "synonyms"
+              - "externalitems"
+              - "categories"
+              - "schemas"
+              - "relations"
+      responses:
+        "200":
+          description: ""
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=attributes"
+        "400":
+          description: "Invalid request."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Database error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/stats":
+    get:
+      operationId: "dataasee-stats"
+      summary: "Return statistics about records."
+      responses:
+        "200":
+          description: ""
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=stats"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Database error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/metadata":
+    get:
+      operationId: "dataasee-metadata"
+      summary: "Fetch from, search, filter or query metadata record(s)."
+      parameters:
+        - name: "id"
+          in: "query"
+          description: "Optional; if provided, a metadata-set with this value is returned."
+          required: false
+          schema:
+            type: "string"
+        - name: "search"
+          in: "query"
+          description: "Optional; if provided, full-text search results for this value are returned."
+          required: false
+          schema:
+            type: "string"
+        - name: "query"
+          in: "query"
+          description: "Optional; if provided, query results using this value are returned, no `language` parameter implies `sql`."
+          required: false
+          schema:
+            type: "string"
+        - name: "language"
+          in: "query"
+          description: "Optional; if provided, filter results by `language` are returned, also used to set `query` language."
+          required: false
+          schema:
+            type: "string"
+        - name: "resourcetype"
+          in: "query"
+          description: "Optional; if provided, filter results by `resourceType` are returned."
+          required: false
+          schema:
+            type: "string"
+        - name: "license"
+          in: "query"
+          description: "Optional; if provided, filter results by `license` are returned."
+          required: false
+          schema:
+            type: "string"
+        - name: "category"
+          in: "query"
+          description: "Optional; if provided, filter results by `categories` are returned."
+          required: false
+          schema:
+            type: "string"
+        - name: "from"
+          in: "query"
+          description: "Optional; if provided, filter results greater or equal `publicationYear` are returned."
+          required: false
+          schema:
+            type: "number"
+        - name: "till"
+          in: "query"
+          description: "Optional; if provided, filter results lesser or equal `publicationYear` are returned."
+          required: false
+          schema:
+            type: "number"
+        - name: "skip"
+          in: "query"
+          description: "Optional; if provided, this number of results is skipped, use for paging."
+          required: false
+          schema:
+            type: "number"
+        - name: "newest"
+          in: "query"
+          description: "Optional; if provided, results are sorted new-to-oldest if true (default), or old-to-new if false."
+          required: false
+          schema:
+            type: "boolean"
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=metadata"
+        "400":
+          description: "Invalid request."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "404":
+          description: "Not found."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Database error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/insert":
+    post:
+      operationId: "dataasee-insert"
+      summary: "Insert a record."
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              externalDocs:
+                url: "/api?request=insert"
+        required: true
+      responses:
+        "201":
+          description: "Record inserted."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=insert"
+        "400":
+          description: "Invalid request."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "403":
+          description: "Invalid credentials."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Database error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/ingest":
+    post:
+      operationId: "dataasee-ingest"
+      summary: "Trigger ingest from data source."
+      security:
+        - basicAuth: []
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              externalDocs:
+                url: "/api?request=ingest"
+        required: true
+      responses:
+        "202":
+          description: "In Progress."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=ingest"
+        "400":
+          description: "Invalid request."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "403":
+          description: "Invalid credentials."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "RRequested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "503":
+          description: "Already ingesting."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/backup":
+    post:
+      operationId: "dataasee-backup"
+      summary: "Triggers database backup."
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: ""
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=backup"
+        "403":
+          description: "Invalid credentials."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Database error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+
+  "/health":
+    post:
+      operationId: "dataasee-health"
+      summary: "Returns internal status of service components."
+      security:
+        - basicAuth: []
+      responses:
+        "200":
+          description: "OK"
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=health"
+        "403":
+          description: "Invalid credentials."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "406":
+          description: "Requested content-type must be \"application/json\"."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"
+        "500":
+          description: "Internal Server error."
+          content:
+            "application/json":
+              schema:
+                externalDocs:
+                  url: "/api?response=error"

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataasee:api?response=api",
+
+  "title": "DatAasee API Endpoint Response", "type": "object", "oneOf": [ { "required": ["openapi", "info", "servers", "components", "paths"] }, { "required": ["$schema", "$id", "title", "type"] } ]
+}

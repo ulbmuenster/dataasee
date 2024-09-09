@@ -1,0 +1,23 @@
+@startuml attributes-endpoint
+
+interface endpoint [
+Endpoint
+]
+
+node backend [
+
+Backend
+
+]
+
+database database [
+
+Database
+
+]
+
+endpoint <<-->> backend : " HTTP Server (<b>/api/v1/attributes</b>)"
+backend -->> database : " HTTP Client (<b>/query</b>)"
+backend -->> backend : " Cache Query"
+
+@enduml

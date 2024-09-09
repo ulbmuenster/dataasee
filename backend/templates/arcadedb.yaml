@@ -1,0 +1,60 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+name: 'arcadedb'
+type: 'processor'
+status: 'beta'
+summary: 'Runs HTTP requests against an ArcadeDB server.'
+description: |
+  This processor template wraps a branch processor around an HTTP processor
+  for use with the ArcadeDB database management system. For details see:
+  https://docs.arcadedb.com
+categories:
+  - 'Integration'
+
+fields:
+  - name: 'host'
+    description: 'The host name of the ArcadeDB server, ie "localhost".'
+    type: 'string'
+  - name: 'port'
+    description: 'The (HTTP) port number of the ArcadeDB server, ie 2480.'
+    type: 'int'
+    default: 2480
+  - name: 'endpoint'
+    description: 'The (HTTP) endpoint at the ArcadeDB server, ie "query".'
+    type: 'string'
+  - name: 'database'
+    description: 'The name of the database at the ArcadeDB server.'
+    type: 'string'
+    default: ''
+  - name: 'username'
+    description: 'The user name at the ArcadeDB server.'
+    type: 'string'
+  - name: 'password'
+    description: 'The path to a file holding the password of the user at the ArcadeDB server'
+    type: 'string'
+  - name: 'retries'
+    description: 'Number of retries after a failed attempt.'
+    type: 'int'
+    default: 1
+  - name: 'request'
+    description: 'A bloblang mapping constructing the request message.'
+    type: 'string'
+    default: ''
+  - name: 'response'
+    description: 'A bloblang mapping transforming the response message.'
+    type: 'string'
+    default: ''
+
+mapping: |
+  root.branch.request_map = this.request
+
+  root.branch.processors = [{}]
+  root.branch.processors.0.http.url = "http://" + this.host + ":" + this.port.string() + "/api/v1/" + this.endpoint + "/" + this.database
+  root.branch.processors.0.http.verb = if this.endpoint.re_match("(?i)(exists)") { "GET" } else { "POST" }
+  root.branch.processors.0.http.basic_auth.enabled = true
+  root.branch.processors.0.http.basic_auth.username = this.username
+  root.branch.processors.0.http.basic_auth.password = file(this.password).string()
+  root.branch.processors.0.http.retries = this.retries
+  root.branch.processors.0.http.timeout = "30s"
+
+  root.branch.result_map = this.response

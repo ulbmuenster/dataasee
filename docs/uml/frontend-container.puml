@@ -1,0 +1,14 @@
+@startuml frontend
+
+card ctr_fe as "CTR: Frontend" {
+  frame fe as "Lowdefy"
+  collections fe0 as "Assets"
+  collections fe1 as "Templates"
+  collections fe2 as "Pages"
+}
+
+fe -->> fe0
+fe -->> fe1
+fe -->> fe2
+
+@enduml

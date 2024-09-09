@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+title: DatAasee
+message: In Development
+type: software
+authors:
+  - given-names: Christian
+    family-names: Himpe
+    orcid: 'https://orcid.org/0000-0003-2194-6754'
+    affiliation: University of Münster
+  - given-names: Philipp
+    family-names: Kuschat
+    affiliation: University of Münster
+  - given-names: Holger
+    family-names: Przibytin
+    affiliation: University of Münster
+  - given-names: Marc
+    family-names: Schutzeichel
+    affiliation: University of Münster
+  - given-names: Jan-Erik
+    family-names: Stange
+    affiliation: University of Münster
+abstract: A metadata-lake for libraries
+keywords:
+  - Metadata Lake
+  - Metadata Catalog
+  - Metadata Management
+  - Data Catalog
+  - Data Engineering
+license: MIT
+version: '0.2'

@@ -1,0 +1,125 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'normalize'
+    try:
+      - mutation: |
+          map prep_str {
+            root = this.string().trim().replace_all_many(["\\","\\\\","'","\\'","\"","\\\"",";","\u037E","--","\u2013"])
+          }
+
+          map prep_uri {
+            let url = this.string().trim().replace_all_many(["\\","%5C","'","%27","\"","%22",";","%3B"," ","%20"])
+            root = if $url.re_match("^(http)[s]?(:\\/\\/)[^\\s\\/$.?#].[^\\s]*$") && $url.length() < 4096 { $url } else { null }
+          }
+
+          map id2url {
+            root = match this.string() { this.lowercase().has_prefix("http")   => this,
+                                         this.has_prefix("10.")                => "https://doi.org/" + this,
+                                         this.lowercase().has_prefix("doi:")   => "https://doi.org/" + this.lowercase().trim_prefix("doi:"),
+                                         this.lowercase().has_prefix("orcid:") => "https://orcid.org/" + this.lowercase().trim_prefix("orcid:"),
+                                         _                                     => null
+                                       }
+          }
+
+          map tiny_str {
+            root = if this.length() < 256 { this } else { this.slice(0,254) + "…" }
+          }
+
+          map small_str {
+            root = if this.length() < 4096 { this } else { this.slice(0,4094) + "…" }
+          }
+
+          map text_str {
+            root = if this.length() < 65536 { this } else { this.slice(0,65534) + "…" }
+          }
+
+          map prune {
+            root = this.not_empty().catch(deleted())
+          }
+
+          root.categories = this.categories.or([]).slice(0,4).map_each(x -> x.apply("prep_str").apply("tiny_str"))
+
+          root.keywords = this.keywords.or("").split(",").map_each(x -> x.trim()).filter(x -> x != "").join(",").apply("prep_str").apply("tiny_str")
+
+          root.name = if this.name.type() == "string" && this.name.length() > 0 { this.name.apply("prep_str").apply("tiny_str") } else { "" }
+
+          root.creators = if this.creators.type() == "array" && this.creators.length() > 0 { this.creators.map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                                                                                           "data": if x.exists("data") { x.data.apply("prep_uri") | deleted() } else { deleted() },
+                                                                                                                           "@type": "pair" }).apply("prune") } else { null }
+
+          root.publicationYear = match { this.publicationYear.type() == "number" => this.publicationYear,
+                                         this.publicationYear.type() == "string" && this.publicationYear.length() > 0 && this.publicationYear.trim().trim_prefix("[").slice(0,4).re_match("^-?[1-9]\\d{0,3}") => this.publicationYear.trim().trim_prefix("[").re_find_object("^-?[1-9]\\d{0,3}")."0".number(),
+                                         _ => null }
+
+          root.publisher = if this.publisher.type() == "string" && this.publisher.length() > 0 { this.publisher.apply("prep_str").apply("tiny_str") } else { null }
+
+          root.resourceType = if this.resourceType.type() == "string" && this.resourceType.length() > 0 { this.resourceType.apply("prep_str").apply("tiny_str") } else { null }
+
+          root.identifiers = if this.identifiers.type() == "array" && this.identifiers.length() > 0 { this.identifiers.map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                                                                                                       "data": x.data.apply("prep_str").apply("small_str"),
+                                                                                                                                       "@type": "pair" }).apply("prune") } else { null }
+
+          root.synonyms = this.synonyms.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                               "data": x.data.apply("prep_str").apply("small_str"),
+                                                               "@type": "pair" })
+          root.synonyms = if this.name.or("").length() > 255 { root.synonyms.append({ "name": "fulltitle",
+                                                                                      "data": this.name.apply("prep_str").apply("small_str"),
+                                                                                      "@type": "pair" }) }
+          root.synonyms = root.synonyms.slice(0,256).apply("prune")
+
+          root.language = this.language.or("").apply("prep_str").apply("tiny_str")
+
+          root.subjects = this.subjects.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                               "data": if x.exists("data") { x.data.apply("prep_uri") | deleted() } else { deleted() },
+                                                               "@type": "pair" }).slice(0,256).apply("prune")
+
+          root.version = this.version.or("").apply("prep_str").apply("tiny_str").apply("prune")
+
+          root.license = this.license.or("").apply("prep_str").apply("tiny_str")
+
+          root.rights = this.rights.or("").apply("prep_str").apply("text_str").apply("prune")
+
+          root.project = if this.project != null { { "name": this.project.name.apply("prep_str").apply("tiny_str"),
+                                                     "data": if this.project.exists("data") { this.project.data.apply("prep_uri") | deleted() } else { deleted() },
+                                                     "@type": "pair" } }
+
+          root.fundings = this.fundings.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                               "data": if x.exists("data") && x.data != null { x.data.apply("prep_str").apply("small_str") } else { deleted() },
+                                                               "@type": "pair" }).slice(0,256).apply("prune")
+
+          root.description = this.description.or("").apply("prep_str").apply("text_str")
+
+          root.message = this.message.or("").apply("prep_str").apply("text_str").apply("prune")
+
+          root.externalItems = this.externalItems.or([]).filter(x -> x.data != null).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                                                                     "data": x.data.apply("id2url").apply("prep_uri"),
+                                                                                                     "@type": "pair" }).slice(0,256).apply("prune")
+
+          root.raw = this.raw.or("").string().trim().replace_all_many(["'","\\'","\"","\\\""])
+
+          root.dataLocation = this.dataLocation.apply("id2url").apply("prep_uri")
+
+          root.related = this.related.or([]).filter(x -> x.data != null).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                                                         "data": x.data.apply("prep_str").apply("small_str"),
+                                                                                         "@type": "pair" }).slice(0,256).apply("prune")
+
+      - arcadedb:
+          host: '${DB_HOST}'
+          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+          endpoint: 'query'
+          database: '${DB_NAME}'
+          username: '${DB_USER}'
+          password: '${DB_PASS}'
+          request: |
+            root.language = "sql"
+            root.command = """SELECT $resourceTypeLink.rid[0] AS resourceType, $categoryLinks.rid AS categories, $languageLink.rid[0] AS language, $licenseLink.rid[0] AS license
+                              LET $resourceTypeLink = (SELECT @rid AS rid FROM BUCKET:resourcetypes WHERE name ILIKE '%s' OR also.asString() MATCHES '(?i).*(%s).*'),
+                                  $categoryLinks = (SELECT @rid AS rid FROM BUCKET:categories WHERE name MATCHES '(?i)(%s)'),
+                                  $languageLink = (SELECT @rid AS rid FROM BUCKET:languages WHERE name ILIKE '%s' OR also.asString() MATCHES '(?i).*([\\[ ]%s[,\\]]).*'),
+                                  $licenseLink = (SELECT @rid AS rid FROM BUCKET:licenses WHERE name ILIKE '%s' OR data ILIKE '%s');""".format(this.resourceType.or(""),this.resourceType.or(""),this.categories.string().replace_all_many([ "[","", "]","", ",","|", "\"","" ]),this.language,this.language,this.license,this.license)
+          response: |
+            root.resourceType = this.result.0.resourceType | null
+            root.language = this.result.0.language | deleted()
+            root.license = this.result.0.license | deleted()
+            root.categories = if this.result.0.categories.length() > 0 { this.result.0.categories } else { deleted() }

@@ -1,0 +1,23 @@
+@startuml health-endpoint
+
+interface endpoint [
+Endpoint
+]
+
+node backend [
+
+Backend
+
+]
+
+database database [
+
+Database
+
+]
+
+endpoint <<-->> backend : " HTTP Server (<b>/api/v1/health</b>)"
+backend -->> backend : " HTTP Client (<b>/version</b>)"
+backend -->> database : " HTTP Client (<b>/command</b>)"
+
+@enduml

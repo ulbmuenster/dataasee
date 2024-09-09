@@ -1,0 +1,17 @@
+{
+  "name": "abc",
+
+  "creators": [
+    { "name": "def" }
+  ],
+
+  "publicationYear": 2000,
+
+  "publisher": "Uni MS",
+
+  "resourceType": "Article",
+
+  "identifiers": [
+    { "name": "doi", "data": "10.0000/abcdef" }
+  ]
+}

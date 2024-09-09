@@ -1,0 +1,58 @@
+{
+  "categories": ["Mathematics", "Law"],
+
+  "keywords": "Keyword1, Keyword2",
+
+  "name": "Test Data Max",
+
+  "creators": [
+    { "name": "First Author" },
+    { "name": "Second Author", "data": "http://second.author" }
+  ],
+
+  "publicationYear": 2024,
+
+  "publisher": "Uni MS",
+
+  "resourceType": "Article",
+
+  "identifiers": [
+    { "name": "doi", "data": "10.0000/abcdefghijklmnopqrstuvwxyz" },
+    { "name": "doi", "data": "10.0000/zyxwvutsrqponmlkjihgfedcba" }
+  ],
+
+  "synonyms": [
+    { "name": "Alternative", "data": "Test Data Maximal" },
+    { "name": "Translated", "data": "Testdatum Maximum" }
+  ],
+
+  "language": "English",
+
+  "subjects": [
+    { "name": "Plattfisch" },
+    { "name": "Scholle", "data": "http://scholle.subject" }
+  ],
+
+  "version": "Published",
+
+  "license": "Public Domain",
+
+  "rights": "Free for all",
+
+  "project":
+    { "name": "Test project", "data": "http://test.project" },
+
+  "fundings": [
+    { "name": "ABCDEF", "data": "Funding Agency 1" },
+    { "name": "FEDCBA", "data": "Funding Agency 2" }
+  ],
+
+  "description": "This could be an abstract",
+
+  "message": "Hi there",
+
+  "externalItems": [
+    { "name": "website", "data": "http://test.website" },
+    { "name": "datarepo", "data": "http://data.repo" }
+  ]
+}

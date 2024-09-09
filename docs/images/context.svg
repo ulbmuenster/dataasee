@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="us-ascii" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="406px" preserveAspectRatio="none" style="width:414px;height:406px;background:#FFFFFF;" version="1.1" viewBox="0 0 414 406" width="414px" zoomAndPan="magnify">
+	<defs />
+	<g>
+		<!-- entity dataasee -->
+		<g id="elem_dataasee">
+			<rect fill="#FFC0CB" height="54.8906" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="87" x="165.1049" y="179.56" />
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="175.1049" y="195.5551">
+				&#160;
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="67" x="175.1049" y="211.852">
+				DatAasee
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="175.1049" y="228.1489">
+				&#160;
+			</text>
+		</g>
+		<!-- entity services -->
+		<g id="elem_services">
+			<path d="M104.0897,319.5383 C107.8668,313.0935 113.6759,313.7321 117.3761,319.6212 C119.7189,312.9225 123.6768,312.8747 128.523,317.0564 C131.8845,310.8925 135.7937,309.2774 140.9592,315.2004 C144.2412,310.8591 148.8487,309.6335 151.7608,315.5885 C156.314,309.883 162.0552,311.9864 164.0433,318.2261 C169.5723,313.0871 173.4971,314.8217 175.7713,321.4657 C185.3478,323.7087 186.4706,329.2577 181.5266,336.9112 C190.5588,339.781 190.621,344.654 185.0979,351.1695 C190.6567,358.898 188.9027,363.8837 180.3309,367.4832 C187.3378,374.6949 185.3464,380.3031 176.7641,384.1858 C173.747,390.7759 170.2634,391.4533 165.1546,386.2437 C162.7698,393.6331 157.3653,394.4876 152.3388,388.8408 C150.4454,395.1687 146.398,395.7125 141.4056,392.3301 C134.9456,398.1697 129.9521,395.1593 127.9932,387.7675 C123.3503,392.9673 119.8757,391.9695 116.3299,386.5613 C111.4232,390.4513 106.9373,389.8134 104.6593,383.5421 C96.0105,379.0816 93.8003,374.0114 101.7652,366.6966 C93.5784,363.6976 91.6882,356.3678 99.4069,350.9818 C93.856,345.2418 94.5996,339.4993 102.0993,336.1241 C93.9124,330.4915 95.8498,323.1996 104.0897,319.5383 " fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;" />
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="110.6049" y="339.4451">
+				&#160;
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="58" x="110.6049" y="355.742">
+				Services
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="110.6049" y="372.0389">
+				&#160;
+			</text>
+		</g>
+		<!-- entity sources -->
+		<g id="elem_sources">
+			<path d="M239.1049,321.95 C239.1049,311.95 277.6049,311.95 277.6049,311.95 C277.6049,311.95 316.1049,311.95 316.1049,321.95 L316.1049,379.8406 C316.1049,389.8406 277.6049,389.8406 277.6049,389.8406 C277.6049,389.8406 239.1049,389.8406 239.1049,379.8406 L239.1049,321.95 " fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;" />
+			<path d="M239.1049,321.95 C239.1049,331.95 277.6049,331.95 277.6049,331.95 C277.6049,331.95 316.1049,331.95 316.1049,321.95 " fill="none" style="stroke:#181818;stroke-width:0.5;" />
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="249.1049" y="348.9451">
+				&#160;
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="249.1049" y="365.242">
+				Sources
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="249.1049" y="381.5389">
+				&#160;
+			</text>
+		</g>
+		<!-- entity consumers -->
+		<g id="elem_consumers">
+			<path d="M20.9876,24.7393 C23.6632,18.8809 26.8761,17.5977 31.6725,22.6654 C35.5205,16.8281 40.22,15.2514 45.1129,21.5038 C47.6053,16.4364 51.4459,14.2633 55.8365,19.5352 C58.8473,12.0858 63.5415,11.5006 68.7224,17.4478 C72.5474,12.5738 77.6821,13.6696 80.2984,18.8407 C85.3721,14.8064 88.9668,15.5386 91.1486,21.8682 C94.3486,15.1014 100.2856,15.9154 103.7765,21.5725 C108.3607,17.7035 112.3362,17.4231 114.4251,24.0935 C122.3877,28.1194 125.3071,32.7768 117.7007,40.0072 C126.5498,42.6243 127.6736,48.1575 121.1118,54.4216 C127.5491,59.8181 126.4374,67.7723 118.8489,71.2869 C123.2744,78.327 121.6409,83.0561 113.8454,85.9164 C112.3589,90.9441 107.9022,92.6431 104.0255,88.4664 C100.6805,94.7033 94.9338,94.8192 90.5396,89.714 C87.1124,93.9772 83.6719,94.7206 80.0993,89.8807 C77.6269,96.2704 72.2179,97.8888 67.3875,92.4053 C63.5048,96.3428 59.1796,95.8405 56.7652,90.6893 C52.3276,96.2836 46.2657,94.8487 43.8752,88.4831 C39.8995,93.1633 36.3819,93.0906 32.6573,88.1892 C27.8639,94.2627 22.9207,93.5107 19.7314,86.5933 C10.7151,84.7078 9.4143,77.4926 16.0035,71.7008 C6,67.8384 6.5301,61.7674 12.5967,54.6871 C7.0122,48.4514 8.946,43.9407 15.9499,40.7291 C9.5491,34.2211 12.8739,26.6744 20.9876,24.7393 " fill="#F1F1F1" style="stroke:#181818;stroke-width:0.5;" />
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="26.6049" y="42.8251">
+				&#160;
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80" x="26.6049" y="59.122">
+				Consumers
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="26.6049" y="75.4189">
+				&#160;
+			</text>
+		</g>
+		<!-- entity frontend -->
+		<g id="elem_frontend">
+			<rect fill="#F1F1F1" height="78.8906" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="103" x="157.1049" y="14.83" />
+			<path d="M191.4382,14.83 L191.4382,19.83 L184.4382,26.83 L157.1049,26.83 " fill="none" style="stroke:#181818;stroke-width:0.5;" />
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="172.1049" y="47.8251">
+				&#160;
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="63" x="172.1049" y="64.122">
+				Frontend
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="172.1049" y="80.4189">
+				&#160;
+			</text>
+		</g>
+		<!-- entity admin -->
+		<g id="elem_admin">
+			<ellipse cx="341.6049" cy="19.8347" fill="#F1F1F1" rx="13.8347" ry="13.8347" style="stroke:#181818;stroke-width:0.5;" />
+			<rect fill="#F1F1F1" height="68.8906" rx="13.8347" ry="13.8347" style="stroke:#181818;stroke-width:0.5;" width="63" x="310.1049" y="33.6694" />
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="320.1049" y="56.6645">
+				&#160;
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="43" x="320.1049" y="72.9614">
+				Admin
+			</text>
+			<text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="4" x="320.1049" y="89.2583">
+				&#160;
+			</text>
+		</g>
+		<!-- link dataasee to services -->
+		<g id="link_dataasee_services">
+			<path d="M164.9349,232.21 C153.6149,240.8 142.8649,251.6 136.6049,264.45 C129.6549,278.73 128.1806,288.0457 129.8206,303.3157 " fill="none" id="dataasee-to-services" style="stroke:#181818;stroke-width:1.0;" />
+			<polygon fill="#181818" points="130.6749,311.27,132.8034,302.9954,126.8377,303.6361,130.6749,311.27" style="stroke:#181818;stroke-width:1.0;" />
+			<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="96" x="137.6049" y="277.5169">
+				Forward (HTTP)
+			</text>
+		</g>
+		<!-- link dataasee to sources -->
+		<g id="link_dataasee_sources">
+			<path d="M223.2849,234.82 C228.2649,244.14 233.7949,254.7 238.6049,264.45 C246.1849,279.8 250.8144,289.648 257.5244,304.518 " fill="none" id="dataasee-to-sources" style="stroke:#181818;stroke-width:1.0;" />
+			<polygon fill="#181818" points="260.8149,311.81,260.2589,303.2841,254.7899,305.7519,260.8149,311.81" style="stroke:#181818;stroke-width:1.0;" />
+			<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="88" x="246.6049" y="277.5169">
+				Import (HTTP)
+			</text>
+		</g>
+		<!-- link consumers to dataasee -->
+		<g id="link_consumers_dataasee">
+			<path d="M73.2249,93.99 C77.9949,112.51 86.0749,133.97 99.6049,149.56 C116.7849,169.35 135.211,180.1544 157.411,189.1544 " fill="none" id="consumers-to-dataasee" style="stroke:#181818;stroke-width:1.0;" />
+			<polygon fill="#181818" points="164.8249,192.16,158.5381,186.3741,156.2838,191.9346,164.8249,192.16" style="stroke:#181818;stroke-width:1.0;" />
+			<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="95" x="100.6049" y="145.6269">
+				Interact (HTTP)
+			</text>
+		</g>
+		<!-- link frontend to dataasee -->
+		<g id="link_frontend_dataasee">
+			<path d="M206.3649,93.81 C205.6349,110.89 205.1149,131.22 205.6049,149.56 C205.8649,159.27 205.9145,161.9227 206.4445,171.3227 " fill="none" id="frontend-to-dataasee" style="stroke:#181818;stroke-width:1.0;" />
+			<polygon fill="#181818" points="206.8949,179.31,209.4398,171.1538,203.4493,171.4916,206.8949,179.31" style="stroke:#181818;stroke-width:1.0;" />
+			<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="91" x="206.6049" y="145.6269">
+				Search (HTTP)
+			</text>
+		</g>
+		<!-- link admin to dataasee -->
+		<g id="link_admin_dataasee">
+			<path d="M328.6849,102.69 C322.6449,118.82 314.1649,136.14 302.6049,149.56 C289.0649,165.28 277.0822,174.1013 259.6622,183.3413 " fill="none" id="admin-to-dataasee" style="stroke:#181818;stroke-width:1.0;" />
+			<polygon fill="#181818" points="252.5949,187.09,261.068,185.9916,258.2565,180.6911,252.5949,187.09" style="stroke:#181818;stroke-width:1.0;" />
+			<text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="92" x="314.6049" y="145.6269">
+				Control (HTTP)
+			</text>
+		</g>
+		<!-- SRC=[NP2n3i8W48Ptdk8I5ntw0WvD6asZcqcx6OSJQ6nieJcelhuSKZJTVlY_2zyXaHGez8XEQzXClNd2LOWZ-eflXBW98GSxAt2QNhtKZkicvLZpz3t0uEnC2_2DV-FI6ZUFcc9zM0uCT8IZXewiyTeehkkKu_WKC6i0rTWRBYiE-M6MB8gop7Pxg2szUQljgMqlknMM5FTm7YTBFaDPZwdy7m4B8eJo1owUAwxHIFAHgMYxGiBIdkoGc0y0] -->
+	</g>
+</svg>

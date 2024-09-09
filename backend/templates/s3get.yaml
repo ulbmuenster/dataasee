@@ -1,0 +1,48 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+name: 's3get'
+type: 'processor'
+status: 'beta'
+summary: 'Runs ListObjects (GetBucket) and GetObject requests against an S3 server.'
+description: |
+  This processor template wraps a branch processor around an HTTP processor
+  for use with a simple storage service instance. For details see:
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListObjects.html
+  https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html
+categories:
+  - 'Integration'
+
+fields:
+  - name: 'url'
+    description: 'Metadata key holding full S3 URL.'
+    type: 'string'
+  - name: 'get'
+    description: 'Has to be "bucket" or "object".'
+    type: 'string'
+  - name: 'access'
+    description: 'Metadata key holding the S3 access key.'
+    type: 'string'
+  - name: 'secret'
+    description: 'Metadata key holding the S3 secret key.'
+    type: 'string'
+
+mapping: |
+  let get = match { this.get == "bucket" => "-1"
+                    this.get == "object" => "-2"
+                    _                    => throw("Unknown action!") }
+
+  root.branch.request_map = """root.url = metadata("%s")
+                               meta "Content-Type" = "application/octet-stream"
+                               meta "Date" = now().ts_format("Mon, 2 Jan 2006 15:04:05 -0700", "UTC")
+                               let sign = "GET\n\n" + @."Content-Type" + "\n" + @."Date" + "\n" + "/" + root.url.split("/").slice(%s).join("/")
+                               meta "Authorization" = "AWS " + metadata("%s") + ":" + $sign.hash("hmac_sha1",metadata("%s")).encode("base64")
+                            """.format(this.url,$get,this.access,this.secret)
+
+  root.branch.processors = [{}]
+
+  root.branch.processors.0.http.url = """${! this.url }"""
+  root.branch.processors.0.http.verb = "GET"
+  root.branch.processors.0.http.timeout = "30s"
+  root.branch.processors.0.http.metadata.include_patterns = ["Content-Type","Date","Authorization"]
+
+  root.branch.result_map = """root = content()"""

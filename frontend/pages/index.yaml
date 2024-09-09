@@ -1,0 +1,118 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Homepage
+id: "index"
+type: "PageSiderMenu"
+properties:
+  title:
+    _global: "title"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+  sider:
+    collapsible: false
+    initialCollapsed: false
+    hideToggleButton: true
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "search_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url: "/metadata"
+      method: "get"
+      params:
+        search:
+          _payload: "search_text"
+        skip:
+          _payload: "results_paging.skip"
+
+events:
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+areas:
+  content:
+    gutter: 16
+    justify: "center"
+    blocks:
+## Research-Data-Lake Card
+      - id: "content_card"
+        type: "Card"
+        blocks:
+## Research Data-Lake Title
+          - id: "main_logo"
+            type: "Img"
+            style:
+              text-align: "center"
+            properties:
+              src: "icon.svg"
+              height: 512
+          - id: "main_title"
+            type: "Title"
+            style:
+              text-align: "center"
+              margin-bottom: "5%"
+            properties:
+              content:
+                _global: "title"
+              level: 1
+## Full-Text-Search Textbox
+          - id: "search_text"
+            type: "TextInput"
+            required: true
+            validate:
+              - message: "Cannot be white-space only!"
+                pass:
+                  _regex: "[^\\s]+"
+            layout:
+              span: 12
+              align: "middle"
+              offset: 5
+            properties:
+              label:
+                disabled: true
+                extra: "Full-text search of metadata title, description and keywords. Use * as wildcard and _ to build phrases."
+              suffixIcon: "AiOutlineSearch"
+            events:
+              _ref: "templates/clear.yaml"
+## Full-Text-Search Button
+          - id: "enter_button"  # Do not change! This name is needed to trigger by pressing "Enter"
+            type: "Button"
+            layout:
+              span: 3
+            properties:
+              title: "Search"
+              icon: "AiFillRocket"
+            events:
+              onClick:
+                - id: "validate_query"
+                  type: "Validate"
+                - id: "clear_results"
+                  type: "SetState"
+                  params:
+                    results_list: []
+                - id: "clear_paging"
+                  type: "SetState"
+                  params:
+                    results_paging:
+                      skip: 0
+                - id: "submit_query"
+                  type: "Request"
+                  params: "search_request"
+                - _ref: "templates/update.yaml"
+## Results Card
+      - _ref: "templates/results.yaml"
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

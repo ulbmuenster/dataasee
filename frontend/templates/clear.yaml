@@ -1,0 +1,14 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# On Change clear results list and pagination
+onChange:
+  - id: "clear_results"
+    type: "SetState"
+    params:
+      results_list: []
+  - id: "clear_paging"
+    type: "SetState"
+    params:
+      results_paging:
+        skip: 0
+        total: 0
