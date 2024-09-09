@@ -11,3 +11,4 @@ include:
   - docs/arc42.md
   - docs/deps.md
   - docs/schema.md
+theme: slate
