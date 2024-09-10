@@ -53,7 +53,7 @@ $ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && docker compo
 * [Architecture Documentation](docs/arc42.md)
 * [Database Schema](docs/schema.md)
 * [OpenAPI Schema](api/openapi.yaml)
-* [`DatAasee`: A Metadata-Lake as Metadata Catalog for a Virtual Data-Lake]( TODO:) (Companion Paper, Open Access)
+* [`DatAasee`: A Metadata-Lake as Metadata Catalog for a Virtual Data-Lake](https://arxiv.org/abs/2409.05512) (Companion Paper, Open Access)
 
 ## Default Ports
 
