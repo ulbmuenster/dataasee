@@ -267,6 +267,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Mandatory Metadata"
+                      headerStyle:
+                        font-size: "large"
                     blocks:
 ## Title Textbox
                       - id: "title"
@@ -431,6 +433,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Optional Metadata"
+                      headerStyle:
+                        font-size: "large"
                     blocks:
 ## Alternative Titles
                       - id: "synonyms_wrapper"
@@ -578,42 +582,6 @@ areas:
                               _request: "schema_request.data.data.attributes.rights.comment"
                             extraStyle:
                               text-align: "right"
-## Project Identity
-                      - id: "project_wrapper"
-                        type: "Label"
-                        required: false
-                        properties:
-                          align: "right"
-                          span: 4
-                          title:
-                            _request: "schema_request.data.data.attributes.project.label"
-                          extra:
-                            _request: "schema_request.data.data.attributes.project.comment"
-                          extraStyle:
-                            text-align: "right"
-                        blocks:
-                          - id: "project_identity"
-                            type: "Card"
-                            blocks:
-                              - id: "project_name"
-                                type: "TextInput"
-                                layout:
-                                  span: 12
-                                properties:
-                                  label:
-                                    disabled: true
-                              - id: "project_span"
-                                type: "Span"
-                                layout:
-                                  span: 1
-                              - id: "project_uri"
-                                type: "TextInput"
-                                layout:
-                                  span: 11
-                                properties:
-                                  placeholder: "https://"
-                                  label:
-                                    disabled: true
 ## Fundings
                       - id: "fundings"
                         type: "Label"
@@ -733,6 +701,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Social Metadata"
+                      headerStyle:
+                        font-size: "large"
                     blocks:
 ## Categories
                       - id: "categories"
@@ -846,6 +816,8 @@ areas:
                   bordered: false
                   size: "small"
                   title: "Insert Help"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16
@@ -870,8 +842,7 @@ areas:
                               - **Version**
                               - **License**, a selection of a license ([SPDX identifier](https://spdx.org/licenses/)).
                               - **Rights**
-                              - **Project**, a pair of associated projection name and an optional website URL.
-                              - **Fundings**, a list of pairs of award identifier and funder name.
+                              - **Funding(s)**, a list of pairs of award identifier and funder name.
                               - **Description**
                               - **Message**
                               - **Link(s)**, a list of pairs of label and associated URL.

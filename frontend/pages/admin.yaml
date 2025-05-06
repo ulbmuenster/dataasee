@@ -121,6 +121,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Backup Database"
+                      headerStyle:
+                        font-size: "large"
                     areas:
                       content:
                         gutter: 16
@@ -145,6 +147,9 @@ areas:
                                   type: "SetState"
                                   params:
                                     operation: "backup_request"
+                                - id: "backup_focus"
+                                  type: "SetFocus"
+                                  params: "username_input"
                                 - id: "backup_stamp"
                                   type: "SetState"
                                   params:
@@ -188,6 +193,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Ingest Source"
+                      headerStyle:
+                        font-size: "large"
                     areas:
                       content:
                         gutter: 16
@@ -286,6 +293,9 @@ areas:
                                   type: "SetState"
                                   params:
                                     operation: "ingest_request"
+                                - id: "ingest_focus"
+                                  type: "SetFocus"
+                                  params: "username_input"
                                 - id: "ingest_stamp"
                                   type: "SetState"
                                   params:
@@ -322,6 +332,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Health Check"
+                      headerStyle:
+                        font-size: "large"
                     areas:
                       content:
                         gutter: 16
@@ -346,6 +358,9 @@ areas:
                                   type: "SetState"
                                   params:
                                     operation: "health_request"
+                                - id: "health_focus"
+                                  type: "SetFocus"
+                                  params: "username_input"
                                 - id: "health_stamp"
                                   type: "SetState"
                                   params:
@@ -412,8 +427,8 @@ areas:
                                   type: "null"
                                   on:
                                     _request: "health_request.data"
-## Database Listing
-                          - id: "database_listing"
+## Database Report
+                          - id: "database_report"
                             type: "Descriptions"
                             properties:
                               bordered: true
@@ -423,7 +438,7 @@ areas:
                                 _array.map:
                                   on:
                                     _object.entries:
-                                      _request: "health_request.data.data.attributes.database.units"
+                                      _request: "health_request.data.data.attributes.database.report"
                                   callback:
                                     _function:
                                       label:
@@ -471,6 +486,8 @@ areas:
                           bordered: false
                           size: "small"
                           title: "Admin Help"
+                          headerStyle:
+                            font-size: "large"
                         blocks:
                           - id: "admin_md"
                             type: "Markdown"
@@ -484,8 +501,8 @@ areas:
                                     - **Data Steward** is of maximal 4095 characters (required).
                                     - **Method** is protocol to be used for ingestion (required).
                                     - **Format** is the file format of the ingested metadata (required).
-                                    - **Username** or (access key) for the source (if needed).
-                                    - **Password** or (secret key) for the source (if needed).
+                                    - **Username** (or access key) for the source (if needed).
+                                    - **Password** (or secret key) for the source (if needed).
                                 * **Health**; returns processor and database liveness, as well as database health stats.
 
                       - id: "admin_detail"
@@ -526,6 +543,12 @@ areas:
         properties:
           title: "DatAasee Authorization"
           okText: "Submit"
+        events:
+          onClose:
+            - id: "modal_clear"
+              type: "SetState"
+              params:
+                password: ""
         areas:
           content:
             gutter: 16
@@ -558,7 +581,6 @@ areas:
                   label:
                     colon: false
                     disabled: true
-                  autoFocus: true
               - id: "password"
                 type: "PasswordInput"
                 required: true

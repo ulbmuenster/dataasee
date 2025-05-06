@@ -5,9 +5,10 @@
 ||||||||
 |           | Full-Text Search | in SQL         | via HTTP API   | Ready Probe       | via OAI-PMH    | Automatic        |
 |           | Facetted Search  | in Gremlin     | API Definition | Health Probe      | via S3         | Manual           |
-|           | Range-based      | in Cypher      | API Format     | Metrics           | as XML         |                  |
-|           | Sorted           | in MQL         |                |                   | in DataCite    |                  |
-|           | Quality-tested   | in SPARQL      |                |                   | in MODS        |                  |
-|           |                  | Schema Info    |                |                   | in MARC        |                  |
-|           |                  | CSV Export     |                |                   | in DC          |                  |
-|           |                  |                |                |                   | in RDF         |                  |
+|           | Range-based      | in Cypher      | API Format     | Metrics           | via GET        |                  |
+|           | Sorted           | in MQL         |                |                   | as XML         |                  |
+|           | Quality-tested   | in SPARQL      |                |                   | in DataCite    |                  |
+|           |                  | Schema Info    |                |                   | in DC          |                  |
+|           |                  | CSV Export     |                |                   | in MODS        |                  |
+|           |                  |                |                |                   | in MARC        |                  |
+|           |                  |                |                |                   | in LIDO        |                  |

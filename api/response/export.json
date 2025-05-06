@@ -1,27 +1,26 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "dataasee:api?response=export",
-    "title": "DatAasee Export Endpoint Response",
-    "type": "object",
-    "properties": {
+    
+    "title": "DatAasee Export Endpoint Response", "type": "object", "properties": {
 
-        "data": "TODO:",
+      "data": "TODO:",
 
-        "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-top-level", "properties": {
+      "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-top-level", "properties": {
 
-            "name": { "type": "string", "const": "DatAasee" },
+          "name": { "type": "string", "const": "DatAasee" },
 
-            "version": { "type": "string", "pattern": "^[1-9]*0?\\.[0-9]+" } },
+          "version": { "type": "string", "pattern": "^[1-9]*0?\\.[0-9]+" } },
 
-            "required": ["name", "version"] },
+          "required": ["name", "version"] },
 
-        "link": { "type": "object", "description": "", "properties": {
+      "link": { "type": "object", "description": "", "properties": {
 
-            "self": { "type": "string",  "description": "See: https://jsonapi.org/format/#document-top-level" },
+          "self": { "type": "string",  "description": "See: https://jsonapi.org/format/#document-top-level" },
 
-            "describedby": { "type": "string", "description": "See: https://jsonapi.org/format/#document-top-level" } },
+          "describedby": { "type": "string", "description": "See: https://jsonapi.org/format/#document-top-level" } },
 
-            "required": ["self", "describedby"] } },
+          "required": ["self", "describedby"] } },
 
-        "required": ["meta", "link"]
+      "required": ["meta", "link"]
 }

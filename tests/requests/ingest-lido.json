@@ -1,0 +1,6 @@
+{
+  "source": "http://host.docker.internal:9876/ingest-lido.xml",
+  "method": "get",
+  "format": "lido",
+  "steward": "little"
+}

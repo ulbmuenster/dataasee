@@ -28,6 +28,10 @@ GET http://localhost:8343/api/v1/attributes?type=languages
 
 ###
 
+GET http://localhost:8343/api/v1/sources
+
+###
+
 GET http://localhost:8343/api/v1/stats
 
 ###

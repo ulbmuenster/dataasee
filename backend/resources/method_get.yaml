@@ -1,0 +1,55 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'get'
+    try:
+      - http:
+          url: '${! metadata("ingest").source }'
+          verb: 'GET'
+
+      - xml:
+          operator: 'to_json'
+
+      - mapping: |  # Translate root children to array of objects with same top key
+          root = this.values().0.filter(x -> !x.key.has_prefix("-")).map_each(x -> x.value.array())
+          root = root.explode(root.keys().0)
+
+      - try:
+          - while:
+              check: 'this.length() > 0'
+              processors:
+                - mapping: 'meta block = [50,this.length()].min()'
+
+                - branch:
+                    request_map: 'root = this.slice(0,metadata("block"))'
+
+                    processors:
+                      - unarchive:
+                          format: 'json_array'
+
+                      - resource: 'formats'
+
+                      - resource: 'normalize'
+
+                      - resource: 'process'
+
+                      - archive:
+                          format: 'json_array'
+
+                      - label: 'get__arcadedb_command'
+                        arcadedb:
+                          host: '${DB_HOST}'
+                          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                          endpoint: 'command'
+                          database: '${DB_NAME}'
+                          username: '${DB_USER}'
+                          password: '${DB_PASS}'
+                          request: |
+                            root.language = "sqlscript"
+                            root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
+                          response: |
+                            root = this
+
+                    result_map: |
+                      root = root.slice(metadata("block"))
+                      meta count = metadata("count") + metadata("block")

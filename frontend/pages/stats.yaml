@@ -23,7 +23,7 @@ requests:
     properties:
       url: "/stats"
       method: "get"
-      timeout: 15000
+      timeout: 20000
 
 events:
   onMount:
@@ -70,12 +70,14 @@ areas:
                   bordered: false
                   size: "small"
                   title: "Top 10"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16
                     blocks:
-## Top Downloads (Bar)
-                      - id: "bar_downloads"
+## Top Views (Bar)
+                      - id: "bar_views"
                         type: "EChart"
                         layout:
                           span: 8
@@ -84,7 +86,7 @@ areas:
                             renderer: "svg"
                           option:
                             title:
-                              text: "Number of Downloads"
+                              text: "Number of Views"
                               left: "center"
                             xAxis:
                               type: "category"
@@ -93,7 +95,7 @@ areas:
                               data:
                                 _array.map:
                                   on:
-                                    _request: "stats_request.data.data.attributes.downloads"
+                                    _request: "stats_request.data.data.attributes.views"
                                   callback:
                                     _function:
                                       __args: "0.name"
@@ -104,7 +106,7 @@ areas:
                                 data:
                                   _array.map:
                                     on:
-                                      _request: "stats_request.data.data.attributes.downloads"
+                                      _request: "stats_request.data.data.attributes.views"
                                     callback:
                                       _function:
                                         __args: "0.value"
@@ -184,6 +186,8 @@ areas:
                   bordered: false
                   size: "small"
                   title: "Shares By"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16

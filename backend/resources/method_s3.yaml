@@ -3,11 +3,17 @@
 processor_resources:
   - label: 's3'
     try:
-      - s3get:
-          url: 'source'
+      - mapping: |
+          meta bucket = metadata("ingest").source
+          meta access = metadata("ingest").username
+          meta secret = metadata("ingest").password
+
+      - label: 's3__get_bucket'
+        s3get:
+          url: 'bucket'
           get: 'bucket'
-          access: 'user'
-          secret: 'pass'
+          access: 'access'
+          secret: 'secret'
 
       - xml:
           operator: 'to_json'
@@ -23,19 +29,22 @@ processor_resources:
 
       - try:
           - mapping: |
-              root.object = this.string()
-              meta object = metadata("source") + "/" + root.object
+              meta object = metadata("ingest").source + "/" + this.string()
 
-          - s3get:
+          - label: 's3__get_object'
+            s3get:
               url: 'object'
               get: 'object'
-              access: 'user'
-              secret: 'pass'
+              access: 'access'
+              secret: 'secret'
 
+          # TODO: enable understanding json
           - xml:
               operator: 'to_json'
 
-          - mapping: 'root = this.collection.explode("record")'
+          - mapping: |
+              root = this.values().0
+              root = root.map_each(x -> x.value.or(x).array()).explode(root.keys().0)
 
           - while:
               check: 'this.length() > 0'
@@ -58,7 +67,8 @@ processor_resources:
                       - archive:
                           format: 'json_array'
 
-                      - arcadedb:
+                      - label: 's3__arcadedb_command'
+                        arcadedb:
                           host: '${DB_HOST}'
                           port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
                           endpoint: 'command'
@@ -67,10 +77,18 @@ processor_resources:
                           password: '${DB_PASS}'
                           request: |
                             root.language = "sqlscript"
-                            root.command = this.fold("",x -> x.tally + "UPDATE metadata MERGE %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
+                            root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
                           response: |
                             root = this
 
                     result_map: |
                       root = root.slice(metadata("block"))
                       meta count = metadata("count") + metadata("block")
+
+                - sleep:
+                    duration: "1s"
+
+      - mapping: |
+          root = this
+          meta access = deleted()
+          meta secret = deleted()

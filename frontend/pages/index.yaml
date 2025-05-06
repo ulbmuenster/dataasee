@@ -25,13 +25,39 @@ requests:
     payload:
       _state: true
     properties:
-      url: "/metadata"
+      url:
+        _if:
+          test:
+            _eq:
+              - _payload: "results_paging"
+              - null
+          then: "metadata"
+          else:
+            _string.substring:
+              on:
+                _get:
+                  from:
+                    _payload: "results_paging"
+                  key: "url"
+              start:
+                _string.indexOf:
+                  on:
+                    _get:
+                      from:
+                        _payload: "results_paging"
+                      key: "url"
+                  searchValue: "metadata?"
       method: "get"
       params:
-        search:
-          _payload: "search_text"
-        skip:
-          _payload: "results_paging.skip"
+        _if:
+          test:
+            _eq:
+              - _payload: "results_paging"
+              - null
+          then:
+            search:
+              _payload: "search_text"
+          else: {}
 
 events:
   onMount:

@@ -1,0 +1,32 @@
+name,data
+Audiovisual,movingImage mov moving image
+Book,
+Book Chapter,chapter bookPart bookChapter
+Collection,col mix mixed material
+Computational Notebook,computationalNotebook
+Conference Paper,proceedings conferencePaper
+Conference Proceedings,conferenceProceedings
+Data Paper,dataPaper
+Data Set,dat dataset
+Dissertation,bachelorThesis masterThesis doctoralThesis
+Event,
+Image,stillImage img still image car cartographic
+Instrument,
+Interactive Resource,interactiveResource mul multimedia
+Journal,
+Journal Article,article journalArticle
+Model,
+Output Management Plan,outputManagementPlan
+Peer Review,review peerReview
+Physical Object,physicalObject art artifact tac tactile
+Poster,conferenceObject
+Preprint,workingPaper
+Report,
+Service,
+Software,
+Sound,aud audio
+Standard,
+Study Registration,
+Text,txt not notated music man manuscript
+Workflow,
+Other,patent contributionToPeriodical annotation lecture dig digital unk unspecified

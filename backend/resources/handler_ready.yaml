@@ -1,0 +1,47 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_ready'
+    processors:
+      - label: 'handler_ready__database_ready'
+        branch:
+          processors:
+            - try:
+                - http:
+                    url: 'http://${DB_HOST}:${DB_PORT}/api/v1/ready'
+                    verb: 'GET'
+
+                - mapping: 'root.ready = true'
+
+            - catch:
+                - mapping: 'root.ready = false'
+
+          result_map: 'root.database = this.ready'
+
+      - label: 'handler_ready__processor_ready'
+        branch:
+          processors:
+            - try:
+                - http:
+                    url: 'http://localhost:4195/ready'
+                    verb: 'GET'
+
+                - mapping: 'root.ready = true'
+
+            - catch:
+                - mapping: 'root.ready = false'
+
+          result_map: 'root.processor = this.ready'
+
+      - switch:
+          - check: 'this.database && this.processor'
+            processors:
+              - mapping: |
+                  root.data.type = "system"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes.ready = this.database && this.processor
+
+          - processors:
+              - mapping: |
+                  meta status = "503"
+                  root.errors = [ { "title": "Server Error: Service Unavailable", "detail": "Service not ready." } ]

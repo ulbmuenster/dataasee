@@ -2,17 +2,17 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dataasee:api?request=ingest",
 
-  "title": "DatAasee Ingest Endpoint Request", "type": "object", "required": ["source", "method", "format", "steward"], "properties": {
+  "title": "DatAasee Ingest Endpoint Request", "type": "object", "oneOf":[{ "maxProperties": 0 }, { "required": ["source", "method", "format", "steward"] }], "properties": {
 
     "source": { "type": "string", "title": "Source URL", "maxLength": 4095, "format": "uri" },
 
-    "method": { "type": "string", "title": "Harvest Protocol", "enum": ["oai-pmh","s3"] },
+    "method": { "type": "string", "title": "Harvest Protocol", "enum": ["oai-pmh","s3","get","dataasee"] },
 
-    "format": { "type": "string", "title": "Metadata Format", "enum": ["datacite","oai_datacite","dc","oai_dc","marc21","marcxml","mods","rawmods"] },
+    "format": { "type": "string", "title": "Metadata Format", "enum": ["datacite","oai_datacite","dc","oai_dc","lido","marc21","marcxml","mods","rawmods","dataasee"] },
 
     "steward": { "type": "string", "title": "Data Steward URL or Email", "maxLength": 4095 },
 
-    "username": { "type": "string", "title": "Username or Access Key", "maxLength": 255 },
+    "username": { "type": ["null","string"], "title": "Username or Access Key", "maxLength": 255 },
 
-    "password": { "type": "string", "title": "Password or Secret Key", "maxLength": 255 } }
+    "password": { "type": ["null","string"], "title": "Password or Secret Key", "maxLength": 255 } }
 }

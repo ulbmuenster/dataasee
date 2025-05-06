@@ -1,30 +1,31 @@
 ARG IMGREPO
 
+## Base Target
+
 FROM ${IMGREPO}node:20-alpine AS base
-
-LABEL maintainer="Christian Himpe (University of Münster)"
-
-RUN apk --no-cache upgrade
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 --spider http://frontend:3000 || exit 1
 
-ENV PORT 3000
+ENV PORT=3000
+
 
 ## Development Target:
 
 FROM base AS develop
 
-RUN corepack enable
+RUN npm install -g npm@latest corepack@latest
 
-USER node
+RUN corepack enable
 
 WORKDIR /lowdefy
 
+RUN chown node /lowdefy
+
+USER node
+
 ARG VERSION
 
-RUN pnpm add lowdefy@${VERSION}
-
-RUN pnpm add @lowdefy/server-dev@${VERSION}
+RUN pnpm add lowdefy@${VERSION} @lowdefy/server-dev@${VERSION}
 
 RUN mkdir -p .lowdefy/dev
 
@@ -68,9 +69,21 @@ RUN --mount=type=bind,source=./frontend,target=/yaml pnpx lowdefy@${VERSION} bui
 
 FROM base AS release
 
-USER root
+ARG DL_VERSION
 
-RUN apk --no-cache upgrade
+LABEL org.opencontainers.image.title="DatAasee: Frontend"
+
+LABEL org.opencontainers.image.version="${DL_VERSION}"
+
+LABEL org.opencontainers.image.licenses="MIT"
+
+LABEL org.opencontainers.image.url="https://github.com/ulbmuenster/dataasee"
+
+LABEL org.opencontainers.image.authors="Christian Himpe (University of Münster)"
+
+LABEL org.opencontainers.image.ref.name="dataasee"
+
+USER root
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 lowdefy

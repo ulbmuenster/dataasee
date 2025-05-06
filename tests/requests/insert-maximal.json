@@ -39,9 +39,6 @@
 
   "rights": "Free for all",
 
-  "project":
-    { "name": "Test project", "data": "http://test.project" },
-
   "fundings": [
     { "name": "ABCDEF", "data": "Funding Agency 1" },
     { "name": "FEDCBA", "data": "Funding Agency 2" }

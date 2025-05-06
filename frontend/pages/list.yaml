@@ -1,0 +1,260 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# Filter Catalog
+id: "list"
+type: "PageSiderMenu"
+properties:
+  title:
+    _string.concat:
+      - _global: "title"
+      - " | List"
+  header:
+    color:
+      _global: "color"
+  logo:
+    _global: "logo"
+layout:
+  contentJustify: "center"
+
+requests:
+  - _ref: "templates/ready.yaml"
+
+  - id: "sources_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    properties:
+      url: "/sources"
+      method: "get"
+
+  - id: "search_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _state: true
+    properties:
+      url:
+        _if:
+          test:
+            _eq:
+              - _payload: "results_paging"
+              - null
+          then: "metadata"
+          else:
+            _string.substring:
+              on:
+                _get:
+                  from:
+                    _payload: "results_paging"
+                  key: "url"
+              start:
+                _string.indexOf:
+                  on:
+                    _get:
+                      from:
+                        _payload: "results_paging"
+                      key: "url"
+                  searchValue: "metadata?"
+      method: "get"
+      params:
+        _if:
+          test:
+            _eq:
+              - _payload: "results_paging"
+              - null
+          then:
+            source:
+              _if_none:
+                - _payload: "source.name"
+                - ""
+            format:
+              _payload: "source.format"
+          else: {}
+
+events:
+  onInit:
+    - id: "sources_enter"
+      type: "Request"
+      params: "sources_request"
+
+  onMount:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
+
+    - id: "set_sort"
+      type: "SetState"
+      params:
+        sort: true
+
+areas:
+  content:
+    gutter: 16
+    blocks:
+## Page Title
+      - id: "heading"
+        type: "Title"
+        properties:
+          content: "List Records"
+          level: 1
+## General Filters Card
+      - id: "general_card"
+        type: "Card"
+        areas:
+          content:
+            gutter: 16
+            blocks:
+## Left Column
+              - id: "left"
+                type: "Box"
+                layout:
+                  span: 12
+                blocks:
+                  - id: "filter_card"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Select Source"
+                      headerStyle:
+                        font-size: "large"
+                    areas:
+                      content:
+                        gutter: 16
+                        blocks:
+## Source List:
+                          - id: "listx"
+                            type: "Descriptions"
+                            properties:
+                              colon: false
+                              items:
+                                _array.map:
+                                  on:
+                                    _request: "sources_request.data.data.attributes.sources"
+                                  callback:
+                                    _function:
+                                      span: 24
+                                      label: "•"
+                                      value:
+                                        __string.concat:
+                                          - __args: "0.name"
+                                          - " ("
+                                          - __if_none:
+                                              - __args: "0.format"
+                                              - "native"
+                                          - ") @ "
+                                          - __args: "0.date"
+## Source Filter:
+                          - id: "source"
+                            type: "Selector"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder: "Sources"
+                              options:
+                                _array.map:
+                                  on:
+                                    _request: "sources_request.data.data.attributes.sources"
+                                  callback:
+                                    _function:
+                                      label:
+                                        __string.concat:
+                                          - __args: "0.name"
+                                          - " ("
+                                          - __if_none:
+                                              - __args: "0.format"
+                                              - "native"
+                                          - ")"
+                                      value:
+                                        name:
+                                          __args: "0.name"
+                                        format:
+                                          __args: "0.format"
+
+                            events:
+                              _ref: "templates/clear.yaml"
+## Submit Button
+                          - id: "enter_button"  # Do not change! This name is needed to trigger by pressing "Enter"
+                            type: "Button"
+                            properties:
+                              block: true
+                              size: "large"
+                              title: "Search"
+                              icon: "AiFillRocket"
+                            events:
+                              onClick:
+                                - id: "clear_results"
+                                  type: "SetState"
+                                  params:
+                                    results_list: []
+                                - id: "clear_paging"
+                                  type: "SetState"
+                                  params:
+                                    results_paging:
+                                      skip: 0
+                                - id: "submit_query"
+                                  type: "Request"
+                                  params: "search_request"
+                                - _ref: "templates/update.yaml"
+## Right Column
+              - id: "list_help"
+                type: "Card"
+                layout:
+                  span: 12
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "List Help"
+                  headerStyle:
+                    font-size: "large"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "filter_md"
+                        type: "Markdown"
+                        properties:
+                          content: |
+                            The filter search returns a subset of metadata records determined by enumerated or numeric record properties.
+                            The background color of the result items indicate comprehensive (green), sufficient (yellow) or incomplete (red) metadata.
+
+                            * **Sources**: Filter by ingested source identifier.
+
+                      - id: "filter_detail"
+                        type: "Collapse"
+                        properties:
+                          defaultActiveKey: "none"
+                          panels:
+                            - key: "technically"
+                              title: "Technically"
+                        areas:
+                          technically:
+                            blocks:
+                              - id: "technically"
+                                type: "Markdown"
+                                properties:
+                                  content: |
+                                    1. The filter "Sources" is filled by the GET request:
+
+                                        ```
+                                        /api/v1/sources
+                                        ```
+                                    2. Clicking "Search" sends the GET request:
+
+                                        ```
+                                        /api/v1/metadata?source=x
+                                        ```
+                                       An empty `source` parameter means "all sources".
+
+                                    3. Paging forward or backwards in the results resends the GET request with an additional `page` parameter:
+
+                                        ```
+                                        /api/v1/metadata?source=x&page=y
+                                        ```
+## Results Card
+      - _ref: "templates/results.yaml"
+
+  sider:
+    _ref: "templates/sider.yaml"
+
+  footer:
+    _ref: "templates/footer.yaml"

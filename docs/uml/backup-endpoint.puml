@@ -16,7 +16,10 @@ Database
 
 ]
 
+database dst as "Backup" #line.dashed;
+
 endpoint <<-->> backend : "  HTTP Server (<b>/api/v1/backup</b>)"
 backend -->> database : "  HTTP Client (<b>/command</b>)"
+database -->> dst
 
 @enduml

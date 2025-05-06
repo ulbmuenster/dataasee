@@ -1,0 +1,48 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'enrich'
+    workflow:
+      order:
+        - - "doi"
+          - "quality"  # This is a reference to the "quality" resource
+        # - - "arxiv"  # TODO:
+      branches:
+        "doi":
+          request_map: 'root = if this.metadataQuality != "OK" { this } else { deleted() }'
+          processors:
+            - label: 'enrich_crossref_http'
+              branch:
+                request_map: |
+                  let doi_index = this.identifiers.find_by(x -> x.name == "doi")
+                  let doi = if $doi_index < 0 { null } else { this.identifiers.index($doi_index).data.trim_prefix("doi:").trim_prefix("https://doi.org/").trim_prefix("http://dx.doi.org/") }
+                  meta doi = $doi
+                  root = if $doi != null { "" } else { deleted() }
+                processors:
+                  - http:
+                      url: '${! "https://api.crossref.org/works/" + metadata("doi") }'
+                      verb: 'GET'
+                result_map: |
+                  root.name = this.message.title.0
+                  root.creators = this.message.author.map_each(x -> { "name": x.family + ", " + x.given,
+                                                                      "data": x.ORCID | deleted(),
+                                                                      "@type": "pair" })
+                  root.publisher = this.message.publisher
+                  root.publicationYear = this.message.published."date-parts".0.0.number()
+                  root.resourceType = match this.message.type { "journal-article" => "Journal Article",
+                                                                _ => deleted() }
+            - arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'query'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sql"
+                  root.command = """SELECT @rid FROM resourcetypes WHERE name ILIKE '%s' OR also.asString() MATCHES '(?i).*(%s).*'""".format(this.resourceType.or(""),this.resourceType.or(""))
+                response: |
+                  root.resourceType = this.result.0.resourceType | null
+
+          result_map: |
+            root = this.assign(root)

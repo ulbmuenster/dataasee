@@ -3,13 +3,14 @@
 name: "dataasee"
 
 networks:
-  "internal":
+  "persistence":
+  "application":
 
 secrets:
   "database":
-    file: "secrets/db_pass"
+    environment: "DB_PASS"
   "datalake":
-    file: "secrets/dl_pass"
+    environment: "DL_PASS"
 
 volumes:
   "backup":
@@ -27,11 +28,12 @@ services:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
-        IMGREPO: ${ORIGIN:-}
-        VERSION: $DB_VERSION
-        DB_NAME: $DB_NAME
+        IMGREPO: "${ORIGIN:-}"
+        VERSION: "$DB_VERSION"
+        DB_NAME: "$DB_NAME"
+        DL_VERSION: "$DL_VERSION"
       cache_from:
-        - "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+        - "$REGISTRY/$DL_REPO/database"
       context: "."
       dockerfile: "container/Dockerfile.db"
       tags:
@@ -52,14 +54,14 @@ services:
     image: "$REGISTRY/$DL_REPO/database:$DL_VERSION"
     init: true
     networks:
-      - "internal"
+      - "persistence"
     ports:
       - "2480:2480"
       - "9999:9999"
     restart: "unless-stopped"
     secrets:
       - "database"
-    stop_grace_period: "180s"
+    stop_grace_period: "200s"
     volumes:
       - "backup:/backup"
 
@@ -69,18 +71,17 @@ services:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
-        IMGREPO: ${ORIGIN:-}
-        VERSION: $BE_VERSION
-        DL_NAME: $DL_NAME
-        DL_VERSION: $DL_VERSION
+        IMGREPO: "${ORIGIN:-}"
+        VERSION: "$BE_VERSION"
+        DL_NAME: "$DL_NAME"
+        DL_VERSION: "$DL_VERSION"
         DL_PORT: "8343"
-        DL_PATH: $DL_PATH
-        DB_TYPE: "ArcadeDB"
+        DL_PATH: "$DL_PATH"
         DB_HOST: "database"
         DB_PORT: "2480"
-        DB_NAME: $DB_NAME
+        DB_NAME: "$DB_NAME"
       cache_from:
-        - "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
+        - "$REGISTRY/$DL_REPO/backend"
       context: "."
       dockerfile: "container/Dockerfile.be"
       tags:
@@ -99,14 +100,17 @@ services:
           memory: "1G"
     environment:
       TZ: "CET"
-      DL_BASE: ${DL_BASE-}
-      DL_USER: ${DL_USER-admin}
+      DL_BASE: "${DL_BASE-}"
+      DL_USER: "${DL_USER-admin}"
       DL_PASS: "/run/secrets/datalake"
       DB_PASS: "/run/secrets/database"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     image: "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
     init: true
     networks:
-      - "internal"
+      - "persistence"
+      - "application"
     ports:
       - "${DL_PORT-8343}:8343"
     restart: "unless-stopped"
@@ -123,11 +127,12 @@ services:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
-        IMGREPO: ${ORIGIN:-}
-        VERSION: $FE_VERSION
-        DL_PATH: $DL_PATH
+        IMGREPO: "${ORIGIN:-}"
+        VERSION: "$FE_VERSION"
+        DL_PATH: "$DL_PATH"
+        DL_VERSION: "$DL_VERSION"
       cache_from:
-        - "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
+        - "$REGISTRY/$DL_REPO/frontend"
       context: "."
       dockerfile: "container/Dockerfile.fe"
       tags:
@@ -145,7 +150,7 @@ services:
     image: "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
     init: true
     networks:
-      - "internal"
+      - "application"
     ports:
       - "${FE_PORT-8000}:3000"
     restart: "unless-stopped"

@@ -6,22 +6,25 @@ FROM ${IMGREPO}golang:latest AS builder
 
 ARG VERSION
 
-RUN wget https://github.com/redpanda-data/benthos/archive/refs/tags/v${VERSION}.tar.gz && tar -xf v${VERSION}.tar.gz
+RUN wget -q https://github.com/redpanda-data/benthos/archive/refs/tags/v${VERSION}.tar.gz \
+ && tar -xf v${VERSION}.tar.gz
 
 WORKDIR /go/benthos-${VERSION}
 
-RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"\n\t_ \"github.com/redpanda-data/connect/v4/public/components/prometheus\"";next}1' cmd/benthos/main.go | tee cmd/benthos/main.go
-RUN go get -u ./...
-RUN go mod tidy
-RUN go build -ldflags "-w -s -X github.com/redpanda-data/benthos/v4/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/benthos
+RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"\n\t_ \"github.com/redpanda-data/connect/v4/public/components/prometheus\"";next}1' cmd/benthos/main.go > cmd/benthos/temp.go && mv cmd/benthos/temp.go cmd/benthos/main.go
+RUN go mod tidy \
+ && go get -u ./... \
+ && go build -ldflags "-w -s -X github.com/redpanda-data/benthos/v4/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/benthos
+
 
 ## Development Target
 
 FROM ${IMGREPO}ubuntu:24.04 AS develop
 
-LABEL maintainer="Christian Himpe (University of Münster)"
-
-RUN apt-get update && apt-get upgrade -y && apt-get -y --no-install-recommends install tzdata wget ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update \
+ && apt-get -y --no-install-recommends install tzdata wget ca-certificates \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -m benthos
 
@@ -47,9 +50,6 @@ ENV DL_PORT=$DL_PORT
 ARG DL_PATH
 ENV DL_PATH=$DL_PATH
 
-ARG DB_TYPE
-ENV DB_TYPE=$DB_TYPE
-
 ARG DB_HOST
 ENV DB_HOST=$DB_HOST
 
@@ -59,7 +59,7 @@ ENV DB_PORT=$DB_PORT
 ARG DB_NAME
 ENV DB_NAME=$DB_NAME
 
-ENV DL_BASE=
+ENV DL_BASE=""
 
 ENV DB_USER=root
 
@@ -67,9 +67,24 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose
 
 ENTRYPOINT ./benthos -w -c "/yaml/dataasee.yaml" -t "/yaml/templates/*.yaml" -r "/yaml/resources/*.yaml"
 
+
 ## Release Target:
 
 FROM develop AS release
+
+ARG DL_VERSION
+
+LABEL org.opencontainers.image.title="DatAasee: Backend"
+
+LABEL org.opencontainers.image.version="${DL_VERSION}"
+
+LABEL org.opencontainers.image.licenses="MIT"
+
+LABEL org.opencontainers.image.url="https://github.com/ulbmuenster/dataasee"
+
+LABEL org.opencontainers.image.authors="Christian Himpe (University of Münster)"
+
+LABEL org.opencontainers.image.ref.name="dataasee"
 
 USER root
 

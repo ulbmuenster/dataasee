@@ -1,14 +1,12 @@
 # DatAasee Architecture Documentation
 
-**Version: 0.2**
+**Version: 0.3**
 
-The Metadata-Lake (MDL) **DatAasee** gathers research metadata and bibliographic
-data from a multitude of sources, associates them with underlying data-sets, and
-provides a HTTP API for access, that is utilized by a (prototype) web frontend.
-
-The main goal of the Metadata-Lake is to provision a one-stop shop for research
-data discovery at university libraries, research libraries, academic libraries,
-and scientific libraries.
+The principal goal of **DatAasee** is to provision a library-focussed one-stop
+shop for research data discovery and as a metadata hub.
+**DatAasee** is a Metadata-Lake (MDL) that aggregates and interconnects research
+metadata and bibliographic data from various data sources, and is interacted
+with via an HTTP API, which is prototypically utilized by a web front-end.
 
 **Sections:**
 
@@ -29,9 +27,9 @@ and scientific libraries.
 
 * Data Architecture: Data-Lake with Metadata Catalog
 * Software Architecture: 3-Tier Architecture
-  * Data-Tier Model: Graph of wide, denormalized one-big-table vertex
+  * Data-Tier Model: Wide, denormalized One-Big-Table (Graph)
   * Logic-Tier Type: Semantic layer
-  * Presentation-Tier Type: HTTP-API
+  * Presentation-Tier Type: HTTP-API (and Web-Frontend)
 
 --------------------------------------------------------------------------------
 
@@ -49,11 +47,12 @@ data-sets. The metadata-lake:
 * ... facilitates exports of data/metadata bundles to external repositories.
 * ... integrates with other services and processes.
 
-![Overview](images/overview.svg)
+![System Landscape](images/overview.svg)
 
 * The database is the core component (included)
 * The backend encapsulates the database and spans the API (included)
 * A frontend uses the API (optionally included)
+* All external and internal communication via HTTP
 * Imports of sources to the database via the backend (through the API)
 * Exports to services are triggered externally (through the API)
 * Consumers can interact (through the API)
@@ -110,9 +109,11 @@ data-sets. The metadata-lake:
 | Standard | Function
 |----------|---------
 | [DataCite](https://schema.datacite.org) | Core metadata vocabulary
-| [FRBR](https://en.wikipedia.org/wiki/Functional_Requirements_for_Bibliographic_Records) | Entity relationships
+| [OpenWEMI](https://www.dublincore.org/specifications/openwemi/specification/) | Entity relationships
 | [Fields of Science](https://en.wikipedia.org/wiki/Fields_of_Science_and_Technology) | Scientific classification
 | [SPDX License List](https://spdx.org/licenses/) | Software license names
+| [Creative Commons](https://creativecommons.org/) | License names
+| [RightsStatements.org](https://rightsstatements.org) | Copyright classification
 | [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) | Data and time formatting
 | [ISO 639-1](https://iso639-3.sil.org/) | Language name abbreviations
 | [DOI](https://doi.org) | Preferred resource identifier
@@ -121,6 +122,7 @@ data-sets. The metadata-lake:
 #### Documentation
 | Standard | Function
 |----------|---------
+| [Tech Stack Canvas](https://techstackcanvas.io/) | Product tech stack
 | [divio](https://documentation.divio.com/) | Software documentation structure
 | [arc42](https://docs.arc42.org) | Software architecture documentation
 | [yasql](https://github.com/aryelgois/yasql) | Database schema documentation
@@ -177,7 +179,7 @@ data-sets. The metadata-lake:
     * Storage not necessary since only metadata is handled, payload data referenced 
     * Web-Frontend uses HTTP API (prototype is included)
 * Declarative realization for high level of abstraction via:
-    * Internal Queries: [ArcadeDB SQL](https://docs.arcadedb.com/#SQL) (external queries may use various query languages)
+    * Internal Queries: [ArcadeDB SQL](https://docs.arcadedb.com/#sql) (external queries may use various query languages)
     * Processes: Configuration-based + [Bloblang](https://docs.redpanda.com/redpanda-connect/guides/bloblang/about/) (data mapping language)
 
 --------------------------------------------------------------------------------
@@ -190,9 +192,9 @@ data-sets. The metadata-lake:
 
 #### DatAasee
 
-* Imports metadata from source systems (DB) via pull
-* Provides API to interact with metadata (endpoints)
-* Exports metadata to other services (triggered via endpoints)
+* Imports metadata from source systems via pull
+* Provides API to interact with metadata via endpoints
+* Exports metadata to other services triggered via endpoints
 
 #### Source Databases (External)
 
@@ -242,7 +244,7 @@ data-sets. The metadata-lake:
 
 ![Backend](images/backend-container.svg)
 
-* The HTTP API endpoints are setup
+* API schemas are deposited
 * Custom configurable components (templates) are defined
 * Reusable fixed components (resources) are defined
 
@@ -258,85 +260,97 @@ data-sets. The metadata-lake:
 
 ## 6. Runtime View
 
-### Processes
+### System Endpoints
 
-#### `/ready` Endpoint
-
-![Ready Endpoint](images/ready-endpoint.svg)
-
-See [`ready` endoint docu](docs.md#ready-endpoint).
-
----
-
-#### `/api` Endpoint
+#### `/api` Endpoint (Public)
 
 ![API Endpoint](images/api-endpoint.svg)
 
-See [`api` endoint docu](docs.md#api-endpoint).
+See `api` [endoint docu](docs.md#api-endpoint) and [source file](../backend/resources/handler_api.yaml).
 
 ---
 
-#### `/schema` Endpoint
+#### `/ready` Endpoint (Public)
 
-![Schema Endpoint](images/schema-endpoint.svg)
+![Ready Endpoint](images/ready-endpoint.svg)
 
-See [`schema` endoint docu](docs.md#schema-endpoint).
-
----
-
-#### `/attributes` Endpoint
-
-![Attributes Endpoint](images/attributes-endpoint.svg)
-
-See [`attributes` endoint docu](docs.md#attributes-endpoint).
+See `ready` [endoint docu](docs.md#ready-endpoint) and [source file](../backend/resources/handler_ready.yaml).
 
 ---
 
-#### `/stats` Endpoint
-
-![Stats Endpoint](images/stats-endpoint.svg)
-
-See [`stats` endoint docu](docs.md#stats-endpoint).
-
----
-
-#### `/metadata` Endpoint
-
-![Metadata Endpoint](images/metadata-endpoint.svg)
-
-See [`metadata` endoint docu](docs.md#metadata-endpoint).
-
----
-
-#### `/insert` Endpoint
-
-![Insert Endpoint](images/insert-endpoint.svg)
-
-See [`insert` endoint docu](docs.md#insert-endpoint).
-
----
-
-#### `/ingest` Endpoint
-
-![Ingest Endpoint](images/ingest-endpoint.svg)
-
-See [`ingest` endoint docu](docs.md#ingest-endpoint).
-
----
-
-#### `/backup` Endpoint
-
-![Backup Endpoint](images/backup-endpoint.svg)
-
-See [`backup` endoint docu](docs.md#backup-endpoint).
-
----
-
-#### `/health` Endpoint
+#### `/health` Endpoint (Private)
 
 ![Health Endpoint](images/health-endpoint.svg)
 
-See [`health` endoint docu](docs.md#health-endpoint).
+See `health` [endoint docu](docs.md#health-endpoint) and [source file](../backend/resources/handler_health.yaml).
+
+---
+
+#### `/backup` Endpoint (Private, External Write)
+
+![Backup Endpoint](images/backup-endpoint.svg)
+
+See `backup` [endoint docu](docs.md#backup-endpoint) and [source file](../backend/resources/handler_backup.yaml).
+
+---
+
+#### `/ingest` Endpoint (Private, External Read)
+
+![Ingest Endpoint](images/ingest-endpoint.svg)
+
+See `ingest` [endoint docu](docs.md#ingest-endpoint) and [source file](../backend/resources/handler_ingest.yaml).
+
+---
+
+### Metadata Endpoints
+
+#### `/schema` Endpoint (Public, Cached)
+
+![Schema Endpoint](images/schema-endpoint.svg)
+
+See `schema` [endoint docu](docs.md#schema-endpoint) and [source file](../backend/resources/handler_schema.yaml).
+
+---
+
+#### `/attributes` Endpoint (Public, Cached)
+
+![Attributes Endpoint](images/attributes-endpoint.svg)
+
+See `attributes` [endoint docu](docs.md#attributes-endpoint) and [source file](../backend/resources/handler_attributes.yaml).
+
+---
+
+### Data Endpoints
+
+#### `/stats` Endpoint (Public, Cached)
+
+![Stats Endpoint](images/stats-endpoint.svg)
+
+See `stats` [endoint docu](docs.md#stats-endpoint) and [source file](../backend/resources/handler_stats.yaml).
+
+---
+
+#### `/sources` Endpoint (Public, Cached)
+
+![Sources Endpoint](images/sources-endpoint.svg)
+
+See `sources` [endoint docu](docs.md#sources-endpoint) and [source file](../backend/resources/handler_sources.yaml).
+
+---
+
+#### `/metadata` Endpoint (Public)
+
+![Metadata Endpoint](images/metadata-endpoint.svg)
+
+See `metadata` [endoint docu](docs.md#metadata-endpoint) and [source file](../backend/resources/handler_metadata.yaml).
+
+---
+
+#### `/insert` Endpoint (Private)
+
+![Insert Endpoint](images/insert-endpoint.svg)
+
+See `insert` [endoint docu](docs.md#insert-endpoint) and [source file](../backend/resources/handler_insert.yaml).
 
 --------------------------------------------------------------------------------
 
@@ -381,6 +395,24 @@ See [`compose.yaml`](../compose.yaml) for deployment details.
 | Status       | ...
 | Decision     | ...
 | Consequences | ...
+
+| 2025-04-11   | Title
+|--------------|-------
+| Status       | Approved
+| Decision     | Minimize database response post-processing.
+| Consequences | Shift transformation workload to ArcadeDB.
+
+| 2024-12-03   | Simplified API Definition
+|--------------|---------------------------
+| Status       | Approved
+| Decision     | Use `api.csv` as ground truth for API definition.
+| Consequences | The API definition is better parseable and more complete; furthermore the OpenAPI file is now dependent on the `api.csv`.
+
+| 2024-10-23   | Title
+|--------------|-------
+| Status       | Approved
+| Decision     | Base containers for database and backend are the current Ubuntu LTS (ie: 24.04).
+| Consequences | Full `libc` support compared to Alpine and obvious release date and support horizon from version number compared to Debian.
 
 | 2024-07-04   | Indirect Processor Dependency Updates
 |--------------|---------------------------------------
@@ -466,25 +498,25 @@ See [`compose.yaml`](../compose.yaml) for deployment details.
 
 ### 10.1 Quality Requirements
 
-| Quality Category       | Quality          | ID | Description
-|------------------------|------------------|----|-------------
-| Functional Suitability | Appropriateness  | F0 | DatAasee should fulfill the expected overall functionality.
-| Transferability        | Installability   | T0 | Installation should work in various container-based environments.
-| Compatibility          | Interoperability | C0 | The available protocols (and format parsers) should fit the most common systems.
-| Operability            | Ease of Use      | O0 | The API should be self-describing, well documented, and following standards and best practices.
-| Maintainability        | Modularity       | M0 | New protocols, format parsers or other pipelines should be implementable without too much effort.
-| Maintainability        | Reusability      | M1 | The protocol and format parser codes serve as sample and documentation.
+| Quality Category           | Quality              | ID     | Description
+|----------------------------|----------------------|--------|-------------
+| **Functional Suitability** | **Appropriateness**  | **F0** | **DatAasee should fulfill the expected overall functionality.**
+| Transferability            | Installability       |   T0   | Installation should work in various container-based environments.
+| Compatibility              | Interoperability     |   C0   | The available protocols (and format parsers) should fit the most common systems.
+| Operability                | Ease of Use          |   O0   | The API should be self-describing, well documented, and following standards and best practices.
+| Maintainability            | Modularity           |   M0   | New protocols, format parsers or other pipelines should be implementable without too much effort.
+| Maintainability            | Reusability          |   M1   | The protocol and format parser codes serve as sample and documentation.
 
 ### 10.2 Quality Scenarios
 
-| ID | Scenario
-|----|----------
-| F0 | Stakeholder project evaluation
-| T0 | Setup of DatAasee by a new operator
-| C0 | Ingesting from a new source system
-| O0 | User and (downstream) developer API Usage
-| M0 | Extending the compatibility to new systems
-| M1 | Development of a follow-up project to DatAasee
+| ID     | Scenario
+|--------|----------
+| **F0** | **Stakeholder project evaluation**
+|   T0   | Setup of DatAasee by a new operator
+|   C0   | Ingesting from a new source system
+|   O0   | User and (downstream) developer API Usage
+|   M0   | Extending the compatibility to new systems
+|   M1   | Development of a follow-up project to DatAasee
 
 ----------------------------------------------------------------------------------
 
@@ -493,6 +525,7 @@ See [`compose.yaml`](../compose.yaml) for deployment details.
 | Risk | Description | Mitigation 
 |------|-------------|------------
 | DBMS project might cease | [`ArcadeDB`](https://github.com/ArcadeData/arcadedb) is a small project which has small-project risks | However, `ArcadeDB` is derived from [`OrientDB`](https://github.com/orientechnologies/orientdb), which could be a replacement (but not drop-in).
+| Processor dependency hell | [`Benthos`](https://github.com/redpanda-data/benthos) has many dependencies. | Consider rewrite with minimal dependencies.
 | Processor project might complicate | [`Benthos`](https://github.com/redpanda-data/benthos) was acquired by "Red Panda" who may change its license or of the [connectors](https://github.com/redpanda-data/connect) | Using hard fork [`bento`](https://github.com/warpstreamlabs/bento) or self-maintain.
 
 --------------------------------------------------------------------------------

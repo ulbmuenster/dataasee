@@ -1,0 +1,6 @@
+{
+  "source": "http://host.docker.internal:9876/ingest-get-enrich.xml",
+  "method": "get",
+  "format": "datacite",
+  "steward": "little"
+}

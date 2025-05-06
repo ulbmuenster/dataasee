@@ -1,0 +1,60 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'self'
+    while:
+      at_least_once: true
+      max_loops: 0
+      check: 'metadata("page") != null'
+      processors:
+        - try:
+            - http:
+                url: '${! metadata("ingest").source + "/api/v1/metadata?source=%25&format=%25&page=" + metadata("page").or(0).string() }'
+                verb: 'GET'
+                timeout: '10s'
+                retries: 3
+
+            - mapping: 'root = this.data'
+
+            - unarchive:
+                format: 'json_array'
+
+            - mapping: 'root = this.attributes'
+
+            - try:
+                - mapping: 'meta sourceid = this.recordId'
+
+                - mapping: 'root = this'
+
+                - resource: 'normalize'
+
+                - resource: 'process'
+
+            - catch:
+                - log:
+                    message: |
+                      ${! error() + " : " + this.with("raw").format_json(no_indent: true).string().replace_all("\"","'") }
+
+            - archive:
+                format: 'json_array'
+
+            - mapping: |
+                meta page = if this.length() < 100 { null } else { metadata("page").or(0) + 1 }
+                meta count = metadata("count") + this.length()
+                root = this
+
+            - label: 'oai_pmh__arcadedb_command'
+              arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'command'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sqlscript"
+                  root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
+                response: |
+                  root = {}
+
+        - catch: []

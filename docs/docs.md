@@ -1,6 +1,6 @@
 # DatAasee Software Documentation
 
-**Version: 0.2**
+**Version: 0.3**
 
 **DatAasee** is a [metadata-lake](#about)
 for centralizing bibliographic metadata and scientific metadata from various sources,
@@ -8,9 +8,10 @@ to increase research data findability and discoverability, as well as metadata a
 and thus supporting [FAIR](https://www.go-fair.org/fair-principles) research and research reporting
 in university libraries, research libraries, academic libraries or scientific libraries.
 
-Particularly, **DatAasee** is developed for and by the [University and State Library of Münster](https://ulb.uni-muenster.de).
+Particularly, **DatAasee** is developed for and by the [University and State Library of Münster](https://ulb.uni-muenster.de),
+but available openly under an free and open-source license.
 
-**Sections:**
+**Table of Contents:**
 
 * [Explanations](#explanations)
 * [How-Tos](#how-tos)
@@ -23,6 +24,8 @@ Particularly, **DatAasee** is developed for and by the [University and State Lib
 * [How to Deploy](#deploy)
 * [HTTP-API Reference](#http-api)
 * [Schema Reference](#native-schema)
+* [Runtime Configuration](#runtime-configuration)
+* [Development FAQ](#development-decision-rationales)
 
 --------------------------------------------------------------------------------
 
@@ -63,14 +66,18 @@ In this section **understanding-oriented** explanations are collected.
       and transformations are performed on the raw or catalog metadata upon request.
 * How does a metadata-lake relate to a **virtual data-lake**?
     - A metadata-lake can act as a central metadata catalog for a set of distributed data sources and thus define a virtual data-lake.
+* How does a metadata-lake relate to **data spaces**?
+    - A data space is a set of (meta)data sources, their interrelations, best-effort interpretation, as-needed integration, and a uniform interface for access.
+      In this sense the metadata-lake DatAasee can span a data space.
 
 ### Features
 
-* **Search via:** full-text, filter, [SRU]
-* **Query by:** `SQL`, `Gremlin`, `Cypher`, `MQL`, `GraphQL`, [SPARQL]
-* **Ingest:** `DataCite` (XML), `DC` (XML), `MARC` (XML), `MODS` (XML), [LIDO], [EAD], [DCAT], [RDF]
-* **Ingest via:** `OAI-PMH` (HTTP), `S3` (HTTP), [GraphQL], [Postgres], [Self]
-* **Deploy via**: `Docker`, `Podman`, [Kubernetes]
+* **Search via:** full-text, facet-filter
+* **Query by:** `SQL`, `Gremlin`, `Cypher`, `MQL`, [`GraphQL`], [`SPARQL`]
+* **Ingest:** `DataCite` (XML), `DC` (XML), `LIDO` (XML), `MARC` (XML), `MODS` (XML)
+* **Ingest via:** `OAI-PMH` (HTTP), `S3` (HTTP), `GET` (HTTP), Self (HTTP), [`GraphQL` (HTTP)]
+* **Deploy via**: `Docker`, `Podman`, `Kubernetes`
+<!-- **Export as:** [`BibJSON` (JSON)] -->
 * REST-like API with CQRS aspects
 * Best-of statistics of enumerated properties
 * CRUD frontend for manual interaction and observation.
@@ -78,20 +85,20 @@ In this section **understanding-oriented** explanations are collected.
 ### Components
 
 **DatAasee** uses a [three-tier architecture](https://en.wikipedia.org/wiki/Multitier_architecture#Three-tier_architecture)
-with these separately containered components:
+with these separately containered components and orchestrated by [Compose](https://compose-spec.io):
 
-| Function         | Abstraction                      | Tier         | Product
-|------------------|----------------------------------|--------------|----------------------------------
-| Metadata Catalog | Multi-Model Database             | Data         | [ArcadeDB](https://arcadedb.com)
-| EtLT Processor   | Declarative Streaming Processor  | Logic        | [Benthos](https://github.com/redpanda-data/benthos)
-| Web Frontend     | Declarative Web Framework        | Presentation | [Lowdefy](https://lowdefy.com)
+| Function         | Abstraction                      | Tier                    | Product
+|------------------|----------------------------------|-------------------------|----------------------------------
+| Metadata Catalog | Multi-Model Database             | Data (Database)         | [ArcadeDB](https://arcadedb.com)
+| EtLT Processor   | Declarative Streaming Processor  | Logic (Backend)         | [Benthos](https://github.com/redpanda-data/benthos)
+| Web Frontend     | Declarative Web Framework        | Presentation (Frontend) | [Lowdefy](https://lowdefy.com)
 
 ### Design
 
 * Each component is encapsulated in its own container.
-* External access happens through an HTTP API transporting JSON and conforming to [JSON:API](https://jsonapi.org).
-* Ingests may happen via compatible protocols, e.g. `OAI-PMH`, `S3`.
-* The frontend is optional as it is exclusively using the (external) HTTP-API.
+* External access is provided through an HTTP API transporting JSON and conforming to [JSON:API](https://jsonapi.org).
+* Ingests may happen via compatible protocols, e.g. `OAI-PMH`, `S3`, `HTTP-GET`.
+* The frontend is optional as it is exclusively using the (backend) HTTP-API.
 * Internal communication happens via the components' HTTP-APIs.
 * Only the database component holds state, the backend (and frontend) are stateless.
 * For more details see the [architecture documentation](arc42.md).
@@ -100,18 +107,19 @@ with these separately containered components:
 
 The internal data model is based on the one big table (OBT) approach, but with
 the exception of linked enumerated dimensions (Look-Up tables) making it
-effectively an denormalized wide table with star schema, named `metadata`.
+effectively a denormalized wide table with star schema.
+Specifically, the type (table) is named `metadata`.
 
 ### EtLT Process
 
-Combining the ETL (Extract-Transform-Load / schema-on-write)
-and ELT (Extract-Load-Transform / schema-on-read) concepts,
-processing is built upon the EtLT approach:
+Combining the **ETL** (Extract-Transform-Load / schema-on-write)
+and **ELT** (Extract-Load-Transform / schema-on-read) concepts,
+processing is built upon the **EtLT** approach:
 
 * **E**xtract: Ingest from data source, see [ingest endpoint](#ingest-endpoint).
-* **t**ransform: Partial parsing and cleaning.
-* **L**oad: Write to database.
-* **T**ransform: Parse to export format on-demand.
+* **t**ransform: Partial parsing and cleaning of ingested data.
+* **L**oad: Write raw and transformed data to database.
+* **T**ransform: Export to format on-demand.
 
 Particularly, this means "EtL" happens (batch-wise) during ingest, while "T" occurs when requested.
 
@@ -120,16 +128,16 @@ Particularly, this means "EtL" happens (batch-wise) during ingest, while "T" occ
 **Secrets**:
 
 * Two secrets need to be handled: _database_ admin and _datalake_ admin passwords.
-* The default _datalake_ admin user name is `admin`, the password can be passed during initial deploy.
-* The _database_ admin user name is `root`, the password can be passed during initial deploy.
-* The passwords are handled as file-based secrets by the deploying compose file (loaded from a file and provided to containers as a file).
-* The database credentials are used by the backend and may be used for manual database access.
-* If the secrets are kept on the host, they need to be protected, for example via `openssl`, `SOPS`, or similar tools.
+* The default _datalake_ admin user name is `admin`, the password can be passed during initial deploy, there is no default password.
+* The _database_ admin user name is `root`, the password can be passed during initial deploy, there is no default password.
+* These passwords are handled as secrets by the deploying compose file (loaded from an environment variable and provided to containers as a file).
+* The database credentials are used by the backend and may also be used for manual database access.
+* If the secrets are kept on the host, they need to be protected, see [Secret Management](#secret-management).
 
 **Infrastructure**:
 
 * Component containers are custom-build and hardened.
-* Only `HTTP` and `Basic Authentication` are used, as it is assumed that `HTTPS` is provided by a user-provided proxy-server. 
+* Only `HTTP` and `Basic Authentication` are used, as it is assumed that `HTTPS` is provided by an operator-provided proxy-server. 
 
 **Interface**:
 
@@ -147,8 +155,9 @@ In this section, **step-by-step guides** for real-world problems are listed.
 
 * [Prerequisite](#prerequisite)
 * [Resources](#resources)
+* [Using DatAasee](#using-dataasee)
 * [Deploy](#deploy)
-* [Test](#test)
+* [Probe](#probe)
 * [Shutdown](#shutdown)
 * [Ingest](#ingest)
 * [Backup Manually](#backup-manually)
@@ -160,16 +169,15 @@ In this section, **step-by-step guides** for real-world problems are listed.
 
 ### Prerequisite
 
-The (virtual) machine deploying **DatAasee** requires [`docker-compose`](https://docs.docker.com/compose/install/),
-or [`podman-compose`](https://github.com/containers/podman-compose).
-See also the [container engine compatibility](#container-engines).
+The (virtual) machine deploying **DatAasee** requires [`docker-compose`](https://docs.docker.com/compose/install/)
+on top of `docker` or `podman`, see also the [container engine compatibility](#container-engines).
 
 ### Resources
 
 The compute and memory resources for **DatAasee** can be configured via the `compose.yaml`.
 Overall, a bare-metal machine or virtual machine requires:
 
-* _Minimum:_ 2 CPU, 4G RAM
+* _Minimum:_ 4 CPU, 4G RAM
 * _Recommended:_ 4 CPU, 8G RAM
 
 So, a Raspberry Pi would be sufficient.
@@ -189,27 +197,47 @@ Note, that resource and system requirements depend on load,
 particularly, database and backend are under heavy load during ingest.
 Post ingest, (new) metadata records are interrelated, also causing heavy database loads.
 Generally, the _database_ drives the overall performance.
-Thus to improve performance, try first to increase memory for the database component (i.e. 4G to 8G).
+Thus, to improve performance, try first to increase the memory `limits` (in the `compose.yaml`)
+for the database component (i.e. from 4G to 6G).
+
+### Using DatAasee
+
+In this section the terms "operator" and "user" are utilized,
+where "operator" refers to the party installing, serving and maintaining DatAasee,
+and "user" refers to the individuals reading from DatAasee.
+
+**Operator Activities**
+
+* Updating DatAasee
+* Ingesting from external sources
+* Database Backups
+
+**User Activities**
+
+* Metadata queries (schema, enumeration)
+* Data queries (data)
+* Custom queries
+
+This means the user can only use the `GET` API endpoints, while the operator also uses the `POST` API endpoints.
+
 
 ### Deploy
 
 ```shell
 $ mkdir -p backup  # or: ln -s /path/to/backup/volume backup
-$ wget https://raw.githubusercontent.com/ulbmuenster/dataasee/0.2/compose.yaml
-$ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && docker compose up -d; rm -f dl_pass db_pass; history -d $(history 1)
+$ wget https://raw.githubusercontent.com/ulbmuenster/dataasee/0.3/compose.yaml
+$  DB_PASS=password1 DL_PASS=password2 docker compose up -d
 ```
 
-> **NOTE:** The required secrets are kept temporary in the files `dl_pass` and `db_pass`.
+> **NOTE:** The required secrets are kept in the temporary environment variables `DL_PASS` and `DB_PASS`,
+            the leading space in the line starting docker compose omits this command from the history.
 
-> **NOTE:** Make sure to delete (or encrypt) secret files `dl_pass` and `db_pass` after use!
+> **NOTE:** To further customize your deploy, use [these environment variables](#runtime-configuration).
+            The runtime configuration environment variables can be stored in an `.env` file.
 
-> **NOTE:** To customize your deploy, use [these environment variables](#runtime-configuration).
+> **WARNING**: Do not put secrets into the `.env` file!
 
-> **NOTE:** The runtime configuration environment variables can be stored in an `.env` file.
-
-> **NOTE:** A custom backup location can alternatively also be specified inside the `compose.yaml`.
-
-### Test
+### Probe
 
 ```shell
 wget -SqO- http://localhost:8343/api/v1/ready
@@ -220,7 +248,7 @@ wget -SqO- http://localhost:8343/api/v1/ready
 ### Shutdown
 
 ```shell
-$ docker-compose down
+$ docker compose down
 ```
 
 > **NOTE:** A (database) backup is automatically triggered on every shutdown.
@@ -228,7 +256,7 @@ $ docker-compose down
 ### Ingest
 
 ```shell
-$ wget -O- http://localhost:8343/api/v1/ingest --user admin --ask-password --post-data \
+$ wget -qO- http://localhost:8343/api/v1/ingest --user admin --ask-password --post-data \
   '{"source":"https://my.url/to/oai","method":"oai-pmh","format":"mods","steward":"https://my.url/identifying/steward"}'
 ```
 
@@ -237,21 +265,24 @@ $ wget -O- http://localhost:8343/api/v1/ingest --user admin --ask-password --pos
 ### Backup Manually
 
 ```shell
-$ wget -O- http://localhost:8343/api/v1/backup --user admin --ask-password --post-data=''
+$ wget -qO- http://localhost:8343/api/v1/backup --user admin --ask-password --post-data=
 ```
+
+> **NOTE:** A custom backup location can alternatively also be specified inside the `compose.yaml`.
 
 ### Logs
 
 ```shell
-$ docker-compose logs backend
+$ docker compose logs backend --no-log-prefix
 ```
+
+> **NOTE:** For better readability the log output can be piped through `grep -E --color '^([^\s]*)\s|$` highlighting the text before the first whitespace, which corresponds to the log-level in the DatAasee logs.
 
 ### Update
 
 ```shell
-$ docker compose down
 $ docker compose pull
-$ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && docker compose up -d; rm -f dl_pass db_pass; history -d $(history 1)
+$  DB_PASS=password1 DL_PASS=password2 docker compose up -d
 ```
 
 > **NOTE:** "Update" means: if available, new images of the same DatAasee version but updated dependencies
@@ -261,19 +292,29 @@ $ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && docker compo
 
 ```shell
 $ docker compose down
-$ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && DL_VERSION=0.3 docker compose up -d; rm -f dl_pass db_pass; history -d $(history 1)
+$  DB_PASS=password1 DL_PASS=password2 DL_VERSION=0.3 docker compose up -d
 ```
 
-> **NOTE:** `docker-compose restart` cannot be used here because environment
+> **NOTE:** `docker compose restart` cannot be used here because environment
             variables (such as `DL_VERSION`) are not updated when using restart.
 
 > **NOTE:** Make sure to put the `DL_VERSION` variable also into the `.env` file for a permanent upgrade.
 
+### Reset
+
+```shell
+$ docker compose restart
+```
+
+> **NOTE**: A reset may become necessary if, for example, the backend crashes during an ingest; a database backup is created during a reset, too.
+
 ### Web Interface (Prototype)
 
-> **NOTE:** The default port for the web frontend is `8000` for development and `80` for deployment.
+> **NOTE:** The default port for the web frontend is `80` for a production deployment and `8000` in the development environment.
 
 ![Index Screenshot](images/web_index.png "Index Screenshot")
+
+![List Screenshot](images/web_list.png "List Screenshot")
 
 ![Filter Screenshot](images/web_filter.png "Filter Screenshot")
 
@@ -291,7 +332,7 @@ $ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && DL_VERSION=0
 
 ### API Indexing
 
-Add the JSON object inside to the `apis` array in your global [`apis.json`](http://apisjson.org) API index.
+Add the JSON object below to the `apis` array in your global [`apis.json`](http://apisjson.org):
 
 ```json
 {
@@ -303,11 +344,26 @@ Add the JSON object inside to the `apis` array in your global [`apis.json`](http
   "properties": [
     {
       "type": "InterfaceLicense",
-      "url": "https://spdx.org/licenses/MIT.html"
+      "url": "https://creativecommons.org/licenses/by/4.0/"
     },
     {
       "type": "x-openapi",
       "url": "http://your-dataasee.url/api/v1/api"
+    }
+  ]
+}
+```
+
+For [FAIRiCat](https://signposting.org/FAIRiCat/), add the JSON object below to the `linkset` array:
+
+```json
+{
+  "anchor": "http://your-dataasee.url/api/v1",
+  "service-doc": [
+    {
+      "href": "http://your-dataasee.url/api/v1/api",
+      "type": "application/json",
+      "title": "DatAasee API"
     }
   ]
 }
@@ -333,31 +389,32 @@ In this section **technical descriptions** are summarized.
 
 ### HTTP-API
 
-The HTTP-API is served under `http://<your-url-here>/api/v1` and provides the following endpoints:
+The HTTP-API is served under `http://<your-url-here>/api/v1` (see [`DL_BASE`](#runtime-configuration)) and provides the following endpoints:
 
 | Method | Endpoint                              | Type     | Summary
 |--------|---------------------------------------|----------|---------
-| `GET`  | [`/ready`](#ready-endpoint)           | system   | Return service status
-| `GET`  | [`/api`](#api-endpoint)               | special  | Return API specification and schemas
-| `GET`  | [`/schema`](#schema-endpoint)         | metadata | Return database schema
-| `GET`  | [`/attributes`](#attributes-endpoint) | metadata | Return enumerated properties
-| `GET`  | [`/stats`](#stats-endpoint)           | data     | Return statistics about records
-| `GET`  | [`/metadata`](#metadata-endpoint)     | data     | Return metadata record(s)
-| `POST` | [`/insert`](#insert-endpoint)         | data     | Create new record
-| `POST` | [`/ingest`](#ingest-endpoint)         | system   | Trigger ingest from source
-| `POST` | [`/backup`](#backup-endpoint)         | system   | Trigger database backup
-| `POST` | [`/health`](#health-endpoint)         | system   | Return service health
+| `GET`  | [`/ready`](#ready-endpoint)           | system   | Returns service readiness
+| `GET`  | [`/api`](#api-endpoint)               | system   | Returns API specification and schemas
+| `GET`  | [`/schema`](#schema-endpoint)         | metadata | Returns database schema
+| `GET`  | [`/attributes`](#attributes-endpoint) | metadata | Returns enumerated attributes
+| `GET`  | [`/stats`](#stats-endpoint)           | data     | Returns metadata record statistics
+| `GET`  | [`/sources`](#sources-endpoint)       | data     | Returns ingested metadata sources
+| `GET`  | [`/metadata`](#metadata-endpoint)     | data     | Returns queried metadata record(s)
+| `POST` | [`/insert`](#insert-endpoint)         | data     | Inserts single metadata record
+| `POST` | [`/ingest`](#ingest-endpoint)         | system   | Triggers ingest from metsadata source
+| `POST` | [`/backup`](#backup-endpoint)         | system   | Triggers database backup
+| `POST` | [`/health`](#health-endpoint)         | system   | Returns service liveness
 | `GET`  | `/export`                             | data     | TODO:
-| `GET`  | `/sru`                                | data     | TODO:
-| `POST` | `/forward`                            | system   | TODO:
+
+For details see the associated [OpenAPI definition](../api/openapi.yaml) and [api.csv](../api/api.csv).
 
 > **NOTE:** The base path for all endpoints is `/api/v1`.
 
 > **NOTE:** All `GET` requests are unchallenged, all `POST` requests are challenged, which are handled via "Basic Authentication".
 
-> **NOTE:** All request and response bodies have content type `JSON`, and if provided, the `Content-Type` HTTP header must be `application/json`!
+> **NOTE:** All request and response bodies have content type `JSON`, and if provided, the `Content-Type` HTTP header must be `application/json` or `application/vnd.api+json`!
 
-> **NOTE:** As the metadata-lake's data is metadata, a type "data" means metadata, and a type "metadata" means metadata about metadata.
+> **NOTE:** As the metadata-lake's data is metadata, a type "data" means metadata, and a type "metadata" means metadata about metadata (global metadata).
 
 > **NOTE:** Responses follow the [JSON:API](https://jsonapi.org) format.
 
@@ -369,19 +426,22 @@ The HTTP-API is served under `http://<your-url-here>/api/v1` and provides the fo
 
 Returns boolean answering if service is ready.
 
-> **NOTE**: The `ready` endpoint can be used as readiness probe.
-
-* Method: `GET`
-* Parameters: None
-* Response Schema: [`response/ready.json`](../api/response/ready.json)
+* HTTP Method: `GET`
+* Request Parameters: None
+* Response Body: [`response/ready.json`](../api/response/ready.json)
+* Cached Response: No
 * Access: Public
-* Process: [see architecture](arc42.md#ready-endpoint)
+* Process: [see architecture](arc42.md#ready-endpoint-public)
+
+> **NOTE**: The `ready` endpoint can be used as readiness probe.
 
 **Status:**
 
 * [200](https://httpstatuses.io/200) OK
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [503](https://httpstatuses.io/503) Service Unavailable.
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [503](https://httpstatuses.io/503) Service Unavailable
 
 **Example:**
 
@@ -394,23 +454,27 @@ $ wget -qO- http://localhost:8343/api/v1/ready
 
 #### `/api` Endpoint
 
-Returns OpenAPI specification if no parameter is given, otherwise returns a request or response schema.
+Returns OpenAPI specification (without parameters), or request and response schema.
 
-> **NOTE**: In case of a succesful request, the response is NOT in the JSONAPI format, but the requested JSON file directly.
-
-* Method: `GET`
-* Parameters:
+* HTTP Method: `GET`
+* Request Parameters: [`params/api.json`](../api/params/api.json)
   * `request` (Optional; if provided, a request schema for the endpoint in the parameter value is returned.)
   * `response` (Optional; if provided, a response schema for the endpoint in the parameter value is returned.)
-* Response Schema: [`response/api.json`](../api/response/api.json)
+* Response Body: [`response/api.json`](../api/response/api.json)
+* Cached Response: Yes
 * Access: Public
-* Process: [see architecture](arc42.md#api-endpoint)
+* Process: [see architecture](arc42.md#api-endpoint-public)
+
+> **NOTE**: In case of a successful request, the response is _NOT_ in the `JSON:API` format, but the requested JSON file directly.
 
 **Statuses:**
 
 * [200](https://httpstatuses.io/200) OK
-* [400](https://httpstatuses.io/400) Parameter value is not an endpoint or has no request schema.
-* [406](https://httpstatuses.io/406) Not Acceptable.
+* [404](https://httpstatuses.io/404) Not Found
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Examples:**
 
@@ -435,17 +499,20 @@ $ wget -qO- http://localhost:8343/api/v1/api?response=metadata
 
 Returns internal metadata schema.
 
-* Method: `GET`
-* Parameters: None
+* HTTP Method: `GET`
+* Request Parameters: None
 * Response Body: [`response/schema.json`](../api/response/schema.json)
+* Cached Response: Yes
 * Access: Public
-* Process: [see architecture](arc42.md#schema-endpoint)
+* Process: [see architecture](arc42.md#schema-endpoint-public-cached)
 
 **Statuses:**
 
 * [200](https://httpstatuses.io/200) OK
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Database error.
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Example:**
 
@@ -460,19 +527,22 @@ $ wget -qO- http://localhost:8343/api/v1/schema
 
 Returns list of enumerated attribute values.
 
-* Method: `GET`
-* Parameters:
+* HTTP Method: `GET`
+* Request Parameters: [`params/attributes.json`](../api/params/attributes.json)
     * `type` (Optional; if provided only selected attribute type is returned.)
-* Response Schema: [`response/attributes.json`](../api/response/attributes.json)
+* Response Body: [`response/attributes.json`](../api/response/attributes.json)
+* Cached Response: Yes
 * Access: Public
-* Process: [see architecture](arc42.md#attributes-endpoint)
+* Process: [see architecture](arc42.md#attributes-endpoint-public-cached)
 
 **Statuses:**
 
 * [200](https://httpstatuses.io/200) OK
-* [400](https://httpstatuses.io/400) Invalid request.
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Database error.
+* [404](https://httpstatuses.io/404) Not Found
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Example:**
 
@@ -481,7 +551,7 @@ Get all enumerated attributes:
 $ wget -qO- http://localhost:8343/api/v1/attributes
 ```
 
-Get language attributes:
+Get "languages" enumerated attributes:
 ```shell
 $ wget -qO- http://localhost:8343/api/v1/attributes?type=languages
 ```
@@ -492,17 +562,20 @@ $ wget -qO- http://localhost:8343/api/v1/attributes?type=languages
 
 Return statistics about records.
 
-* Method: `GET`
-* Parameters: None
+* HTTP Method: `GET`
+* Request Parameters: None
 * Response Body: [`response/stats.json`](../api/response/stats.json)
+* Cached Response: Yes
 * Access: Public
-* Process: [see architecture](arc42.md#stats-endpoint)
+* Process: [see architecture](arc42.md#stats-endpoint-public-cached)
 
 **Statuses:**
 
 * [200](https://httpstatuses.io/200) OK
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Database error.
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Example:**
 
@@ -512,38 +585,86 @@ $ wget -qO- http://localhost:8343/api/v1/stats
 
 ---
 
-#### `/metadata` Endpoint
+#### `/sources` Endpoint
 
-Fetch from, search, filter or query metadata record(s).
+Return ingested sources.
 
-* Method: `GET`
-* Parameters:
-    * `id` (Optional; if provided, a metadata-set with this value is returned.)
-    * `search` (Optional; if provided, full-text search results for this value are returned.)
-    * `query` (Optional; if provided, query results using this value are returned, no `language` parameter implies `sql`.)
-    * `language` (Optional; if provided, filter results by `language` are returned, also used to set `query` language.)
-    * `resourcetype` (Optional; if provided, filter results by `resourceType` are returned.)
-    * `license` (Optional; if provided, filter results by `license` are returned.)
-    * `category` (Optional; if provided, filter results by `category` are returned.)
-    * `from` (Optional; if provided, filter results greater or equal `publicationYear` are returned.)
-    * `till` (Optional; if provided, filter results lesser or equal `publicationYear` are returned.)
-    * `skip` (Optional; if provided, this number of results is skipped, use for paging.)
-    * `newest` (Optional; if provided, results are sorted new-to-oldest if true (default), or old-to-new if false.)
-* Response Body: [`response/metadata.json`](../api/response/metadata.json)
+* HTTP Method: `GET`
+* Request Parameters: None
+* Response Body: [`response/sources.json`](../api/response/sources.json)
+* Cached Response: Yes
 * Access: Public
-* Process: [see architecture](arc42.md#metadata-endpoint)
-
-> **NOTE:** Only idem-potent read operations are permitted in custom queries.
-
-> **NOTE:** A full-text search always matches for all argument terms (AND-based) in titles, descriptions and keywords in any order, while accepting `*` as wildcards and `_` to build phrases.
+* Process: [see architecture](arc42.md#sources-endpoint-public-cached)
 
 **Statuses:**
 
 * [200](https://httpstatuses.io/200) OK
-* [400](https://httpstatuses.io/400) Invalid request.
-* [404](https://httpstatuses.io/404) Not found.
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Database error.
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
+
+**Example:**
+
+```shell
+$ wget -qO- http://localhost:8343/api/v1/sources
+```
+
+---
+
+#### `/metadata` Endpoint
+
+Fetch from, search, filter or query metadata record(s).
+Four modes of operation are available:
+
+* If `id` is given, a record with this `recordId` is returned if it exists;
+* if `query` and `language` are given, a custom query is send;
+* if `source` and optionally `format` are given a source query is send;
+* if no `id` or `source` is given and the `language` is not a compatible query language,
+  a combined full-text search of `search` and faceted search of `language`, `resourcetype`, `license`, `category`, `format`, `from`, `till` is performed.
+
+Paging via `page` is supported only for the source query and the combined full-text and filter search, sorting via `newest` only for the latter.
+
+* HTTP Method: `GET`
+* Request Parameters: [`params/metadata.json`](../api/params/metadata.json)
+    * `id` (Optional; if provided, a metadata record with this `recordId` is returned.)
+    * `source` (Optional; if provided, metadata records from this `source` is returned.)
+    * `query` (Optional; if provided, query results using this value are returned, no `language` parameter implies `sql`.)
+    * `language` (Optional; if provided, filter results by `language` are returned, also used to set `query` language.)
+    * `search` (Optional; if provided, full-text search results for this value are returned.)
+    * `resourcetype` (Optional; if provided, filter results by `resourceType` are returned.)
+    * `license` (Optional; if provided, filter results by `license` are returned.)
+    * `category` (Optional; if provided, filter results by `category` are returned.)
+    * `format` (Optional; if provided, filter results by `metadataFormat` are returned.)
+    * `from` (Optional; if provided, filter results greater or equal `publicationYear` are returned.)
+    * `till` (Optional; if provided, filter results lesser or equal `publicationYear` are returned.)
+    * `page` (Optional; if provided, the n-th page of results is returned.)
+    * `newest` (Optional; if provided, results are sorted new-to-oldest if true (default), or old-to-new if false.)
+* Response Body: [`response/metadata.json`](../api/response/metadata.json)
+* Cached Response: No
+* Access: Public
+* Process: [see architecture](arc42.md#metadata-endpoint-public)
+
+> **NOTE:** Only idem-potent read operations are permitted in custom queries.
+
+> **NOTE:** This endpoint's responses includes pagination links, except for custom queries.
+
+> **NOTE:** For searches without `id` and `query`, a maximum of **20** results are returned;
+  for by-source and custom queries using `query` a maximum of **100** results are returned.
+
+> **NOTE:** An explicitly empty `source` parameter (i.e. `source=`) implies all sources.
+
+> **NOTE:** A full-text search always matches for all argument terms (AND-based) in titles, descriptions and keywords in any order, 
+  while accepting `*` as wildcards and `_` to build phrases.
+
+**Statuses:**
+
+* [200](https://httpstatuses.io/200) OK
+* [404](https://httpstatuses.io/404) Not Found
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Examples:**
 
@@ -577,28 +698,36 @@ Search records by custom SQL query:
 $ wget -qO- http://localhost:8343/api/v1/metadata?language=sql&query=SELECT%20FROM%20metadata%20LIMIT%2010
 ```
 
+List the second page of records from all sources:
+```shell
+$ wget -qO- http://localhost:8343/api/v1/metadata?source=&page=1
+```
+
 ---
 
 #### `/insert` Endpoint
 
 Inserts and parses, if necessary, a new record into the database.
 
-* Method: `POST`
+* HTTP Method: `POST`
 * Request Body: [`request/insert.json`](../api/request/insert.json)
 * Response Body: [`response/insert.json`](../api/response/insert.json)
+* Cached Response: No
 * Access: Challenged (Basic Authentication)
-* Process: [see architecture](arc42.md#insert-endpoint)
+* Process: [see architecture](arc42.md#insert-endpoint-private)
 
-> **NOTE:** This endpoint is meant for metadata records that cannot be ingested such as a report of ingested sources or testing;
+> **NOTE:** This endpoint is meant for metadata records that are not ingestible like a report of ingested sources;
             general use is discouraged. For details on the request body, see the associated [JSON schema](../api/request/insert.json).
 
 **Status:**
 
-* [201](https://httpstatuses.io/200) OK
-* [400](https://httpstatuses.io/400) Invalid request.
-* [403](https://httpstatuses.io/403) Invalid credentials.
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Database error.
+* [201](https://httpstatuses.io/201) Created
+* [400](https://httpstatuses.io/400) Bad Request
+* [403](https://httpstatuses.io/403) Invalid Credentials
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Example:**
 
@@ -613,34 +742,41 @@ $ wget -qO- http://localhost:8343/api/v1/insert --user admin --ask-password --po
 
 Trigger ingest from data source.
 
-* Method: `POST`
+* HTTP Method: `POST`
 * Request Body: [`request/ingest.json`](../api/request/ingest.json)
     * `source` must be an URL
-    * `method` can be `oai-pmh` or `s3`
-    * `format` can be `datacite`, `oai_datacite`, `dc`, `oai_dc`, `marc21`, `marcxml`, `mods`, or `rawmods`
-    * `steward` should be an URL or email address.
+    * `method` must be one of `oai-pmh`, `s3`, `get`, or another DatAasee instance
+    * `format` must be one of `datacite`, `oai_datacite`, `dc`, `oai_dc`, `marc21`, `marcxml`, `mods`, or `rawmods`
+    * `steward` should be an URL or email address
+    * `username` (optional) a username or access key (if needed) 
+    * `password` (optional) a password or secret key (if needed)
 * Response Body: [`response/ingest.json`](../api/response/ingest.json)
+* Cached Response: No
 * Access: Challenged (Basic Authentication)
-* Process: [see architecture](arc42.md#ingest-endpoint)
+* Process: [see architecture](arc42.md#ingest-endpoint-private-external-read)
 
 > **NOTE:** To test if the server is busy, send an empty (POST) body to this endpoint.
-            HTTP status `400` means available, status `503` means currently ingesting.
+            HTTP status `200` means here available, status `503` means currently ingesting.
 
 > **NOTE:** The `method` and `format` are case-sensitive.
 
 **Status:**
 
-* [202](https://httpstatuses.io/202) Accepted.
-* [400](https://httpstatuses.io/400) Invalid request.
-* [403](https://httpstatuses.io/403) Invalid credentials.
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [503](https://httpstatuses.io/503) Already ingesting.
+* [200](https://httpstatuses.io/200) OK
+* [202](https://httpstatuses.io/202) Accepted
+* [400](https://httpstatuses.io/400) Bad Request
+* [403](https://httpstatuses.io/403) Invalid credentials
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [503](https://httpstatuses.io/503) Service Unavailable
 
 **Example:**
 
 Start ingest from a given source:
 ```shell
-$ wget -qO- http://localhost:8343/api/v1/ingest --user admin --ask-password --post-data='{"source":"https://datastore.uni-muenster.de/oai", "method":"oai-pmh", "format":"datacite", "steward":"forschungsdaten@uni-muenster.de"}'
+$ wget -qO- http://localhost:8343/api/v1/ingest --user admin --ask-password --post-data \
+  '{"source":"https://datastore.uni-muenster.de/oai", "method":"oai-pmh", "format":"datacite", "steward":"forschungsdaten@uni-muenster.de"}'
 ```
 
 ---
@@ -649,18 +785,23 @@ $ wget -qO- http://localhost:8343/api/v1/ingest --user admin --ask-password --po
 
 Trigger database backup.
 
-* Method: `POST`
+* HTTP Method: `POST`
 * Request Body: None
-* Response Schema: [`response/backup.json`](../api/response/backup.json)
+* Response Body: [`response/backup.json`](../api/response/backup.json)
+* Cached Response: No
 * Access: Challenged (Basic Authentication)
-* Process: [see architecture](arc42.md#backup-endpoint)
+* Process: [see architecture](arc42.md#backup-endpoint-private-external-write)
+
+> **NOTE**: The backup location can be set through the `DL_BACKUP` environment variable.
 
 **Status:**
 
 * [200](https://httpstatuses.io/200) OK
-* [403](https://httpstatuses.io/403) Invalid credentials.
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Database error.
+* [403](https://httpstatuses.io/403) Invalid Credentials
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Example:**
 
@@ -672,22 +813,25 @@ $ wget -qO- http://localhost:8343/api/v1/backup --user admin --ask-password --po
 
 #### `/health` Endpoint
 
-Returns internal status of service components.
+Returns internal status and versions of service components.
+
+* HTTP Method: `POST`
+* Request Body: None
+* Response Body: [`response/health.json`](../api/response/health.json)
+* Cached Response: No
+* Access: Challenged (Basic Authentication)
+* Process: [see architecture](arc42.md#health-endpoint-private)
 
 > **NOTE**: The `health` endpoint can be used as liveness probe.
-
-* Method: `POST`
-* Parameters: None
-* Response Schema: [`response/health.json`](../api/response/health.json)
-* Access: Public
-* Process: [see architecture](arc42.md#health-endpoint)
 
 **Status:**
 
 * [200](https://httpstatuses.io/200) OK
-* [403](https://httpstatuses.io/403) Invalid credentials.
-* [406](https://httpstatuses.io/406) Not Acceptable.
-* [500](https://httpstatuses.io/500) Internal Server Error.
+* [403](https://httpstatuses.io/403) Invalid Credentials
+* [406](https://httpstatuses.io/406) Not Acceptable
+* [413](https://httpstatuses.io/413) Payload Too Large
+* [414](https://httpstatuses.io/414) Request-URI Too Long
+* [500](https://httpstatuses.io/500) Internal Server Error
 
 **Example:**
 
@@ -702,113 +846,131 @@ $ wget -qO- http://localhost:8343/api/v1/health --user admin --ask-password --po
 
 TODO:
 
-#### `/sru` Endpoint
-
-TODO:
-
-#### `/forward` Endpoint
-
-TODO:
-
 ### Ingest Protocols
 
 * [OAI-PMH](http://www.openarchives.org/OAI/openarchivesprotocol.html) (Open Archives Initiative Protocol for Metadata Harvesting)
+  * Identifier: `oai-pmh`
   * Supported Versions: `2.0`
+  * List available metadata formats via `http://url.to/oai?verb=ListMetadataFormats`
 * [S3](https://docs.aws.amazon.com/AmazonS3/latest/API) (Simple Storage Service)
+  * Identifier: `s3`
   * Supported Versions: `2006-03-01`
+  * Expects a bucket of files in the same format (!) which is ingested entirely file by file
+* [GET](https://httpwg.org/specs/rfc9110.html#GET) (Plain HTTP GET)
+  * Identifier: `get`
+  * Expects a single `.xml` file
+  * The file's contents require an XML root-element (of any name).
+* [DatAasee](https://github.com/ulbmuenster/dataasee)
+  * Identifier: `dataasee`
+  * Supported Versions: `0.3`
+  * Ingest all contents from another DatAasee instance, an associated format parameter is ignored.
 
 ### Ingest Encodings
 
-Currently, [XML](https://www.w3.org/XML) (eXtensible Markup Language) is the sole encoding for ingested metadata.
+Currently, [XML](https://www.w3.org/XML) (eXtensible Markup Language) is the sole encoding for
+ingested metadata, with the exception of ingesting via the `DatAasee` protocol, which uses
+[JSON](https://www.json.org) (JavaScript Object Notation).
 
 ### Ingest Formats
 
 * [DataCite](https://datacite.org/)
-  * Supported Versions: `4.4`, `4.5`
+  * Identifiers: `datacite`, `oai_datacite`
+  * Supported Versions: `4.4`, `4.5`, `4.6`
   * [Format Specification](https://support.datacite.org/docs/datacite-metadata-schema-v44-properties-overview)
 * [DC](https://www.dublincore.org/) (Dublin Core)
+  * Identifiers: `dc`, `oai_dc`
   * Supported Versions: `1.1`
   * [Format Specification](https://www.dublincore.org/specifications/dublin-core/dces/)
+* [LIDO](https://lido-schema.org) (Lightweight Information Describing Objects)
+  * Identifiers: `lido`
+  * Supported Versions: `1.0`
+  * [Format Specification](https://cidoc.mini.icom.museum/working-groups/lido/lido-overview/lido-schema/)
 * [MARC](https://www.loc.gov/marc/) (MAchine-Readable Cataloging)
-  * Supported Versions: `1.1`
+  * Identifier: `marc21`, `marcxml`
+  * Supported Versions: `1.1` (XML)
   * [Format Specification](https://www.loc.gov/marc/bibliographic/)
 * [MODS](http://www.loc.gov/mods/) (Metadata Object Description Schema)
+  * Identifiers: `mods`, `rawmods`
   * Supported Versions: `3.7`, `3.8`
   * [Format Specification](https://www.loc.gov/standards/mods/userguide/generalapp.html)
-* TODO: RDF
 
 ### Native Schema
 
-| Key               | Class       | Entry     | Type                | Constraints
-|-------------------|-------------|-----------|---------------------|-------------
-| `schemaVersion`   | Process     | Automatic | Integer             | min 0
-| `recordId`        | Process     | Automatic | String              | max 31
-| `metadataQuality` | Process     | Automatic | String              | max 255
-| `dataSteward`     | process     | Automatic | String              | max 4095
-| `source`          | Process     | Automatic | String              | max 4095
-| `createdAt`       | Process     | Automatic | Datetime            |
-| `updatedAt`       | Process     | Automatic | Datetime            |
-|||||
-| `sizeBytes`       | Technical   | Automatic | Integer             | min 0
-| `fileFormat`      | Technical   | Automatic | String              | max 255
-| `dataLocation`    | Technical   | Automatic | String              | max 4095, regexp
-|||||
-| `numberDownloads` | Social      | Automatic | Integer             | min 0
-| `keywords`        | Social      | Optional  | String              | max 255
-| `categories`      | Social      | Optional  | List(String)        | max 4
-|||||
-| `name`            | Descriptive | Mandatory | String              | max 255
-| `creators`        | Descriptive | Mandatory | List(pair)          | max 255
-| `publisher`       | Descriptive | Mandatory | String              | min 1, max 255
-| `publicationYear` | Descriptive | Mandatory | Integer             | min -9999, max 9999
-| `resourceType`    | Descriptive | Mandatory | Link(attribute)     | resourceTypes
-| `identifiers`     | Descriptive | Mandatory | List(pair)          | max 255
-|||||
-| `synonyms`        | Descriptive | Optional  | List(pair)          | max 255
-| `language`        | Descriptive | Optional  | Link(attribute)     | languages
-| `subjects`        | Descriptive | Optional  | List(pair)          | max 255
-| `version`         | Descriptive | Optional  | String              | max 255
-| `license`         | Descriptive | Optional  | Link(pair)          | licenses
-| `rights`          | Descriptive | Optional  | String              | max 65535
-| `project`         | Descriptive | Optional  | Embedded(pair)      |
-| `fundings`        | Descriptive | Optional  | List(pair)          | max 255
-| `description`     | Descriptive | Optional  | String              | max 65535
-| `message`         | Descriptive | Optional  | String              | max 65535
-| `externalItems`   | Descriptive | Optional  | List(pair)          | max 255
-|||||
-| `rawType`         | Raw         | Optional  | String              | max 255
-| `raw`             | Raw         | Optional  | String              | max 1048575
-| `rawChecksum`     | Raw         | Optional  | String              | max 255
+The main type of the `metadatalake` database is `metadata` vertex type with the
+following properties:
+
+| Key                | Class       | Entry     | Internal Type | Constraints         | Comment
+|--------------------|-------------|-----------|---------------|---------------------|---------
+| `schemaVersion`    | Process     | Automatic | Integer       |                     |
+| `recordId`         | Process     | Automatic | String        |                     |
+| `metadataChecksum` | Process     | Automatic | String        |                     |
+| `metadataQuality`  | Process     | Automatic | String        |                     |
+| `dataSteward`      | process     | Automatic | String        | max 4095            |
+| `source`           | Process     | Automatic | String        | max 4095            |
+| `createdAt`        | Process     | Automatic | Datetime      |                     |
+||||||
+| `metadataFormat`   | Technical   | Automatic | String        | max 255             |
+| `sizeBytes`        | Technical   | Automatic | Integer       | min 0               |
+| `dataFormat`       | Technical   | Automatic | String        | max 255             |
+| `dataLocation`     | Technical   | Automatic | String        | max 4095, regexp    |
+||||| |
+| `numberViews`      | Social      | Automatic | Integer       | min 0               |
+| `keywords`         | Social      | Optional  | String        | max 255             | Comma separated
+| `categories`       | Social      | Optional  | List(String)  | max 4               | Pass array of strings to API, returned as array of strings form API
+||||||
+| `name`             | Descriptive | Mandatory | String        | max 255             |
+| `creators`         | Descriptive | Mandatory | List(pair)    | max 255             | Pass array of [pair](#pair-documents) objects (name, identifier) to API
+| `publisher`        | Descriptive | Mandatory | String        | max 255             |
+| `publicationYear`  | Descriptive | Mandatory | Integer       | min -9999, max 9999 |
+| `resourceType`     | Descriptive | Mandatory | Link(pair)    | resourceTypes       | Pass string to API, returned as string from API
+| `identifiers`      | Descriptive | Mandatory | List(pair)    | max 255             | Pass array of [pair](#pair-documents) objects (type, identifier) to API
+||||||
+| `synonyms`         | Descriptive | Optional  | List(pair)    | max 255             | Pass array of [pair](#pair-documents) objects (type, title) to API
+| `language`         | Descriptive | Optional  | Link(pair)    | languages           | Pass string to API, returned as string from API
+| `subjects`         | Descriptive | Optional  | List(pair)    | max 255             | Pass array of [pair](#pair-documents) objects (name, identifier) to API
+| `version`          | Descriptive | Optional  | String        | max 255             |
+| `license`          | Descriptive | Optional  | Link(pair)    | licenses            | Pass string to API, returned as string from API
+| `rights`           | Descriptive | Optional  | String        | max 65535           |
+| `fundings`         | Descriptive | Optional  | List(pair)    | max 255             | Pass array of [pair](#pair-documents) objects (project, funder) to API
+| `description`      | Descriptive | Optional  | String        | max 65535           |
+| `message`          | Descriptive | Optional  | String        | max 65535           |
+| `externalItems`    | Descriptive | Optional  | List(pair)    | max 255             | Pass array of [pair](#pair-documents) objects (type, URL) to API
+||||||
+| `rawMetadata`      | Raw         | Optional  | String        | max 2097151         | Larger raw data is discarded
 
 > **NOTE:** See also the schema diagram: [schema.md](schema.md)
 
-> **NOTE**: The preloaded set of `categories` (see [preload.sql](../database/preload.sql)) is highly opinionated.
+> **NOTE:** The properties `related` and `visited` are only for internal purposes and hence not listed here.
 
-#### Helper types
+> **NOTE**: The preloaded set of `categories` (see [categories.csv](../database/preload/categories.csv)) is highly opinionated.
 
-##### `attributes`
+#### Global Metadata
 
-| Property | Type         | Constraints
-|----------|--------------|------------
-| `name`   | String       | min 3, max 255
-| `also`   | List(String) |
+The `metadata` type has the custom metadata fields:
 
-##### `pair`
+| Key       | Type    | Comment
+|-----------|---------|---------
+| `version` | Integer | Internal schema version (compare against `schemaVersion`)
+| `comment` | String  | Database comment
+
+#### Property Metadata
+
+Each schema property has a `label`, additionally the descriptive properties have
+a `comment` property.
+
+| Key       | Type    | Comment
+|-----------|---------|---------
+| `label`   | String  | For UI labels
+| `comment` | String  | For UI helper texts
+
+#### `pair` Documents
+
+A helper document type used for `creators`, `identifiers`, `synonyms`, `subjects`, `fundings`, `externalItems` link targets or list elements.
 
 | Property | Type   | Constraints
 |----------|--------|------------
 | `name`   | String | max 255
 | `data`   | String | max 4095, regexp
-
-#### Global Metadata
-
-Each schema property has a `label`, additionally the descriptive properties have
-a `comment` property.
-
-| Key        | Type    | Comment
-|------------|---------|---------
-| `label`    | String  | For UI labels
-| `comment`  | String  | For UI helper texts
 
 ### Interrelation Edges
 
@@ -818,45 +980,57 @@ a `comment` property.
 | `isNewVersionOf`        | Derived from `isRelatedTo`
 | `isDerivedFrom`         | Derived from `isRelatedTo`
 | `isPartOf`              | Derived from `isRelatedTo`
-| `isSameExpressionAs`    | Derived from `isRelatedTo`
-| `isSameManifestationAs` | Derived from `isRelatedTo`
+| `commonExpression`      | Derived from `isRelatedTo`
+| `commonManifestation`   | Derived from `isRelatedTo`
+
+#### Edge Metadata
+
+| Key        | Type    | Comment
+|------------|---------|---------
+| `label`    | String  | For UI labels (outbound edge)
+| `altlabel` | String  | For UI labels (incoming edge)
 
 ### Ingestable to Native Schema Crosswalk
 
 TODO: Add sub elements
 
-| DatAasee                | DataCite                             | DC                       | MARC                                     | MODS
-|------------------------:|:------------------------------------:|:------------------------:|:----------------------------------------:|:-----:
-| `name`                  | `titles`                             | `title`                  | `245`, `130`                             | `titleInfo`, `part`
-| `creators`              | `creators`, `contributors`           | `creator`, `contributor` | `100`, `700`                             | `name`, `relatedItem`
-| `publisher`             | `publisher`                          | `publisher`              | `260`, `264`                             | `originInfo`
-| `publicationYear`       | `publicationYear`                    | `date`                   | `260`, `264`                             | `originInfo`, `part`, `recordInfo`
-| `resourceType`          | `resourceType`                       | `type`                   | `007`,                                   | `genre`
-| `identifiers`           | `identifier`, `alternateIdentifiers` | `identifier`             | `001`, `020`, `856`                      | `identifier`, `recordInfo`
-| `synonyms`              | `titles`                             | `title`                  | `210`, `222`, `240`, `242`, `246`, `247` | `titleInfo`
-| `language`              | `language`                           | `language`               | `008`, `041`                             | `language`
-| `subjects`              | `subjects`                           | `subjects`               | `655`, `689`                             | `subject`
-| `version`               | `version`                            |                          | `250`                                    |
-| `license`               | `rights`                             |                          |                                          | `accessCondition`
-| `rights`                |                                      | `rights`                 | `506`, `540`                             |
-| `project`               |                                      |                          |                                          |
-| `fundings`              | `fundingReferences`                  |                          |                                          |
-| `description`           | `description`                        | `description`            | `520`                                    |
-| `message`               |                                      | `format`                 | `500`                                    | `note`
-| `externalItems`         | `relatedIdentifiers`                 | `identifier`             |                                          | `identifier`
+| DatAasee                | DataCite                                                           | DC            | LIDO                                                                                      | MARC                                     | MODS
+|------------------------:|:------------------------------------------------------------------:|:-------------:|:-----------------------------------------------------------------------------------------:|:----------------------------------------:|:----:
+| `name`                  | `titles.title`                                                     | `title`       | `descriptiveMetadata.objectIdentificationWrap.titleWrap.titleSet`                         | `245`, `130`                             | `titleInfo.title`, `titleInfo.partName`, `titleInfo.partNumber`, `part.text`, `part.detail.title`, `part.detail.caption`
+| `creators`              | `creators.creator`                                                 | `creator`     |                                                                                           | `100`, `700`                             | `name`, `relatedItem`
+| `publisher`             | `publisher`                                                        | `publisher`   |                                                                                           | `260`, `264`                             | `originInfo.publisher`
+| `publicationYear`       | `publicationYear`                                                  | `date`        | `descriptiveMetadata.eventWrap.eventSet`                                                  | `260`, `264`                             | `originInfo.dateIssued`, `originInfo.dateCreated`, `originInfo.dateCaptured`, `originInfo.dateOther`, `part`, `recordInfo`
+| `resourceType`          | `resourceType`                                                     | `type`        | `descriptiveMetadata.objectClassificationWrap.objectWorkTypeWrap.objectWorkType`          | `007`, `337`                             | `genre`, `typeOfResource`
+| `identifiers`           | `identifier`, `alternateIdentifiers.alternateIdentifier`           | `identifier`  | `objectPublishedID`                                                                       | `001`, `020`, `856`                      | `identifier`, `recordInfo.recordIdentifier`
+| `synonyms`              | `titles.title`                                                     | `title`       | `descriptiveMetadata.objectIdentificationWrap.titleWrap.titleSet`                         | `210`, `222`, `240`, `242`, `246`, `247` | `titleInfo.title`, `titleInfo.subTitle`
+| `language`              | `language`                                                         | `language`    |                                                                                           | `008`, `041`                             | `language.languageTerm`
+| `subjects`              | `subjects.subject`                                                 |               | `category.Concept`                                                                        | `655`, `689`                             | `subject.topic`, `subject.geographic`, `subject.genre`, `subject.temporal`, `subject.occupation`
+| `version`               | `version`                                                          |               |                                                                                           | `250`                                    | `originInfo.edition`
+| `license`               | `rightsList.rights`                                                |               |                                                                                           |                                          | `accessCondition`
+| `rights`                |                                                                    | `rights`      | `administrativeMetadata.rightsWorkWrap.rightsWorkSet`                                     | `506`, `540`                             | `accessCondition`
+| `fundings`              | `fundingReferences.fundingReference`                               |               |                                                                                           |                                          |
+| `description`           | `descriptions.description`                                         | `description` | `descriptiveMetadata.objectIdentificationWrap.objectDescriptionWrap.objectDescriptionSet` | `520`                                    | `abstract`
+| `message`               |                                                                    |               |                                                                                           | `500`                                    | `note`
+| `externalItems`         | `relatedIdentifiers.relatedIdentifier`                             | `related`     |                                                                                           |                                          | `identifier`
 |||||
-| `isRelatedTo`           | `relatedItems`, `relatedIdentifiers` | `related`                | `773`                                    | `relatedItem`
-| `isNewVersionOf`        | `relatedItems`, `relatedIdentifiers` |                          |                                          | `relatedItem`
-| `isDerivedFrom`         | `relatedItems`, `relatedIdentifiers` |                          |                                          | `relatedItem`
-| `isPartOf`              | `relatedItems`, `relatedIdentifiers` |                          |                                          | `relatedItem`
-| `isSameExpressionAs`    |                                      |                          |                                          | `relatedItem`
-| `isSameManifestationAs` |                                      |                          |                                          | `recordInfo`
+| `keywords`              | `subjects.subject`                                                 | `subject`     | `category.term`                                                                           |                                          |
+|||||
+| `dataLocation`          | `identifier`                                                       | `source`      |                                                                                           |                                          |
+| `dataFormat`            | `formats.format`                                                   | `format`      |                                                                                           |                                          |
+| `sizeBytes`             |                                                                    |               |                                                                                           |                                          |
+|||||
+| `isRelatedTo`           | `relatedItems.relatedItem`, `relatedIdentifiers.relatedIdentifier` | `related`     |                                                                                           | `773`                                    | `relatedItem`
+| `isNewVersionOf`        | `relatedItems.relatedItem`, `relatedIdentifiers.relatedIdentifier` |               |                                                                                           |                                          | `relatedItem`
+| `isDerivedFrom`         | `relatedItems.relatedItem`, `relatedIdentifiers.relatedIdentifier` |               |                                                                                           |                                          | `relatedItem`
+| `isPartOf`              | `relatedItems.relatedItem`, `relatedIdentifiers.relatedIdentifier` |               |                                                                                           |                                          | `relatedItem`
+| `CommonExpression`      |                                                                    |               |                                                                                           |                                          | `relatedItem`
+| `CommonManifestation`   |                                                                    |               |                                                                                           |                                          | `recordInfo`
 
 ### Query Languages
 
 | Language | Identifier | Documentation
 |----------|------------|---------------
-| SQL      | `sql`      | [ArcadeDB SQL](https://docs.arcadedb.com/#SQL)
+| SQL      | `sql`      | [ArcadeDB SQL](https://docs.arcadedb.com/#sql)
 | Cypher   | `cypher`   | [Neo4J Cypher](https://neo4j.com/docs/cypher-manual/current/)
 | GraphQL  | `graphql`  | [GraphQL Spec](https://spec.graphql.org/)
 | Gremlin  | `gremlin`  | [Tinkerpop Gremlin](https://kelvinlawrence.net/book/PracticalGremlin.html)
@@ -870,13 +1044,15 @@ The following environment variables affect **DatAasee** if set before starting.
 
 | Symbol       | Value                     | Meaning
 |--------------|---------------------------|---------
-| `TZ`         | `CET` (Default)           | Timezone of server
-| `DL_VERSION` | `0.2` (Example)           | Requested DatAasee version
+| `TZ`         | `CET` (Default)           | Timezone of database and backend servers
+| `DL_PASS`    | `password1` (Example)     | DatAasee password (**use only command local!**)
+| `DB_PASS`    | `password2` (Example)     | Database password (**use only command local!**)
+| `DL_VERSION` | `0.3` (Example)           | Requested DatAasee version
 | `DL_BACKUP`  | `$PWD/backup` (Default)   | Path to backup folder
 | `DL_USER`    | `admin` (Default)         | DatAasee admin username
-| `DL_BASE`    | `http://my.url` (Example) | Outward DatAasee base URL (including protocol and port, no trailing slash)
+| `DL_BASE`    | `http://my.url` (Example) | Outward DatAasee base URL (including protocol and port, but no trailing slash)
 | `DL_PORT`    | `8343` (Default)          | DatAasee API port
-| `FE_PORT`    | `8000` (Default)          | Web Frontend port (Development)
+| `FE_PORT`    | `8000`                    | Web Frontend port (development default `8000`, release default `80`)
 
 --------------------------------------------------------------------------------
 
@@ -888,6 +1064,8 @@ In this section **learning-oriented** lessons for new-comers are given.
 
 * [Getting Started](#getting-started)
 * [Example Ingest](#example-ingest)
+* [Example Harvest](#example-harvest)
+* [Secret Management](#secret-management)
 * [Container Engines](#container-engines)
 * [Container Probes](#container-probes)
 * [Custom Queries](#custom-queries)
@@ -898,21 +1076,13 @@ In this section **learning-oriented** lessons for new-comers are given.
 0. Setup [compatible compose](#container-engines) orchestrator
 1. Download **DatAasee** release
     ```shell
-    $ wget https://raw.githubusercontent.com/ulbmuenster/dataasee/0.2/compose.yaml
+    $ wget https://raw.githubusercontent.com/ulbmuenster/dataasee/0.3/compose.yaml
     ```
     or:
     ```shell
-    $ curl https://raw.githubusercontent.com/ulbmuenster/dataasee/0.2/compose.yaml
+    $ curl https://raw.githubusercontent.com/ulbmuenster/dataasee/0.3/compose.yaml
     ```
-2. Unpack `compose.yaml`
-    ```shell
-    $ tar -xf dataasee-0.2.tar.gz
-    ```
-    and:
-    ```shell
-    $ cd dataasee-0.2
-    ```
-3. Create or mount folder for backups (assuming your backup volume is mounted under `/backup`)
+2. Create or mount folder for backups (assuming your backup volume is mounted under `/backup` on the host in case of mount)
     ```shell
     $ mkdir -p backup
     ```
@@ -920,25 +1090,17 @@ In this section **learning-oriented** lessons for new-comers are given.
     ```shell
     $ ln -s /backup backup
     ```
-4. Create **DatAasee** API and database admin passwords. The spaces before `echo` prevent these commands from being added to the history. `echo -n` is used to create the password files as most editors add a newline at the end of a file.
+3. Start **DatAasee** service, note the space in front of the command excluding it from the terminal history.
     ```shell
-    $  echo -n 'password1' > dl_pass
-    ```
-      and:
-    ```shell
-    $  echo -n 'password2' > db_pass
-    ```
-5. Start **DatAasee** service
-    ```shell
-    $ docker-compose up -d
+    $  DB_PASS=password1 DL_PASS=password2 docker compose up -d
     ```
       or:
     ```shell
-    $ podman-compose up -d
+    $  DB_PASS=password1 DL_PASS=password2 podman compose up -d
     ```
 
 Now, if started locally point a browser to `http://localhost:8000` to use the web frontend,
-or send requests to `http://localhost:8343/api/v1/` to use the HTTP API directly.
+or send requests to `http://localhost:8343/api/v1/` to use the HTTP API directly, for example via `wget` or `curl`.
 
 ### Example Ingest
 
@@ -969,7 +1131,8 @@ Fourth and lastly, the ingested data is interconnected inside the database.
 
 4. Start an ingest:
     ```shell
-    $ wget -qO- http://localhost:8343/api/v1/ingest --user admin --ask-password --post-data='{"source":"https://doaj.org/oai", "method":"oai-pmh", "format":"oai_dc", "steward":"helpdesk@doaj.org"}'
+    $ wget -qO- http://localhost:8343/api/v1/ingest --user admin --ask-password --post-data \
+      '{"source":"https://doaj.org/oai", "method":"oai-pmh", "format":"oai_dc", "steward":"helpdesk@doaj.org"}'
     ```
    A status `202` confirms the start of the ingest.
    Here, no steward is listed in the DOAJ documentation, thus a general contact is set.
@@ -985,7 +1148,7 @@ Fourth and lastly, the ingested data is interconnected inside the database.
     ```shell
     $ docker logs dataasee-backend-1
     ```
-   with a message akin to: `Completed ingest of 20812 records from https://doaj.org/oai after 0.05h.`.
+   with a message akin to: `Finished ingest of 21424 records from https://doaj.org/oai after 0.1h.`.
 
 7. DatAasee starts interconnecting the ingested metadata records:
     ```shell
@@ -1001,83 +1164,137 @@ Fourth and lastly, the ingested data is interconnected inside the database.
 
 > **NOTE:** The interconnection is a potentially long-running, asynchronous operation, whose status is only reported in the database logs.
 
+> **NOTE:** Generally, the ingest methods `OAI-PMH` for suitable sources, `S3` for multi-file sources, and `GET` for single-file sources should be used.
+
+### Example Harvest TODO:
+
+A typical use-case for DatAasee is to forward all metadata records from a specific source.
+To demonstrate this, the previous [Example Ingest](#example-ingest) is assumed to have happened.
+
+1. Check the ingested sources
+    ```
+    $ wget http://localhost:8343/api/v1/sources
+    ```
+
+2. Request the first set of metadata records from source `https://doaj.org/oai` (the source needs to be [URL encoded](https://en.wikipedia.org/wiki/Percent-encoding)):
+    ```shell
+    $ wget http://localhost:8343/api/v1/metadata?source=https%3A%2F%2Fdoaj.org%2Foai
+    ```
+   At most 100 records are returned. For the first page, also the parameter `page=0` may be used.
+
+3. Request the next set of metadata records via pagination:
+    ```shell
+    $ wget http://localhost:8343/api/v1/metadata?source=https%3A%2F%2Fdoaj.org%2Foai&page=1
+    ```
+   The last page will contain less than 100 records, all pages before contain 100 records.
+
+> **NOTE**: Using the `source` filter, the **full** record is returned, instead of a search result when used without.
+
+
+### Secret Management
+
+Two secrets need to be managed for DatAasee, the database root password and the backend admin password.
+To protect these secrets on a host running docker(-compose), for example, the following tools can be used:
+
+#### [sops](https://getsops.io)
+
+```shell
+$ printf "DB_PASS=password1\nDL_PASS=password2" > secrets.env
+```
+
+```shell
+$ sops encrypt -i secrets.env
+```
+
+```shell
+$ sops exec-env secrets.env 'docker compose up -d'
+```
+
+#### consul & [envconsul](https://github.com/hashicorp/envconsul)
+
+```shell
+$ consul kv put dataasee/DB_PASS password1
+```
+
+```shell
+$ consul kv put dataasee/DL_PASS password2
+```
+
+```shell
+$ envconsul -prefix dataasee docker compose up -d
+```
+
+#### [env-vault](https://github.com/romantomjak/env-vault)
+
+```shell
+$ EDITOR=nano env-vault create secrets.env
+```
+
+* Enter a password and then in the editor (here `nano`) the secrets line-by-line `DB_PASS=password1`, `DL_PASS=password2`; save and exit.
+
+```shell
+$ env-vault secrets.env docker compose -- up -d
+```
+
+#### `openssl`
+
+```shell
+$  printf "DB_PASS=password1\nDL_PASS=password2" | openssl aes-256-cbc -e -a -salt -pbkdf2 -in - -out secrets.enc
+```
+
+```shell
+$ (openssl aes-256-cbc -d -a -pbkdf2 -in secrets.enc -out secrets.env; docker compose up -d --env-file .env --env-file secrets.env; rm secrets.env)
+```
+
+
 ### Container Engines
 
 **DatAasee** is deployed via a `compose.yaml` (see [How to deploy](#deploy)),
-which is compatible to the following orchestration tools:
+which is compatible to the following container and orchestration tools:
 
-* [`docker-compose`](https://docs.docker.com/compose/)
-* [`podman-compose`](https://github.com/containers/podman-compose)
+* Docker / Podman via [`docker compose`](https://docs.docker.com/compose/) 
 * Kubernetes / Minikube via [`kompose`](https://kompose.io)
 
-#### Docker-Compose
+#### Docker-Compose (Docker)
 
 * docker
-* docker-compose >= 2
+* docker compose >= 2
 
 Installation see: [docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
 
 ```shell
-$ docker-compose up -d
+$ docker compose up -d
 ```
 
 ```shell
-$ docker-compose ps
+$ docker compose ps
 ```
 
 ```shell
-$ docker-compose down
+$ docker compose down
 ```
 
-#### Docker-Compose (with Podman)
+#### Docker-Compose (Podman)
 
 * podman
-* podman-docker
-* docker-compose
+* docker compose
 
 Installation see: [docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
 
-> **NOTE:** This tutorial assumes a Debian-based Linux host like Ubuntu.
+> **NOTE**: Alternatively the package `podman-docker` can be used to emulate docker through podman.
+
+> **NOTE**: The compose implementation `podman-compose` is not compatible at the moment.
 
 ```shell
-$ sudo apt-get -y install dnsmasq podman-plugins containernetworking-plugins podman-docker
+$ podman compose up -d
 ```
 
 ```shell
-$ docker-compose up -d
+$ podman compose ps
 ```
 
 ```shell
-$ docker-compose ps
-```
-
-```shell
-$ docker-compose down
-```
-
-#### Podman-Compose
-
-* podman >= 4.6.2
-* podman-compose >= 1.0.6
-
-> **NOTE:** This tutorial assumes a Debian-based Linux host like Ubuntu.
-
-Additionally:
-```shell
-$ sudo apt-get -y install dnsmasq podman-plugins containernetworking-plugins python3-pip
-$ pip3 install podman-compose
-```
-
-```shell
-$ podman-compose up -d
-```
-
-```shell
-$ podman-compose ps
-```
-
-```shell
-$ podman-compose down
+$ podman compose down
 ```
 
 #### Kompose (Minikube)
@@ -1088,53 +1305,28 @@ $ podman-compose down
 
 Installation see: [kompose.io/installation/](https://kompose.io/installation/)
 
-Prepare `compose.yaml`:
-
-* Add port to database service:
-    ```yaml
-    services:
-      database:
-        ports:  # value changed from []
-          - "2480:2480"
-    ```
+Rename `compose.yaml` to `compose.txt` and run:
 
 ```shell
-$ kompose -f compose.yaml convert
+$ kompose -f compose.txt convert
 ```
 
-Particularly, for `kompose` in version **1.33.0** and **1.34.0** the following manual changes need to be made in:
+* In `database-deployment.yaml` change:
+    * `mountPath: /db` to `mountPath: /db/secret`
+    * `secretName: database` to `secretName: dataasee`
 
-* `database-deployment.yaml`:
-    ```yaml
-    spec:
-      template:
-        spec:
-          containers:
-            - env:
-                volumeMounts:
-                  - name: "database"
-                    mountPath: "/run/secrets/database"  # value changed from "/run/secrets"
-    ```
-* `backend-deployment.yaml`:
-    ```yaml
-    spec:
-      template:
-        spec:
-          containers:
-            - env:
-                volumeMounts:
-                  - name: "database"
-                    mountPath: "/run/secrets/database"  # value changed from "/run/secrets"
-                  - name: "datalake"
-                    mountPath: "/run/secrets/datalake"  # value changed from "/run/secrets"
-    ```
-
-```shell
-$ rm compose.yaml
-```
+* In `backend-deployment.yaml` change:
+    * `mountPath: /db` to `mountPath: /db/secret`
+    * `secretName: database` to `secretName: dataasee`
+    * `mountPath: /dl` to `mountPath: /dl/secret`
+    * `secretName: datalake` to `secretName: dataasee`
 
 ```shell
 $ minikube start
+```
+
+```shell
+$ kubectl create secret generic dataasee --from-literal=database=password1 --from-literal=datalake=password2
 ```
 
 ```shell
@@ -1181,7 +1373,7 @@ allows [Prometheus](https://prometheus.io) scraping, see also [Connect `promethe
 ```http
 http://database:2480/api/v1/ready
 ```
-returns HTTP status `204` if ready, see also [ArcadeDB `ready`](https://docs.arcadedb.com/#HTTP-CheckReady).
+returns HTTP status `204` if ready, see also [ArcadeDB `ready`](https://docs.arcadedb.com/#http-checkready).
 
 #### Frontend
 
@@ -1198,13 +1390,13 @@ returns HTTP status `200` if ready.
 
 #### SQL
 
-**DatAasee** uses the [ArcadeDB SQL dialect](https://docs.arcadedb.com/#SQL).
+**DatAasee** uses the [ArcadeDB SQL dialect](https://docs.arcadedb.com/#sql).
 For custom SQL queries, only single, read-only queries are admissible,
 meaning:
 
-* [`SELECT`](https://docs.arcadedb.com/#SQL-Select)
-* [`MATCH`](https://docs.arcadedb.com/#SQL-Match)
-* [`TRAVERSE`](https://docs.arcadedb.com/#SQL-Traverse)
+* [`SELECT`](https://docs.arcadedb.com/#sql-select)
+* [`MATCH`](https://docs.arcadedb.com/#sql-match)
+* [`TRAVERSE`](https://docs.arcadedb.com/#sql-traverse)
 
 The vertex type (cf. table) holding the metadata records is named `metadata`.
 
@@ -1220,9 +1412,9 @@ Get one-hundred metadata record titles:
 SELECT name FROM metadata
 ```
 
-#### Gremlin
+#### Gremlin TODO:
 
-TODO:
+**DatAasee** supports a subset of [Gremlin](https://docs.arcadedb.com/#gremlin-api).
 
 Get one-hundred metadata record titles:
 ```gremlin
@@ -1231,7 +1423,7 @@ g.V().hasLabel("metadata")
 
 #### Cypher
 
-**DatAasee** supports a subset of [OpenCypher](https://docs.arcadedb.com/#Open-Cypher).
+**DatAasee** supports a subset of [OpenCypher](https://docs.arcadedb.com/#open-cypher).
 For custom Cypher queries, only read-queries are admissible,
 meaning:
 
@@ -1251,17 +1443,22 @@ Get one-hundred metadata record titles:
 MATCH (m:metadata) RETURN m
 ```
 
-#### MQL
+#### MQL TODO:
 
-TODO:
+**DatAasee** supports a subset of a [MQL](https://docs.arcadedb.com/#mongodb-api) as JSON queries.
 
-#### GraphQL
+**Examples:**
 
-TODO:
+Get one-hundred metadata record titles:
+```json
+{ 'collection': 'metadata', 'query': { } }
+```
 
-#### SPARQL
+#### GraphQL TODO:
 
-TODO:
+
+#### SPARQL TODO:
+
 
 ### Custom Frontend
 
@@ -1277,8 +1474,25 @@ In this section **development-related** guidelines are gathered.
 
 **Overview:**
 
+* [Reference Links](#reference-links)
 * [Development Decision Rationales](#development-decision-rationales)
 * [Development Workflows](#development-workflows)
+
+### Reference Links:
+
+* [`DatAasee`: A Metadata-Lake as Metadata Catalog for a Virtual Data-Lake](https://arxiv.org/abs/2409.05512)
+* [The Rise of the Metadata-Lake](https://towardsdatascience.com/the-rise-of-the-metadata-lake-1e95127594de)
+* [Implementing the Metadata Lake](https://medium.com/@ganandg/implementing-the-metadata-lake-7676f9dadb89)
+* [ELT is dead, and EtLT will be the end of modern data processing architecture](https://blog.devgenius.io/elt-is-dead-and-etlt-will-be-the-end-of-modern-data-processing-architecture-154b87c1cce0)
+* [Dataspace](https://en.wikipedia.org/wiki/Dataspace)
+
+#### Dependency Docs:
+
+* [Docker Compose Docs](https://docs.docker.com/compose/)
+* [ArcadeDB Docs](https://docs.arcadedb.com)
+* [Benthos Docs](https://docs.redpanda.com) (via Redpanda Connect)
+* [Lowdefy Docs](https://docs.lowdefy.com)
+* [GNU Make Docs](https://www.gnu.org/software/make/manual/make.html)
 
 ### Development Decision Rationales:
 
@@ -1291,7 +1505,7 @@ In this section **development-related** guidelines are gathered.
 
 * How stable is the upgrade to a release?
     * During the development releases (`0.X`) every release will likely be breaking, particularly
-      with respect to backend API and database schema. Once a version 1.0 is released, breaking
+      with respect to backend API and database schema. Once a version `1.1` is released, breaking
       changes will only occur between major versions.
 
 * What are the three `compose` files for?
@@ -1305,20 +1519,39 @@ In this section **development-related** guidelines are gathered.
       needed.
 
 * Why is **Ubuntu 24.04** used as base image for database and backend?
-    * Overall, the calendar based version together with the 5 year support policy for Ubuntu LTS
+    * Overall, the [calendar based version together with the 5 year support policy for Ubuntu LTS](https://ubuntu.com/about/release-cycle)
       makes keeping current easier. Generally, `glibc` is used, and specifically for the database,
       OpenJDK is supported, as opposed to Alpine.
 
-* Why does building the backend Docker image fail?
-    * This is likely a timeout when downloading Go module packages. Multiple retries maybe necessary
-      to complete a build.
+* Why is the security so weak (i.e. `http` not `https`, `basic auth` not `digest`, no rate limiter)?
+    * DatAasee is a backend service supposed to run behind a proxy or API gateway, which provides
+      `https` (then `basic auth` is not too problematic) as well as a rate limiter.
+
+* Why does the testing setup require `busybox` and `wget`, isn't `wget` part of `busybox`?
+    * `busybox` is used for its onboard HTTP server; and while a `wget` is part of `busybox`, this
+      is a slimmed down variant, specifically the flag `--content-on-error` is not supported.
+
+* Why do (ingest) tests say the (busybox) `httpd` was not found even though `busybox` is installed?
+    * In some distributions an extra package (ie `busybox-extras` in Alpine) needs to be installed.
 
 #### Database
 
 * Why is an `init.sh` script used instead of a plain command in the database container?
     * This is a security measure; the script is designed to hide secrets which need to be passed on
-      start up. A secondary use is the set up of the database schema in case the container is
-      freshly created.
+      start up. A secondary use is to restore the most recent database backup if available.
+
+* How to fix the database if a `/health` report has issues?
+    * First of all, this should be a rare occurence, if not please report an issue. A fix can be
+      attempted by starting a shell in the database container and open the database console via
+      `bin/console.sh`, then connect remotely to the database (local connections do not work):
+      `connect remote:localhost:2480/metadatalake root <db_pass>` and run the commands:
+      `CHECK DATABASE FIX` and `REBUILD INDEX *`. Infos on AcadeDB's console can be found in the
+      [ArcadeDB Docs](https://docs.arcadedb.com/#console)
+
+* How are enumerated properties filled?
+    * Enumerated types and also suggestions for free text fields are stored in CSV files in the
+      `preload` sub-folder. These files contain at least one column with the label (first line)
+      "name" and optionally a second column with the label "data".
 
 #### Backend
 
@@ -1326,12 +1559,16 @@ In this section **development-related** guidelines are gathered.
     * Since the ingests may take very long, it is only triggered and the sucessful triggering is
       reported in the response while the ingest keeps on running. This async behavior is only
       possible with a `buffer` which has to be directly after the input and after `sync_response`
-      of the trigger, thus the input post-pressing processors are used as main pipeline.
+      of the trigger, thus the input post-processing processors are used as main pipeline.
 
 * Why is the content type `application/json` used for responses and not `application/vnd.api+json`?
     * Using the official JSON MIME-type makes a response more compatible and states what it is in
       more general terms. Requested content types on the other hand may be either empty, `*/*`,
       `application/json`, or `application/vnd.api+json`.
+
+* Why are there limits for requests and their bodies and what are they?
+    * This is an additional defense against exhaustion attacks. A parsed request header together
+      with its URL may not exceed 8192 Bytes, likewise the request body may not exceed 8192 Bytes.
 
 #### Frontend
 
@@ -1356,6 +1593,12 @@ In this section **development-related** guidelines are gathered.
 2. `make setup` (builds container images locally)
 3. `make start` (starts development setup)
 
+#### Compose Setup
+
+* `make xxx` (uses `docker compose`)
+* `make xxx COMPOSE="docker compose"` (uses `docker compose`)
+* `make xxx COMPOSE="podman compose"` (uses `podman compose`)
+
 #### Dependency Updates
 
 1. [Dependency documentation](deps.md)
@@ -1370,11 +1613,16 @@ In this section **development-related** guidelines are gathered.
 
 #### API Changes
 
-1. [API definition](../api/openapi.yaml)
+1. [API definition](../api/api.csv)
 2. [API architecture](arc42.md)
 3. [API documentation](#http-api)
-4. [API implementation](../backend/dataasee.yaml)
-5. [API testing](../tests)
+4. [API implementation](../backend/resources/handler_xyz.yaml)
+5. [API rendering](../api/openapi.yaml)
+6. [API testing](../tests/Makefile)
+
+#### Dev Monitoring
+
+* [`lazydocker`](https://github.com/jesseduffield/lazydocker) (use `[` and `]` for tab selection)
 
 #### Coding Standards
 

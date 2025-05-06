@@ -1,0 +1,52 @@
+<resources>
+	<resource>
+		<identifier identifierType="DOI">
+			10.82433/B09Z-4K37
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			https://doi.org/10.1145/3609860
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			http://dx.doi.org/10.1007/978-3-030-72983-7_7
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			10.1007/s10444-019-09724-7
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			10.82433/B09Z-4K37
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			doi:10.1002/pamm.201900006
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			https://doi.org/10.3390/a11070091
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			https://doi.org/10.1002/pamm.201710388
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			https://doi.org/10.1007/978-3-319-58786-8_17
+		</identifier>
+  </resource>
+  <resource>
+		<identifier identifierType="DOI">
+			https://doi.org/10.1080/21642583.2016.1215273
+		</identifier>
+  </resource>
+</resources>

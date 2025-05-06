@@ -1,0 +1,52 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_insert'
+    processors:
+      - label: 'handler_insert__filter_body'
+        mapping: |
+          root = this.catch({}).with("categories","keywords","name","creators","publisher","publicationYear","resourceType","identifiers","synonyms","language","subjects","version","license","rights","project","fundings","description","message","externalItems").catch({}).filter(x -> x.value != null && x.value != [] && x.value != {})
+
+      - label: 'handler_insert__validate_body'
+        json_schema:
+          schema_path: 'file:///schemas/request/insert.json'
+
+      - switch:
+          - check: '!errored()'
+            processors:
+              - try:
+                  - resource: 'normalize'
+
+                  - mapping: 'meta ingest = {"format": "dataasee"}'
+
+                  - resource: 'process'
+
+                  - label: 'handler_insert__arcadedb_command'
+                    arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'command'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      request: |
+                        root.language = "sql"
+                        root.params.recordid = this.recordId
+                        root.command = "UPDATE metadata CONTENT %s UPSERT RETURN AFTER recordId WHERE recordId = :recordid;".format(this.string())
+                      response: |
+                        meta status = "201"
+                        root = {}
+                        root.data.type = "data"
+                        root.data.id = timestamp_unix().string()
+                        root.data.attributes.recordId = this.result.0.recordId
+
+              - catch:
+                  - mapping: |
+                      meta status = "500"
+                      root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]
+
+          - processors:
+              - catch:
+                  - mapping: |
+                      meta status = "400"
+                      root.errors = [ { "title": "Request Error: Bad Request", "detail": "Request failed to pass schema validation.", "links": { "about": "${DL_BASE}/${DL_PATH}/api?request=insert" } } ]

@@ -1,0 +1,103 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_ingest'
+    processors:
+      - label: 'handler_ingest__cache_lock'
+        branch:
+          processors:
+            - cache:
+                resource: 'global_cache'
+                operator: 'exists'
+                key: 'ingesting'
+          result_map: 'meta ingesting = this'
+
+      - switch:
+          - check: 'metadata("ingesting")'
+            processors:
+              - mapping: |
+                  meta status = "503"
+                  root.errors = [ { "title": "Server error: Service Unavailable", "detail": "Already ingesting." } ]
+
+          - check: 'content().string().trim() == "" || this.catch(null) == {}'
+            processors:
+              - mapping: |
+                  meta status = "200"
+                  root.data.type = "system"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes.started = false
+
+          - processors:
+              - try:
+                  - label: 'handler_ingest__filter_body'
+                    mapping: |
+                      root = this.catch({}).with("source","steward","username","password")
+                      root.method = this.method.or("").lowercase()
+                      root.format = this.format.or("").lowercase()
+
+                  - label: 'handler_ingest__validate_body'
+                    json_schema:
+                      schema_path: 'file:///schemas/request/ingest.json'
+
+                  - label: 'handler_ingest__preserve_body'
+                    mapping: |
+                      meta ingest = this
+
+                  - label: 'handler_ingest__set_lock'
+                    cache:
+                      resource: 'global_cache'
+                      operator: 'set'
+                      key: 'ingesting'
+
+                  - mapping: |
+                      meta status = "202"
+                      root.data.type = "system"
+                      root.data.id = timestamp_unix().string()
+                      root.data.attributes.started = true
+
+              - catch:
+                  - mapping: |
+                      meta status = "400"
+                      root.errors = [ { "title": "Request Error: Bad Request", "detail": "Request failed to pass schema validation.", "links": { "about": "${DL_BASE}/${DL_PATH}/api?request=ingest" } } ]
+
+
+  - label: 'handler_ingest_async'
+    processors:
+      - switch:
+          - check: 'metadata("ingest") != null'
+            processors:
+              - log:
+                  message: 'Starting ingest from ${! metadata("ingest").source } via ${! metadata("ingest").method } as ${! metadata("ingest").format }.'
+
+              - mapping: |
+                  meta timer_start = timestamp_unix()
+                  meta count = 0
+
+              - resource: 'methods'
+
+              - arcadedb:
+                  host: '${DB_HOST}'
+                  port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                  endpoint: 'command'
+                  database: '${DB_NAME}'
+                  username: '${DB_USER}'
+                  password: '${DB_PASS}'
+                  request: |
+                    root.language = "sql"
+                    root.command = "REBUILD INDEX *;"
+                  response: |
+                    root = {}
+
+              - resource: 'interconnect'
+
+              - log:
+                  message: 'Finished ingest of ${! metadata("count").string() } records from ${! metadata("ingest").source } after ${! "%.1f".format((timestamp_unix() - metadata("timer_start")) / 3600.0) }h.'
+
+              - mapping: |
+                  meta ingest = deleted()
+
+              - label: 'async_ingest__clear_lock_after_finish'
+                cache:
+                  resource: 'global_cache'
+                  operator: 'delete'
+                  key: 'ingesting'

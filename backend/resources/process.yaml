@@ -4,9 +4,12 @@ processor_resources:
   - label: 'process'
     mapping: |
       root = this
-      root.rawType = metadata("format")
-      root.rawChecksum = this.raw.hash("md5")
-      root.recordId = (metadata("source").string() + "/" + metadata("sourceid").string() + "/" + this.publicationYear.string() + "/" + this.publisher.string() + "/" + this.version.string()).hash("xxhash64").encode("base64rawurl")
-      root.source = metadata("source")
-      root.dataSteward = metadata("steward")
-      root.metadataQuality = if this.with("name","creators","publicationYear","publisher","resourceType").values().any(x -> x.type() == "null") { "Incomplete" } else { "OK" }
+      root.metadataFormat = metadata("ingest").format.or(deleted())
+      root.metadataChecksum = this.rawMetadata.hash("md5").catch(deleted())
+      root.recordId = (metadata("ingest").source.string() + "/" + metadata("ingest").format.string() + "/" + metadata("sourceid").or(this.publisher.string()) + "/" + this.publicationYear.string() + "/" + this.name.string() + "/" + this.version.string()).hash("xxhash64").encode("base64rawurl")
+      root.source = metadata("ingest").source.or("dataasee")
+      root.dataSteward = metadata("ingest").steward.or("dataasee admin")
+      root.schemaVersion = 1
+      root.numberViews = 0                                     # TODO: Remove once 'APPLY DEFAULTS' is implemented in ArcadeDB
+      root.createdAt = now().ts_format("2006-01-02 15:04:05")  # TODO: Remove once 'APPLY DEFAULTS' is implemented in ArcadeDB
+      root.visited = false

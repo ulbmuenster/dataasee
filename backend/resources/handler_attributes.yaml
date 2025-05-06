@@ -1,0 +1,112 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_attributes'
+    processors:
+      - switch:
+          - check: 'metadata("type") == null'
+            processors:
+              - cached:
+                  cache: 'global_cache'
+                  key: 'attributes'
+                  processors:
+                    - label: 'handler_attributes__arcadedb_query_all'
+                      arcadedb:
+                        host: '${DB_HOST}'
+                        port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                        endpoint: 'query'
+                        database: '${DB_NAME}'
+                        username: '${DB_USER}'
+                        password: '${DB_PASS}'
+                        request: |
+                          root.language = "sql"
+                          root.command = """SELECT $resourceTypes.name AS resourcetypes,
+                                                   $languages.name AS languages,
+                                                   $licenses.name AS licenses,
+                                                   $synonyms.name AS synonyms,
+                                                   $externalItems.name AS externalitems,
+                                                   $categories.name as categories,
+                                                   $schemas.name AS schemas,
+                                                   $relations.name AS relations
+                                            LET $resourceTypes = (SELECT name
+                                                                  FROM resourcetypes
+                                                                  ORDER BY name),
+                                                $languages = (SELECT name
+                                                              FROM languages
+                                                              ORDER BY name),
+                                                $licenses = (SELECT name
+                                                             FROM licenses
+                                                             ORDER BY name),
+                                                $synonyms = (SELECT name
+                                                             FROM synonyms
+                                                             ORDER BY name),
+                                                $externalItems = (SELECT name
+                                                                  FROM externalitems
+                                                                  ORDER BY name),
+                                                $categories = (SELECT name
+                                                               FROM categories
+                                                               ORDER BY name),
+                                                $schemas = (SELECT name
+                                                            FROM schemas
+                                                            ORDER BY name),
+                                                $relations = (SELECT name
+                                                              FROM schema:types
+                                                              WHERE type = 'edge'
+                                                              ORDER BY name)"""
+                        response: |
+                          root.data.type = "metadata"
+                          root.data.id = timestamp_unix().string()
+                          root.data.attributes = this.result.0
+
+          - check: 'metadata("type").or("").lowercase().re_match("resourcetypes|languages|licenses|synonyms|externalitems|categories|schemas")'
+            processors:
+              - label: 'handler_attributes__arcadedb_query_single'
+                arcadedb:
+                  host: '${DB_HOST}'
+                  port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                  endpoint: 'query'
+                  database: '${DB_NAME}'
+                  username: '${DB_USER}'
+                  password: '${DB_PASS}'
+                  request: |
+                    root.language = "sql"
+                    root.command = """SELECT unionall(name) AS %s
+                                      FROM (SELECT name
+                                            FROM %s
+                                            ORDER BY name)""".format(metadata("type").lowercase(),metadata("type").lowercase())
+                  response: |
+                    root.data.type = "metadata"
+                    root.data.id = timestamp_unix().string()
+                    root.data.attributes = this.result.0
+
+          - check: 'metadata("type").or("").lowercase() == "relations"'
+            processors:
+              - label: 'handler_attributes__arcadedb_query_relations'
+                arcadedb:
+                  host: '${DB_HOST}'
+                  port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                  endpoint: 'query'
+                  database: '${DB_NAME}'
+                  username: '${DB_USER}'
+                  password: '${DB_PASS}'
+                  request: |
+                    root.language = "sql"
+                    root.command = """SELECT unionall(name) AS relations
+                                      FROM (SELECT name
+                                            FROM schema:types
+                                            WHERE type = 'edge'
+                                            ORDER BY name)"""
+                  response: |
+                    root.data.type = "metadata"
+                    root.data.id = timestamp_unix().string()
+                    root.data.attributes = this.result.0
+
+          - processors:
+              - mapping: |
+                  meta status = "404"
+                  root.errors = [ { "title": "Request Error: Not Found", "detail": "Requested attribute type not found." } ]
+
+      - catch:
+          - mapping: |
+              meta status = "500"
+              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]

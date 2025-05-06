@@ -1,0 +1,9 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'quality'
+    branch:
+      request_map: 'root = this.with("name","creators","publisher","publicationYear","resourceType")'
+      processors:
+        - mapping: 'root.metadataQuality = if this.values().contains(null) || this.name == "" { "Incomplete" } else { "OK" }'
+      result_map: 'root.metadataQuality = this.metadataQuality'

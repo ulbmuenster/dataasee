@@ -76,6 +76,12 @@ events:
                       __object.values:
                         __args: 0
                     key: "0.summary"
+                parameters:
+                  __get:
+                    from:
+                      __object.values:
+                        __args: 0
+                    key: "0.parameters.0.schema.externalDocs.url"
                 request:
                   __get:
                     from:
@@ -83,23 +89,11 @@ events:
                         __args: 0
                     key: "0.requestBody.content.application/json.schema.externalDocs.url"
                 response:
-                  __if_none:
-                    - __get:
-                        from:
-                          __object.values:
-                            __args: 0
-                        key: "0.responses.200.content.application/json.schema.externalDocs.url"
-                    - __if_none:
-                        - __get:
-                            from:
-                              __object.values:
-                                __args: 0
-                            key: "0.responses.201.content.application/json.schema.externalDocs.url"
-                        - __get:
-                            from:
-                              __object.values:
-                                __args: 0
-                            key: "0.responses.202.content.application/json.schema.externalDocs.url"
+                  __get:
+                    from:
+                      __object.values:
+                        __args: 0
+                    key: "0.responses.default.content.application/json.schema.externalDocs.url"
                 secured:
                   __not:
                     __not:
@@ -132,6 +126,8 @@ areas:
                   bordered: false
                   size: "small"
                   title: "Endpoints"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16
@@ -187,12 +183,48 @@ areas:
                               - id: "summary.$"
                                 type: "Span"
                                 layout:
-                                  span: 10
+                                  span: 7
                                 properties:
                                   style:
                                     font-size: "large"
                                   content:
                                     _state: "endpoints.$.summary"
+                              - id: "parameters.$"
+                                type: "Anchor"
+                                layout:
+                                  span: 3
+                                properties:
+                                  disabled:
+                                    _type:
+                                      type: "none"
+                                      on:
+                                        _state: "endpoints.$.parameters"
+                                  strong: true
+                                  title: "Parameter Schema"
+                                  style:
+                                    color: "white"
+                                    cursor: "pointer"
+                                events:
+                                  onClick:
+                                    - id: "select_parameter_schema"
+                                      type: "SetGlobal"
+                                      params:
+                                        schema:
+                                          _state: "endpoints.$.parameters"
+                                    - id: "get_parameter_schema"
+                                      type: "Request"
+                                      params: "schema_request"
+                                    - id: "refer_parameter_schema"
+                                      type: "Link"
+                                      params:
+                                        newTab: true
+                                        url:
+                                          _string.concat:
+                                            - "data:application/json,"
+                                            - _uri.encode:
+                                                _json.stringify:
+                                                  on:
+                                                    _request: "schema_request.data"
                               - id: "request.$"
                                 type: "Anchor"
                                 layout:
@@ -204,7 +236,7 @@ areas:
                                       on:
                                         _state: "endpoints.$.request"
                                   strong: true
-                                  title: "JSON Request Schema"
+                                  title: "Request Schema"
                                   style:
                                     color: "white"
                                     cursor: "pointer"
@@ -240,7 +272,7 @@ areas:
                                       on:
                                         _state: "endpoints.$.response"
                                   strong: true
-                                  title: "JSON Response Schema"
+                                  title: "Response Schema"
                                   style:
                                     color: "white"
                                     cursor: "pointer"
@@ -285,7 +317,9 @@ areas:
                 properties:
                   bordered: false
                   size: "small"
-                  title: "Specification"
+                  title: "API Specification"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16

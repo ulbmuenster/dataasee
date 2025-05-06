@@ -10,7 +10,11 @@
 
         "title": { "type": "string" },
 
-        "detail": { "type": "string" } } } },
+        "detail": { "type": "string" },
+        
+        "links": { "type": "object",
+
+          "additionalProperties": { "type": "string" } } } } },
 
     "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
 

@@ -1,0 +1,6 @@
+{
+  "source": "http://host.docker.internal:9876/ingest-marc.xml",
+  "method": "get",
+  "format": "marcxml",
+  "steward": "little"
+}

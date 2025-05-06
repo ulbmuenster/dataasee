@@ -1,9 +1,10 @@
-
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dataasee:api?response=insert",
 
-  "title": "DatAasee Insert Endpoint Response", "type": "object", "required": ["data", "meta", "links"], "properties": {
+  "title": "DatAasee Insert Endpoint Response", "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
+  
+                                                                             { "required": ["errors", "meta", "links"] } ], "properties": {
 
     "data": { "type": "object", "description": "See: https://jsonapi.org/format/#document-resource-objects", "required": ["type", "id", "attributes"], "properties": {
 
@@ -14,6 +15,18 @@
       "attributes": { "type": "object", "title": "Payload", "required": ["recordId"], "properties": {
 
         "recordId": { "type": "string", "title": "Record Identifier" } } } } },
+
+    "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
+
+      "items": { "type": "object", "description": "See: https://jsonapi.org/format/#error-objects", "required": ["title", "detail"], "properties": {
+    
+        "title": { "type": "string" },
+    
+        "detail": { "type": "string" },
+            
+        "links": { "type": "object",
+
+          "additionalProperties": { "type": "string" } } } } },
 
     "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
 

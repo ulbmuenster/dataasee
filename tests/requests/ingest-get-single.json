@@ -1,0 +1,6 @@
+{
+  "source": "http://host.docker.internal:9876/ingest-get-minimal.xml",
+  "method": "get",
+  "format": "datacite",
+  "steward": "little"
+}

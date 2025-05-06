@@ -1,0 +1,101 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_stats'
+    processors:
+      - cached:
+          cache: 'global_cache'
+          key: 'stats'
+          ttl: '1m'
+          processors:
+            - label: 'handler_stats__arcadedb_query'
+              arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'query'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sql"
+                  root.command = """SELECT $total[0].count AS total,
+                                           $resourceTypes AS resourceTypes,
+                                           $licenses AS licenses,
+                                           $languages AS languages,
+                                           $categories AS categories,
+                                           $subjects AS subjects,
+                                           $schemas AS schemas,
+                                           $views AS views,
+                                           $keywords AS keywords,
+                                           $years AS years
+                                    LET $total = (SELECT count(name) AS count
+                                                  FROM metadata),
+                                        $resourceTypes = (SELECT ifnull(resourceType.name,'Unknown') AS name,
+                                                                 count(*) AS value
+                                                          FROM metadata
+                                                          GROUP BY resourceType
+                                                          ORDER BY value DESC
+                                                          LIMIT 100),
+                                        $licenses = (SELECT ifnull(license.name,'Unknown') AS name,
+                                                            count(*) AS value
+                                                     FROM metadata
+                                                     GROUP BY license
+                                                     ORDER BY value DESC
+                                                     LIMIT 100),
+                                        $languages = (SELECT ifnull(language.name,'Unknown') AS name,
+                                                             count(*) AS value
+                                                      FROM metadata
+                                                      GROUP BY language
+                                                      ORDER BY value DESC
+                                                      LIMIT 100),
+                                        $categories = (SELECT ifnull(categories.asRID().name,'None') AS name,
+                                                              count(*) AS value
+                                                       FROM (SELECT categories
+                                                             FROM metadata
+                                                             UNWIND categories)
+                                                       GROUP BY categories
+                                                       ORDER BY value DESC
+                                                       LIMIT 100),
+                                        $subjects = (SELECT ifnull(subjects.name,'Unknown') AS name,
+                                                            count(*) AS value
+                                                     FROM (SELECT subjects
+                                                           FROM metadata
+                                                           UNWIND subjects)
+                                                     GROUP BY subjects
+                                                     ORDER BY value DESC
+                                                     LIMIT 100),
+                                        $schemas = (SELECT ifnull(metadataFormat,'None') AS name,
+                                                           count() AS value
+                                                    FROM metadata
+                                                    GROUP BY name
+                                                    ORDER BY value DESC
+                                                    LIMIT 100),
+                                        $views = (SELECT recordId AS name,
+                                                         numberViews AS value
+                                                  FROM metadata
+                                                  ORDER BY value DESC
+                                                  LIMIT 10),
+                                        $keywords = (SELECT keywords AS name,
+                                                            count(*) AS value
+                                                     FROM (SELECT keywords.toLowerCase().split(',').transform('trim') AS keywords
+                                                           FROM metadata
+                                                           WHERE keywords != ""
+                                                           UNWIND keywords)
+                                                     GROUP BY keywords
+                                                     ORDER BY value DESC
+                                                     LIMIT 10),
+                                        $years = (SELECT ifnull(publicationYear.asString(),'Unknown') AS name,
+                                                         count(*) AS value
+                                                  FROM metadata
+                                                  GROUP BY publicationYear
+                                                  ORDER BY value DESC
+                                                  LIMIT 10)"""
+                response: |
+                  root.data.type = "data"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes = this.result.0
+
+      - catch:
+          - mapping: |
+              meta status = "500"
+              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]

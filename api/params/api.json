@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataasee:api?params=api",
+
+  "title": "DatAasee API Endpoint Parameters", "type": "object", "properties": {
+
+    "params": { "type": "string", "title": "URI Parameter", "enum": ["api", "attributes", "metadata"] },
+
+    "request": { "type": "string", "title": "Request Body", "enum": ["ingest", "insert"] },
+
+    "response": { "type": "string", "title": "Response Body", "enum": ["api", "attributes", "backup", "health", "ingest", "insert", "metadata", "ready", "schema", "stats", "sources"] } }
+}

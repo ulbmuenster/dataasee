@@ -32,25 +32,51 @@ requests:
     payload:
       _state: true
     properties:
-      url: "/metadata"
+      url:
+        _if:
+          test:
+            _eq:
+              - _payload: "results_paging"
+              - null
+          then: "metadata"
+          else:
+            _string.substring:
+              on:
+                _get:
+                  from:
+                    _payload: "results_paging"
+                  key: "url"
+              start:
+                _string.indexOf:
+                  on:
+                    _get:
+                      from:
+                        _payload: "results_paging"
+                      key: "url"
+                  searchValue: "metadata?"
       method: "get"
       params:
-        category:
-          _payload: "category"
-        resourcetype:
-          _payload: "resourcetype"
-        language:
-          _payload: "language"
-        license:
-          _payload: "license"
-        from:
-          _payload: "from"
-        till:
-          _payload: "till"
-        newest:
-          _payload: "sort"
-        skip:
-          _payload: "results_paging.skip"
+        _if:
+          test:
+            _eq:
+              - _payload: "results_paging"
+              - null
+          then:
+            category:
+              _payload: "category"
+            resourcetype:
+              _payload: "resourcetype"
+            language:
+              _payload: "language"
+            license:
+              _payload: "license"
+            from:
+              _payload: "from"
+            till:
+              _payload: "till"
+            newest:
+              _payload: "sort"
+          else: {}
 
 events:
   onInit:
@@ -97,6 +123,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Select Filters"
+                      headerStyle:
+                        font-size: "large"
                     areas:
                       content:
                         gutter: 16
@@ -224,6 +252,8 @@ areas:
                   bordered: false
                   size: "small"
                   title: "Filter Help"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16
@@ -262,19 +292,18 @@ areas:
                                         ```
                                         /api/v1/attributes
                                         ```
-                                    2. Clicking "Submit" sends the GET request:
+                                    2. Clicking "Search" sends the GET request:
 
                                         ```
                                         /api/v1/metadata?category=x&resourcetype=y&language=z&license=a&from=b&till=c&newest=true
                                         ```
                                        The server filters null or empty filters.
 
-                                    3. Paging forward or backwards in the results resends the GET request with an additional `skip` parameter:
+                                    3. Paging forward or backwards in the results resends the GET request with an additional `page` parameter:
 
                                         ```
-                                        /api/v1/metadata?skip=10&category=x&resourcetype=y&language=z&license=a&from=b&till=c&newest=true
+                                        /api/v1/metadata?category=x&resourcetype=y&language=z&license=a&from=b&till=c&newest=true&page=q
                                         ```
-                                       The frontend has to keep count for the skip; which pagination controls typically provide.
 ## Results Card
       - _ref: "templates/results.yaml"
 

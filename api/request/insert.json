@@ -58,12 +58,6 @@
 
     "rights": { "type": "string", "title": "Additional rights agreements.", "maxLength": 65535 },
 
-    "project": { "type": "object", "title": "Name and website of overarching project", "required": ["name"], "properties": {
-
-      "name": { "type": "string", "title": "Name", "maxLength": 255 },
-
-      "data": { "type": ["string","null"], "title": "Website", "maxLength": 4095, "format": "uri" } } },
-
     "fundings": { "type": "array", "title": "Award identifier and optional funder of fundings.", "maxItems": 15,
 
       "items": { "type": "object", "required": ["name"], "properties": {

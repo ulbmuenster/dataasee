@@ -1,0 +1,43 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_api'
+    processors:
+      - switch:
+          - check: 'metadata("request") == null && metadata("response") == null && metadata("params") == null'
+            processors:
+              - cached:
+                  cache: 'global_cache'
+                  key: 'api'
+                  processors:
+                    - label: 'handler_api__openapi_schema'
+                      mapping: |
+                        root.data = file("/schemas/openapi.yaml").parse_yaml()
+
+          - check: 'metadata("params").or("").re_match("api|attributes|metadata")'
+            processors:
+              - label: 'handler_api__params_schema'
+                mapping: |
+                  root.data = file("/schemas/params/" + metadata("params").string() + ".json").parse_json()
+
+          - check: 'metadata("request").or("").re_match("ingest|insert")'
+            processors:
+              - label: 'handler_api__request_schema'
+                mapping: |
+                  root.data = file("/schemas/request/" + metadata("request").string() + ".json").parse_json()
+
+          - check: 'metadata("response").or("").re_match("api|attributes|backup|error|health|ingest|insert|metadata|ready|schema|sources|stats")'
+            processors:
+              - label: 'handler_api__response_schema'
+                mapping: |
+                  root.data = file("/schemas/response/" + metadata("response").string() + ".json").parse_json()
+
+          - processors:
+              - mapping: |
+                  meta status = "404"
+                  root.errors = [ { "title": "Request Error: Not Found", "detail": "A parameter value is not an endpoint or has no request schema or parameters." } ]
+
+      - catch:
+          - mapping: |
+              meta status = "500"
+              root.errors = [ { "title": "Server error: Internal Server Error", "detail": "Schema read error." } ]

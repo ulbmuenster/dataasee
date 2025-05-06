@@ -1,0 +1,108 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: "lido"
+    try:
+      - label: 'format_lido__get_payload'
+        mapping: 'root = this.lido'
+
+      - label: 'format_lido__parser_workflow'
+        workflow:
+          meta_path: ''
+          order:
+            - - 'rawMetadata'
+              - 'name'
+              - 'publicationYear'
+              - 'resourceType'
+              - 'identifiers'
+              - 'subjects'
+              - 'keywords'
+            - - 'synonyms'
+              - 'subjects_1'
+            - - 'gather'
+          branches:
+            'rawMetadata':
+              request_map: 'root = this.without("dataasee")'
+              processors:
+                - mapping: |
+                    root.rawMetadata = this.format_xml(no_indent: true).string()
+              result_map: 'root.dataasee.rawMetadata = this.rawMetadata'
+
+            'name':
+              request_map: 'root = this.descriptiveMetadata.objectIdentificationWrap.titleWrap.titleSet.array()'
+              processors:
+                - mapping: |
+                    let preferred = this
+                    let preferred = if $preferred.length() > 1 { $preferred.filter(x -> x."-pref" == "http://terminology.lido-schema.org/lido00169").not_empty().catch($preferred) }
+                    let preferred = if $preferred.length() > 1 { $preferred.filter(x -> x.appellationValue.array().filter(y -> y."-pref" == "http://terminology.lido-schema.org/lido00169").length() > 0).not_empty().catch($preferred) }
+                    let preferred = $preferred.index(0).appellationValue.array()
+                    let preferred = if $preferred.length() > 1 { $preferred.filter(x -> x."-pref" == "http://terminology.lido-schema.org/lido00169").not_empty().catch($preferred) }
+                    let preferred = if $preferred.length() > 1 { $preferred.filter(x -> x."-lang" == "en").not_empty().catch($preferred) }
+
+                    root.name = $preferred.index(0)."#text" | $preferred.index(0).string()
+              result_map: 'root.dataasee.name = this.name'
+
+            'publicationYear':
+              request_map: 'root = this.descriptiveMetadata.eventWrap.eventSet.array()'
+              processors:
+                - mapping: |
+                    let production = this
+                    let production = if $production.length() > 1 { $production.filter(x -> x.event.eventType.Concept."-about" == "http://terminology.lido-schema.org/lido00007").not_empty().catch($production) }
+                    let production = if $production.length() > 1 { $production.filter(x -> x.event.eventType.conceptID.array().filter(y -> y."-type" == "http://terminology.lido-schema.org/lido00007").length() > 0).not_empty().catch($production) }
+                    let production = if $production.length() > 1 { $production.filter(x -> x.event.eventType.term.array().filter(y -> y."#text".lowercase() == "Production")).not_empty().catch($production) }
+                    let production = $production.index(0).event.eventDate
+
+                    root.publicationYear = $production.date.latestDate | $production.date.earliestDate | $production.displayDate
+              result_map: 'root.dataasee.publicationYear = this.publicationYear'
+
+            'resourceType':
+              request_map: 'root = this.descriptiveMetadata.objectClassificationWrap.objectWorkTypeWrap.objectWorkType.array()'
+              processors:
+                - mapping: |
+                    root.resourceType = "Other"
+              result_map: 'root.dataasee.resourceType = this.resourceType'
+
+            'identifiers':
+              request_map: 'root = this.lidoRecID.array()'
+              processors:
+                - mapping: |
+                    root.identifiers = this.map_each(x -> { "name": "lidoRecId",
+                                                            "data": x."#text" })
+              result_map: 'root.dataasee.identifiers = this.identifiers'
+
+            'subjects':
+              request_map: 'root = this.descriptiveMetadata.objectRelationWrap.subjectWrap.subjectSet.array()'
+              processors:
+                - mapping: |  # TODO: first term and id is chosen, not best
+                    root.subjects = this.fold([],x -> x.tally.concat(x.value.subject.subjectConcept.array().map_each(y -> {"name":y.term.array().0."#text",
+                                                                                                                           "data":y.conceptID.array().0."#text"})))
+              result_map: 'root.dataasee.subjects = this.subjects'
+
+            'keywords':
+              request_map: 'root = this.descriptiveMetadata.objectClassificationWrap.objectWorkTypeWrap.objectWorkType.array()'
+              processors:
+                - mapping: |
+                    root.keywords = this.fold("",x -> x.tally + x.value.term.array().fold("",y -> y.tally + y.value."#text" + ",")).trim_suffix(",")
+              result_map: 'root.dataasee.keywords = this.keywords'
+
+            'synonyms':
+              request_map: 'root = this.descriptiveMetadata.objectIdentificationWrap.titleWrap.titleSet.array()'
+              processors:
+                - mapping: |
+                    root.synonyms = this.fold([],x -> x.tally.concat(x.value.appellationValue.array().map_each(y -> { "name": "alternative title",
+                                                                                                                              "data": y."#text" | y.string() })))
+              result_map: 'root.dataasee.synonyms = this.synonyms.filter(x -> x.data != root.dataasee.name).not_empty().catch(deleted())'
+
+            'subjects_1':  # TODO: first term and id is chosen, not best
+              request_map: 'root = this.descriptiveMetadata.objectClassificationWrap.classificationWrap.classification.array()'
+              processors:
+                - mapping: |
+                    root.subjects = this.fold([],x -> x.tally.concat([{"name":x.value.term.array().0."#text",
+                                                                       "data":x.value.conceptID.array().0."#text"}]))
+              result_map: 'root.dataasee.subjects = root.dataasee.subjects.or([]).concat(this.subjects).not_empty().catch(deleted())'
+
+            'gather':
+              request_map: 'root = this'
+              processors:
+                - noop: {}
+              result_map: 'root = this.dataasee'

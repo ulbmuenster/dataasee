@@ -1,7 +1,5 @@
 @startuml inside
 
-database src as "DB" #line.dashed;
-
 card ctr_db as "CTR: Database" {
     database db as "ArcadeDB"
 }
@@ -16,9 +14,14 @@ card ctr_fe as "CTR: Frontend" #line.dotted; {
     frame fe as "Lowdefy" #line.dotted;
 }
 
+database dst as "Backup" #line.dashed;
+
+database src as "Source" #line.dashed;
+
+ctr_db -[dashed]->> dst
 ctr_be -[dashed]->> src 
-ctr_db <<-->> ctr_be
-ctr_be <<-->> http
-http <<-[dotted]->> ctr_fe
+ctr_db <<-- ctr_be
+ctr_be -- http
+http <<-[dotted]- ctr_fe
 
 @enduml

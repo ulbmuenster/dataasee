@@ -2,7 +2,7 @@
 
 card ctr_be as "CTR: Backend" {
   agent be as "Benthos"
-  card be0 as "API"
+  collections be0 as "Schemas"
   collections be1 as "Templates"
   collections be2 as "Resources"
 }

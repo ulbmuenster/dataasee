@@ -81,6 +81,8 @@ areas:
                       bordered: false
                       size: "small"
                       title: "Enter Query"
+                      headerStyle:
+                        font-size: "large"
                     areas:
                       content:
                         gutter: 16
@@ -112,13 +114,16 @@ areas:
                               content:
                                 _string.concat:
                                   - "> "
-                                  - _request: "schema_request.data.data.attributes.comment"
+                                  - _request: "schema_request.data.data.attributes.@comment"
 ## Query Text
                           - id: "query_text"
                             type: "TextArea"
                             properties:
                               label:
                                 disabled: true
+                                extra: "A custom query is limited to 100 results per query!"
+                                extraStyle:
+                                  text-align: "right"
                               placeholder: "-- here goes the query"
                               autoSize: true
                               maxLength: 4096
@@ -181,6 +186,8 @@ areas:
                   bordered: false
                   size: "small"
                   title: "Query Help"
+                  headerStyle:
+                    font-size: "large"
                 areas:
                   content:
                     gutter: 16
@@ -239,6 +246,7 @@ areas:
               - id: "table"
                 type: "AgGridAlpine"
                 properties:
+                  rowNumbers: true  # TODO: not available yet: https://www.ag-grid.com/angular-data-grid/row-numbers/
                   rowData:
                     _request: "query_request.data.data.attributes.result"
                   columnDefs:

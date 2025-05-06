@@ -34,6 +34,8 @@ params:
                 __string.concat:
                   - "fetch?id="
                   - __args: "0.attributes.recordId"
+              doi:
+                __args: "0.attributes.doi"
       else:
         - title: "No Results"
           href: null

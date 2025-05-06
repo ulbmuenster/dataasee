@@ -14,70 +14,68 @@ definitions:
   mandatory: "mandatory true"
   notnull: "notnull true"
   readonly: "readonly true"
+  hidden: "hidden true"
   tiny: "max 255"
   small: "max 4095"
   normal: "max 65535"
   integer: "long"
-  notempty: "min 0"
   nonnegative: "min 0"
   url: "regexp"
 
 documents:
-  attributes:
-    name: "string (mandatory, notnull, readonly, tiny)"
-    also: "list of string (notnull, readonly)"
-
   pair:
     name: "string (mandatory, notnull, tiny)"
-    data: "string (mandatory, small, url)"
+    data: "string (small, url)"
 
 vertexes:
   metadata:
 
     # Process
-    schemaVersion: "integer (mandatory, notnull, readonly, nonnegative, default)"
-    recordId: "string (mandatory, notnull, readonly)"
-    metadataQuality: "string (mandatory, notnull, tiny, default)"
-    dataSteward: "string (mandatory, small, default)"
+    schemaVersion: "integer (notnull, min 1, max 1, default 1)"
+    recordId: "string (mandatory, notnull, readonly, max 31)"
+    metadataChecksum: "string (tiny)"
+    metadataQuality: "string (mandatory, notnull, tiny)"
+    dataSteward: "string (mandatory, notnull, small)"
     source: "string (mandatory, notnull, readonly, small)"
-    createdAt: "datetime (mandatory, notnull, readonly, default)"
-    updatedAt: "datetime (default)"
+    createdAt: "datetime (mandatory, notnull, default sysdate('YYYY-MM-DD HH:MM:SS'))"
 
     # Technical
+    metadataFormat: "string (tiny)"
     sizeBytes: "integer (nonnegative)"
-    fileFormat: "string (tiny)"
+    dataFormat: "string (tiny)"
     dataLocation: "string (small, url)"
 
     # Social
-    numberDownloads: "integer (mandatory, notnull, nonnegative, default)"
-    keywords: "string (tiny, default)"
+    numberViews: "integer (notnull, nonnegative, default 0)"
+    keywords: "string (tiny, default '')"
     categories: "list of string (max 4)"
 
     # Descriptive (Mandatory)
-    name: "string (mandatory, tiny, default)"
-    creators: "list of pair (mandatory, tiny)"
-    publisher: "string (mandatory, min 1, tiny)"
+    name: "string (mandatory, tiny, default '')"
+    creators: "list of pair (mandatory, max 255)"
+    publisher: "string (mandatory, tiny)"
     publicationYear: "integer (mandatory, min -9999, max 9999)"
-    resourceType: "link of attribute (mandatory)"
-    identifiers: "list of pair (mandatory, min 1, tiny)"
+    resourceType: "link of pair (mandatory)"
+    identifiers: "list of pair (mandatory, max 255)"
 
     # Descriptive (Optional)
     synonyms: "list of pair (max 255)"
-    language: "link of attribute"
+    language: "link of pair"
     subjects: "list of pair (max 255)"
     version: "string (tiny)"
     license: "link of pair"
     rights: "string (normal)"
-    project: "embedded of pair"
     fundings: "list of pair (max 255)"
-    description: "string (mandatory, normal, default)"
+    description: "string (mandatory, normal, default '')"
     message: "string (normal)"
     externalItems: "list of pair (max 255)"
 
     # Raw Metadata
-    rawType: "string (tiny)"
-    raw: "string"
-    rawChecksum: "string (tiny)"
+    rawMetadata: "string (mandatory, max 2097151, default '')"
+
+    # Internal
+    related: "map of list (hidden)"
+    visited: "boolean (hidden, default false)"
 
 edges:
   isRelatedTo:
@@ -93,10 +91,10 @@ edges:
   isPartOf:
     @extends: "isRelatedTo"
 
-  isSameExpressionAs:
+  commonExpression:
     @extends: "isRelatedTo"
 
-  isSameManifestationAs:
+  commonManifestation:
     @extends: "isRelatedTo"
 
 indexes:
@@ -104,15 +102,14 @@ indexes:
     - "metadata.recordId"
 
   notunique:
-    - "metadata.numberDownloads"
+    - "metadata.numberViews"
     - "metadata.categories"
     - "metadata.publicationYear"
     - "metadata.resourceType"
-    - "metadata.identifiers"
     - "metadata.language"
     - "metadata.subjects"
     - "metadata.license"
-    - "metadata.rawType"
+    - "metadata.metadataFormat"
 
   full_text:
     - "metadata.keywords"

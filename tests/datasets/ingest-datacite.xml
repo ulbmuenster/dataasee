@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+	<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+
+		<identifier identifierType="DOI">10.5555/12345678</identifier>
+
+		<creators>
+			<creator>
+				<creatorName nameType="Personal">Carberry, Josiah</creatorName>
+        <nameIdentifier schemeURI="https://orcid.org/" nameIdentifierScheme="ORCID">0000-0002-1825-0097</nameIdentifier>
+			</creator>
+
+			<creator>
+				<givenName>Ed</givenName>
+        <familyName>Pentz</familyName>
+        <nameIdentifier schemeURI="https://orcid.org/" nameIdentifierScheme="ORCID">0000-0002-5993-8592</nameIdentifier>
+			</creator>
+		</creators>
+
+		<titles>
+			<title xml:lang="en">Toward a Unified Theory of High-Energy Metaphysics: Silly String Theory</title>
+      <title xml:lang="en" titleType="Subtitle">DataCite Edition</title>
+		</titles>
+
+		<publisher>Open Journal System</publisher>
+
+		<publicationYear>2008</publicationYear>
+
+		<resourceType>Article</resourceType>
+
+		<subjects>
+			<subject>Psychoceramics</subject>
+		</subjects>
+
+		<language>en</language>
+
+		<formats>
+			<format>application/pdf</format>
+		</formats>
+
+		<rightsList>
+			<rights rightsURI="https://spdx.org/licenses/CC-BY-4.0">CC-BY-4.0</rights>
+		</rightsList>
+
+		<descriptions>
+			<description xml:lang="en" descriptionType="Abstract">The characteristic theme of the works of Stone is the bridge between culture and society. Several narratives concerning the fatal flaw, and subsequent dialectic, of semioticist class may be found. Thus, Debord uses the term ‘the subtextual paradigm of consensus’ to denote a cultural paradox. The subject is interpolated into a neocultural discourse that includes sexuality as a totality. But Marx’s critique of prepatriarchialist nihilism states that consciousness is capable of significance. The main theme of Dietrich’s model of cultural discourse is not construction, but neoconstruction. Thus, any number of narratives concerning the textual paradigm of narrative exist. Pretextual cultural theory suggests that context must come from the collective unconscious.</description>
+		</descriptions>
+
+	</resource>
+</resources>

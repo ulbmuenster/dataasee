@@ -1,0 +1,66 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_health'
+    processors:
+      - branch:
+          processors:
+            - label: 'handler_health__arcadedb_probe'
+              arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'command'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sqlscript"
+                  root.command = """LET $a = CHECK DATABASE;
+                                    SELECT version().split(' ')[0] AS version,
+                                           { "warnings": $a.warnings[0].size(),
+                                             "errors": $a.totalErrors[0],
+                                             "corrupted": $a.corruptedRecords[0].size(),
+                                             "invalid": $a.invalidLinks[0] } AS report;"""
+                response: |
+                  root = this.result.0
+                  root.healthy = true
+
+            - catch:
+                - mapping: 'root.healthy = false'
+
+          result_map: |
+            root.database = this
+            root.database.name = "ArcadeDB"
+
+      - branch:
+          processors:
+            - try:
+                - label: 'handler_health__benthos_probe'
+                  http:
+                    url: 'http://localhost:4195/version'
+                    verb: 'GET'
+
+                - mapping: |
+                    root.version = this.version
+                    root.healthy = true
+
+            - catch:
+                - mapping: 'root.healthy = false'
+
+          result_map: |
+            root.processor = this
+            root.processor.name = "Benthos"
+
+      - switch:
+          - check: 'this.database.healthy && this.processor.healthy'
+            processors:
+              - mapping: |
+                  root.data.type = "system"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes.database = this.database
+                  root.data.attributes.processor = this.processor
+
+          - processors:
+              - mapping: |
+                  meta status = "500"
+                  root.errors = [{ "title": "Server Error: Internal Server Error", "detail": "Service not healthy." }]

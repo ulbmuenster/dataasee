@@ -1,0 +1,34 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_sources'
+    processors:
+      - cached:
+          cache: 'global_cache'
+          key: 'sources'
+          ttl: '1h'
+          processors:
+            - label: 'handler_sources__arcadedb_query'
+              arcadedb:
+                host: '${DB_HOST}'
+                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                endpoint: 'query'
+                database: '${DB_NAME}'
+                username: '${DB_USER}'
+                password: '${DB_PASS}'
+                request: |
+                  root.language = "sql"
+                  root.command = """SELECT source AS name,
+                                           metadataFormat AS format,
+                                           max(createdAt.format('YYYY-MM-dd')) AS date
+                                    FROM metadata
+                                    GROUP BY name, format"""
+                response: |
+                  root.data.type = "data"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes.sources = this.result
+
+      - catch:
+          - mapping: |
+              meta status = "500"
+              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]

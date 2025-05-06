@@ -9,51 +9,70 @@ processor_resources:
       database: '${DB_NAME}'
       username: '${DB_USER}'
       password: '${DB_PASS}'
+      retries: 0
       request: |
         root.language = "sqlscript"
-        root.awaitResponse = "false"
+        root.awaitResponse = false
         root.command = """
-          CONSOLE.output '\nInterconnect Started!';
+          CONSOLE.log 'Starting interconnect!\n';
+          LET $new = SELECT @rid FROM metadata WHERE visited = false;
           LET $progress = 0;
-          LET $marker = #-1:-1;
-          WHILE( $marker IS NOT NULL ) {
-            LET $block = SELECT @rid, identifiers, related FROM metadata WHERE (@rid > $marker) AND (related IS NOT NULL) LIMIT 100;
-            LET $marker = last($block.@rid);
-            BEGIN;
-            FOREACH( $src IN $block ) {
-              LET $rid = $src.@rid;
-              LET $related = $src.related[data <> 'null'];
-              LET $identifiers = $src.identifiers;
-              IF( 'isRelatedTo' IN $related.name ) {
-                CREATE EDGE isRelatedTo FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isRelatedTo'].data)) IF NOT EXISTS;
+          BEGIN;
+          FOREACH( $src IN $new.@rid ) {
+
+            LET $related = $src.related;
+
+            IF( $related <> {} ) {
+              LET $relatee = SELECT @rid, identifiers.data AS ids FROM metadata WHERE identifiers.data CONTAINSANY unionall($related.values());
+
+              IF( $related CONTAINSKEY 'isRelatedTo' ) {
+                LET $dst = $relatee[ids CONTAINSANY $related.isRelatedTo].@rid;
+                CREATE EDGE isRelatedTo FROM $src TO $dst IF NOT EXISTS;
               }
-              IF( 'isNewVersionOf' IN $related.name ) {
-                CREATE EDGE isNewVersionOf FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isNewVersionOf'].data)) IF NOT EXISTS;
+
+              IF( $related CONTAINSKEY 'isNewVersionOf' ) {
+                LET $dst = $relatee[ids CONTAINSANY $related.isNewVersionOf].@rid;
+                CREATE EDGE isNewVersionOf FROM $src TO $dst IF NOT EXISTS;
               }
-              IF( 'isDerivedFrom' IN $related.name ) {
-                CREATE EDGE isDerivedFrom FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isDerivedFrom'].data)) IF NOT EXISTS;
+
+              IF( $related CONTAINSKEY 'isDerivedFrom' ) {
+                LET $dst = $relatee[ids CONTAINSANY $related.isDerivedFrom].@rid;
+                CREATE EDGE isDerivedFrom FROM $src TO $dst IF NOT EXISTS;
               }
-              IF( 'isPartOf' IN $related.name ) {
-                CREATE EDGE isPartOf FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isPartOf'].data)) IF NOT EXISTS;
+
+              IF( $related CONTAINSKEY 'isPartOf' ) {
+                LET $dst = $relatee[ids CONTAINSANY $related.isPartOf].@rid;
+                CREATE EDGE isPartOf FROM $src TO $dst IF NOT EXISTS;
               }
-              IF( 'isSameExpressionAs' IN $related.name ) {
-                CREATE EDGE isSameExpressionAs FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $related[name='isSameExpressionAs'].data)) IF NOT EXISTS;
-              }
-              IF( $identifiers IS NOT NULL ) {
-                CREATE EDGE isSameManifestationAs FROM $rid TO (SELECT FROM metadata WHERE (identifiers.data CONTAINSANY $identifiers.data) AND (@rid <> $rid)) IF NOT EXISTS;
+
+              IF( $src.related CONTAINSKEY 'commonExpression' ) {
+                LET $dst = $relatee[ids CONTAINSANY $src.related.commonExpression].@rid;
+                CREATE EDGE commonExpression FROM $src TO $dst IF NOT EXISTS;
               }
             }
-            COMMIT;
-            LET $progress = $progress + $block.size();
-            CONSOLE.output $progress + ' Done!';
+
+            LET $identifiers = $src.identifiers;
+
+            IF( $identifiers IS NOT NULL ) {
+              LET $dst = SELECT @rid FROM metadata WHERE (@rid <> $src) AND (identifiers.data CONTAINSANY $identifiers.data);
+              CREATE EDGE commonManifestation FROM $src TO $dst.@rid IF NOT EXISTS;
+            }
+
+            UPDATE metadata SET visited = true WHERE @rid = $src;
+
+            LET $progress = $progress + 1;
+
+            IF( $progress % 1000 = 0 ) {
+              COMMIT;
+              CONSOLE.output $progress + ' Done!';
+              BEGIN;
+            }
           }
-          BEGIN;
-          UPDATE metadata REMOVE related WHERE related IS NOT NULL;
           COMMIT;
+          CONSOLE.output $progress + ' Done!';
           SLEEP 5000;
           BACKUP DATABASE;
-          CONSOLE.output 'Interconnect Completed!';"""
+          CONSOLE.log 'Finished interconnect!\n';"""
 
       response: |
         root = {}
-

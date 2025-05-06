@@ -2,11 +2,13 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dataasee:api?response=metadata",
 
-  "title": "DatAasee Metadata Endpoint Response", "type": "object", "required": ["data", "meta", "links"], "properties": {
+  "title": "DatAasee Metadata Endpoint Response", "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
+  
+                                                                               { "required": ["errors", "meta", "links"] } ], "properties": {
 
     "data": { "oneOf": [
 
-      { "type": "array", "title": "Search Result",
+      { "type": "array", "title": "Search Result", "maxItems": 20,
 
           "items":  { "type": "object", "properties": {
 
@@ -16,13 +18,15 @@
 
             "attributes": { "type": "object", "title": "Payload", "properties": {
 
-              "name": { "type": "string", "title": "Title" },
-
               "recordId": { "type": "string", "title": "Record Identifier" },
 
-              "publicationYear": { "type": "integer", "title": "Published" },
+              "name": { "type": "string", "title": "Title" },
 
-              "resourceType": { "type": "string", "title": "Resource Type" },
+              "publicationYear": { "type": ["integer", "null"], "title": "Published" },
+
+              "resourceType": { "type": ["string","null"], "title": "Resource Type" },
+
+              "doi" : { "type": ["string", "null"], "title": "Digital Object Identifier" },
 
               "metadataQuality": { "type": "string", "title": "Metadata Quality" } } } } } },
 
@@ -32,145 +36,157 @@
 
           "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
 
-          "attributes": { "oneOf": [
+          "attributes": {
           
-            { "type": "object", "title": "Payload", "required": ["result"], "properties": {
+            "type": "object", "title": "Payload", "required": ["result"], "properties": {
 
-                "result": { "type": "array",
+              "result": { "type": "array", "maxItems": 100,
 
-                  "items": { "type": "object", "title": "Query Result" } } } },
+                "items": { "type": "object", "title": "Query Result" } } } } } },
 
-            { "type": "object", "title": "Payload", "required": ["schemaVersion", "recordId", "metadataQuality", "source", "createdAt", "numberDownloads", "keywords", "categories"], "properties": {
+      { "type": "object", "title": "Fetch Result", "required": ["type", "id", "attributes"], "properties": {
 
-                "schemaVersion": { "type": "integer", "title": "Schema Version" },
+          "type": { "type": "string", "const": "data" },
 
-                "recordId": { "type": "string", "title": "Record Identifier" },
+          "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
 
-                "metadataQuality": { "type": "string", "title": "Metadata Quality" },
+          "attributes": {
 
-                "dataSteward": { "type": ["string","null"], "title": "Data Steward" },
+            "type": "object", "title": "Payload", "required": ["schemaVersion", "recordId", "metadataQuality", "source", "createdAt", "numberViews", "keywords", "categories"], "properties": {
 
-                "source": { "type": "string", "title": "Source" },
+              "schemaVersion": { "type": "integer", "title": "Schema Version" },
 
-                "createdAt": { "type": "string", "title": "Created At" },
+              "recordId": { "type": "string", "title": "Record Identifier" },
 
-                "updatedAt": { "type": ["string","null"], "title": "Last Changed" },
+              "metadataChecksum": { "type": ["string","null"], "title": "Metadata Checksum (MD5)" },
 
-                "sizeBytes": { "type": ["integer","null"], "title": "Size (in Bytes)" },
+              "metadataQuality": { "type": "string", "title": "Metadata Quality" },
 
-                "fileFormat": { "type": ["string","null"], "title": "File Format" },
+              "dataSteward": { "type": ["string","null"], "title": "Data Steward" },
 
-                "dataLocation": { "type": ["string","null"], "title": "Data Location", "pattern": "uri" },
+              "source": { "type": "string", "title": "Source" },
 
-                "numberDownloads": { "type": "integer", "title": "Views" },
+              "createdAt": { "type": "string", "title": "Created At" },
 
-                "keywords": { "type": "string", "title": "Keywords" },
+              "metadataFormat": { "type": ["string","null"], "title": "Metadata Format" },
 
-                "categories": { "type": ["array","null"],
+              "sizeBytes": { "type": ["integer","null"], "title": "Data Size (in Bytes)" },
 
-                  "items": { "type": "string", "title": "Category" } },
+              "dataFormat": { "type": ["string","null"], "title": "Data (File) Format" },
 
-                "name": { "type": "string", "title": "Title" },
+              "dataLocation": { "type": ["string","null"], "title": "Data Location", "format": "uri" },
 
-                "creators": { "type": "array",
-              
-                  "items": { "type": "object", "properties": {
+              "numberViews": { "type": "integer", "title": "Views" },
 
-                    "name": { "type": "string", "title": "Display Name" },
+              "keywords": { "type": "string", "title": "Keywords" },
 
-                    "data": { "type": "string", "pattern": "uri", "title": "Persistent Identifier" } } } },
+              "categories": { "type": ["array","null"],
 
-                "publisher": { "type": "string", "title": "Publisher" },
+                "items": { "type": "string", "title": "Category" } },
 
-                "publicationYear": { "type": "integer", "title": "Published" },
+              "name": { "type": "string", "title": "Title" },
 
-                "resourceType": { "type": "string", "title": "Resource Type" },
+              "creators": { "type": "array",
 
-                "identifiers": { "type": "array",
-              
-                  "items": { "type": "object", "properties": {
+                "items": { "type": "object", "properties": {
 
-                    "name": { "type": "string", "title": "Identifier Type" },
+                  "name": { "type": "string", "title": "Display Name" },
 
-                    "data": { "type": "string", "title": "Persistent Identifier" } } } },
+                  "data": { "type": "string", "format": "uri", "title": "Persistent Identifier" } } } },
 
-                "synonyms": { "type": ["array","null"],
-              
-                  "items": { "type": "object", "properties": {
+              "publisher": { "type": "string", "title": "Publisher" },
 
-                    "name": { "type": "string", "title": "Title Type" },
+              "publicationYear": { "type": ["integer", "null"], "title": "Published" },
 
-                    "data": { "type": "string", "title": "Alternative Title" } } } },
+              "resourceType": { "type": ["string","null"], "title": "Resource Type" },
 
-                "language": { "type": ["string","null"], "title": "Language" },
+              "identifiers": { "type": "array",
 
-                "subjects": { "type": ["array","null"],
-              
-                  "items": { "type": "object", "properties": {
+                "items": { "type": "object", "properties": {
 
-                    "name": { "type": "string", "title": "Subject Name" },
+                  "name": { "type": "string", "title": "Identifier Type" },
 
-                    "data": { "type": "string", "pattern": "uri", "title": "Subject Identifier" } } } },
+                  "data": { "type": "string", "title": "Persistent Identifier" } } } },
 
-                "version": { "type": ["string","null"], "title": "Version" },
+              "synonyms": { "type": ["array","null"],
 
-                "license": { "type": ["object","null"], "properties": {
+                "items": { "type": "object", "properties": {
 
-                  "name": { "type": "string", "title": "License" },
+                  "name": { "type": "string", "title": "Title Type" },
 
-                  "data": { "type": "string", "pattern": "uri", "title": "Project Identifier" } } },
+                  "data": { "type": "string", "title": "Alternative Title" } } } },
 
-                "rights": { "type": ["string","null"], "title": "Rights" },
+              "language": { "type": ["string","null"], "title": "Language" },
 
-                "project": { "type": ["object","null"], "properties": {
+              "subjects": { "type": ["array","null"],
 
-                  "name": { "type": "string", "title": "Project Name" },
+                "items": { "type": "object", "properties": {
 
-                  "data": { "type": "string", "pattern": "uri", "title": "Project Identifier" } } },
+                  "name": { "type": "string", "title": "Subject Name" },
 
-                "fundings": { "type": ["array","null"],
-              
-                  "items": { "type": "object", "properties": {
+                  "data": { "type": "string", "format": "uri", "title": "Subject Identifier" } } } },
 
-                    "name": { "type": "string", "title": "Award Identifier" },
+              "version": { "type": ["string","null"], "title": "Version" },
 
-                    "data": { "type": "string", "title": "Funder Name" } } } },
+              "license": { "type": ["object","null"], "properties": {
 
-                "description": { "type": "string", "title": "Description" },
+                "name": { "type": "string", "title": "License" },
 
-                "message": { "type": ["string","null"], "title": "Note" },
+                "data": { "type": "string", "format": "uri", "title": "Project Identifier" } } },
 
-                "externalItems": { "type": ["array","null"],
-              
-                  "items": { "type": "object", "properties": {
+              "rights": { "type": ["string","null"], "title": "Rights" },
 
-                    "name": { "type": "string", "title": "Item Type" },
+              "fundings": { "type": ["array","null"],
 
-                    "data": { "type": "string", "pattern": "uri", "title": "Item Identifier" } } } },
+                "items": { "type": "object", "properties": {
 
-                "rawType": { "type": ["string","null"], "title": "Raw Format" },
+                  "name": { "type": "string", "title": "Award Identifier" },
 
-                "raw": { "type": "string", "title": "Raw Metadata" },
+                  "data": { "type": "string", "title": "Funder Name" } } } },
 
-                "rawChecksum": { "type": ["string","null"], "title": "Raw Checksum" },
+              "description": { "type": "string", "title": "Description" },
 
-                "relations": { "type": "array", "title": "Relations", 
-                
-                  "items": { "type": "object", "required": ["type", "name", "recordId", "publicationYear", "resourceType", "metadataQuality"], "properties": {
+              "message": { "type": ["string","null"], "title": "Note" },
 
-                    "type": { "type": "string", "title": "Relation Type" },
+              "externalItems": { "type": ["array","null"],
 
-                    "isOut": { "type": "boolean", "title": "Is Outgoing? (or else Incoming)" },
+                "items": { "type": "object", "properties": {
 
-                    "name": { "type": "string", "title": "Title" },
+                  "name": { "type": "string", "title": "Item Type" },
 
-                    "recordId": { "type": "string", "title": "Record Identifier" },
+                  "data": { "type": "string", "format": "uri", "title": "Item Identifier" } } } },
 
-                    "publicationYear": { "type": "integer", "title": "Published" },
+              "rawMetadata": { "type": "string", "title": "Raw Metadata" },
 
-                    "resourceType": { "type": "string", "title": "Resource Type" },
+              "relations": { "type": "array", "title": "Relations",
 
-                    "metadataQuality": { "type": "string", "title": "Metadata Quality" } } } } } } ] } } } ] },
+                "items": { "type": "object", "required": ["type", "name", "recordId", "publicationYear", "resourceType", "metadataQuality"], "properties": {
+
+                  "type": { "type": "string", "title": "Relation Type" },
+
+                  "isOut": { "type": "boolean", "title": "Is Outgoing? (or else Incoming)" },
+
+                  "recordId": { "type": "string", "title": "Record Identifier" },
+
+                  "name": { "type": ["string","null"], "title": "Title" },
+
+                  "publicationYear": { "type": ["integer","null"], "title": "Published" },
+
+                  "resourceType": { "type": ["string","null"], "title": "Resource Type" },
+
+                  "metadataQuality": { "type": "string", "title": "Metadata Quality" } } } } } } } } ] },
+
+    "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
+
+      "items": { "type": "object", "description": "See: https://jsonapi.org/format/#error-objects", "required": ["title", "detail"], "properties": {
+    
+        "title": { "type": "string" },
+    
+        "detail": { "type": "string" },
+            
+        "links": { "type": "object",
+
+          "additionalProperties": { "type": "string" } } } } },
 
     "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
 
@@ -182,5 +198,11 @@
 
       "self": { "type": "string" },
 
-      "describedby": { "type": "string" } } } }
+      "describedby": { "type": "string" },
+
+      "first": { "type": "string" },
+    
+      "prev": { "type": "string" },
+    
+      "next": { "type": "string" } } } }
 }

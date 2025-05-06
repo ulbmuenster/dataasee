@@ -1,0 +1,54 @@
+<records>
+	<mods version="3.5" xsi:schemaLocation="http://www.loc.gov/mods/v3 http://www.loc.gov/standards/mods/v3/mods-3-5.xsd">
+
+    <location>
+      <url>https://doi.org/10.5555/12345678</url>
+    </location>
+
+		<titleInfo>
+			<title>Toward a Unified Theory of High-Energy Metaphysics: Silly String Theory</title>
+      <subtitle>MODS Edition</subtitle>
+		</titleInfo>
+
+		<titleInfo type="alternate">
+			<title>MODS Test Data Set Alternate</title>
+      <subtitle>Another Subtitle</subtitle>
+		</titleInfo>
+
+    <name type="personal">
+			<namePart type="given">Josiah</namePart>
+			<namePart type="family">Carberry</namePart>
+			<nameIdentifier>orcid:0000-0002-1825-0097 </nameIdentifier>
+		</name>
+
+		<name type="personal">
+			<displayForm>Pentz, Ed</namePart>
+      <nameIdentifier valueURI="https://orcid.org/0000-0002-5993-8592">0000-0002-5993-8592 </nameIdentifier>
+		</name>
+
+    <originInfo eventType="publication">
+      <dateIssued>2008</dateIssued>
+      <publisher>Open Journal System</publisher>
+      <edition>version 1</edition>
+    </originInfo>
+
+		<typeOfResource>text</typeOfResource>
+
+    <identifier>Car08</identifier>
+
+    <language>
+      <languageTerm>en</languageTerm>
+    </language>
+
+    <subject>
+      <topic valueURL="http://subjects.org/psychoceramics">Psychoceramics</topic>
+    </subject>
+
+    <accessCondition>CC-BY 4.0</accessCondition>
+
+    <abstract>The characteristic theme of the works of Stone is the bridge between culture and society. Several narratives concerning the fatal flaw, and subsequent dialectic, of semioticist class may be found. Thus, Debord uses the term ‘the subtextual paradigm of consensus’ to denote a cultural paradox. The subject is interpolated into a neocultural discourse that includes sexuality as a totality. But Marx’s critique of prepatriarchialist nihilism states that consciousness is capable of significance. The main theme of Dietrich’s model of cultural discourse is not construction, but neoconstruction. Thus, any number of narratives concerning the textual paradigm of narrative exist. Pretextual cultural theory suggests that context must come from the collective unconscious.</abstract>
+
+    <note>Journal of Psychoceramics, Vol. 1 No. 1 (2008): Issue 1</note>
+
+	</mods>
+</records>

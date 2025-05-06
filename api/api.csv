@@ -1,0 +1,13 @@
+endpoint,   type,     method, header, params,                 request,             response,                 handler,            comment
+,,,,,,,,
+ready,      system,   GET,    ,       ,                       ,                    response/ready.json,      handler_ready,      Returns service readiness.
+api,        system,   GET,    ,       params/api.json,        ,                    response/api.json,        handler_api,        Returns API schemas.
+schema,     metadata, GET,    ,       ,                       ,                    response/schema.json,     handler_schema,     Returns database schema.
+attributes, metadata, GET,    ,       params/attributes.json, ,                    response/attributes.json, handler_attributes, Returns enumerated attributes.
+stats,      data,     GET,    ,       ,                       ,                    response/stats.json,      handler_stats,      Returns record statistics.
+sources,    data,     GET,    ,       ,                       ,                    response/sources.json,    handler_sources,    Returns ingested sources.
+metadata,   data,     GET,    ,       params/metadata.json,   ,                    response/metadata.json,   handler_metadata,   Returns query results.
+insert,     data,     POST,   ,       ,                       request/insert.json, response/insert.json,     handler_insert,     Inserts single record.
+ingest,     data,     POST,   ,       ,                       request/ingest.json, response/ingest.json,     handler_ingest,     Triggers source ingest.
+backup,     system,   POST,   ,       ,                       ,                    response/backup.json,     handler_backup,     Triggers database backup.
+health,     system,   POST,   ,       ,                       ,                    response/health.json,     handler_health,     Returns service liveness.

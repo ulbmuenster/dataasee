@@ -1,0 +1,6 @@
+{
+  "source": "http://host.docker.internal:9876/ingest-dc.xml",
+  "method": "get",
+  "format": "dc",
+  "steward": "little"
+}

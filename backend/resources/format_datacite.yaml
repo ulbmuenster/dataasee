@@ -13,8 +13,9 @@ processor_resources:
         workflow:
           meta_path: ''
           order:
-            - - 'raw'
+            - - 'rawMetadata'
               - 'dataLocation'
+              - 'dataFormat'
               - 'name'
               - 'creators'
               - 'publisher'
@@ -24,6 +25,7 @@ processor_resources:
               - 'synonyms'
               - 'language'
               - 'subjects'
+              - 'keywords'
               - 'version'
               - 'license'
               - 'fundings'
@@ -34,19 +36,26 @@ processor_resources:
               - 'related_1'
             - - 'gather'
           branches:
-            'raw':
+            'rawMetadata':
               request_map: 'root = this.without("dataasee")'
               processors:
                 - mapping: |
-                    root.raw = this.format_xml(no_indent: true).string()
-              result_map: 'root.dataasee.raw = this.raw'
+                    root.rawMetadata = this.format_xml(no_indent: true).string()
+              result_map: 'root.dataasee.rawMetadata = this.rawMetadata'
 
             'dataLocation':
               request_map: 'root = this.identifier.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.dataLocation = this.0."#text"
+                    root.dataLocation = this.0."#text" | this.0.string()
               result_map: 'root.dataasee.dataLocation = this.dataLocation'
+
+            'dataFormat':
+              request_map: 'root = this.formats.format.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.name = this.0."#text" | this.0.string()
+              result_map: 'root.dataasee.format = this.format'
 
             'name':
               request_map: 'root = this.titles.title.not_null().array().not_empty().catch(deleted())'
@@ -60,11 +69,11 @@ processor_resources:
               request_map: 'root = this.creators.creator.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.creators = this.map_each(x -> { "name": x.creatorName."#text" | (if x.creatorName.type() == "string" { x.creatorName.string() } else { x.familyName.string() + ", " + x.givenName.string() }),
-                                                         "data": if x.exists("nameIdentifier") { match x.nameIdentifier.array().filter(y -> y."-nameIdentifierScheme".lowercase() == "orcid").not_empty().catch(x.nameIdentifier.array()).0 {
+                    root.creators = this.map_each(x -> { "name": x.creatorName."#text" | (if x.creatorName.type() == "string" { x.creatorName } else { x.familyName.string() + ", " + x.givenName.string() }),
+                                                         "data": if x.exists("nameIdentifier") { match x.nameIdentifier.array().filter(y -> y.exists("-nameIdentifierScheme") && y."-nameIdentifierScheme".lowercase().re_match("orcid|ror")).not_empty().catch(x.nameIdentifier.array()).0 {
                                                                                                   this."#text".has_prefix("http") => this."#text".string(),
-                                                                                                  this.exists("-schemeURI") => this."-schemeURI".trim_suffix("/") + "/" + this."#text".string(),
-                                                                                                  _ => this."-nameIdentifierScheme" + ":"  + this."#text".string() }
+                                                                                                  this.exists("-schemeURI")       => this."-schemeURI".trim_suffix("/") + "/" + this."#text".string(),
+                                                                                                  _                               => this."-nameIdentifierScheme" + ":"  + this."#text".string() }
                                                                                                } else { deleted() } })
               result_map: 'root.dataasee.creators = this.creators'
 
@@ -116,9 +125,17 @@ processor_resources:
               request_map: 'root = this.subjects.subject.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.subjects = this.map_each(x -> { "name": x."#text" | x.string(),
-                                                         "data": x."-valueURI" | deleted() })
+                    root.subjects = this.filter(x -> x.exists("-valueURI")).map_each(x -> { "name": x."#text".or(x.string()),
+                                                                                            "data": x."-valueURI" })
               result_map: 'root.dataasee.subjects = this.subjects.not_empty().catch(deleted())'
+
+            'keywords':
+              request_map: 'root = this.subjects.subject.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = ","
+                    root.keywords = this.filter(x -> x."-valueURI" == null).fold("", x -> x.tally + x.value."#text".or(x.value.string()) + $sep).trim_suffix($sep)
+              result_map: 'root.dataasee.keywords = this.keywords.not_empty().catch(deleted())'
 
             'version':
               request_map: 'root = this.version.not_null().array().not_empty().catch(deleted())'
@@ -131,7 +148,7 @@ processor_resources:
               request_map: 'root = this.rightsList.rights.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.license = this.0."-rightsURI"
+                    root.license = this.0."-rightsURI" | this.0."-rightsIdentifier" | this.0."#text" | this.0.string()
               result_map: 'root.dataasee.license = this.license.not_null().catch(deleted())'
 
             'fundings':
@@ -146,7 +163,7 @@ processor_resources:
               request_map: 'root = this.descriptions.description.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.description = this.fold("",x -> match { x.value."-descriptionType" == "Abstract" => x.value."#text",
+                    root.description = this.fold("",x -> match { x.value."-descriptionType" == "Abstract"               => x.value."#text",
                                                                  x.tally == "" && x.value."-descriptionType" == "Other" => x.value."#text",
                                                                  _ => x.tally })
               result_map: 'root.dataasee.description = this.description.not_empty().catch(deleted())'
@@ -163,8 +180,10 @@ processor_resources:
               request_map: 'root = this.relatedIdentifiers.relatedIdentifier.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.related = this.map_each(x -> { "name": (if ["isNewVersionOf","isDerivedFrom","isPartOf"].contains(x."-relationType") { x."-relationType" } else { "isRelatedTo" }),
-                                                        "data": x."#text" })
+                    root.related = this.fold({}, x -> x.tally.merge({ match x.value."-relationType" { "isNewVersionOf" => "isNewVersionOf",
+                                                                                                      "isDerivedFrom"  => "isDerivedFrom",
+                                                                                                      "isPartOf"       => "isPartOf",
+                                                                                                      _                => "isRelatedTo" }: x.value."#text" }))
               result_map: 'root.dataasee.related = this.related.not_empty().catch(deleted())'
 
             'identifiers_1':
@@ -179,8 +198,10 @@ processor_resources:
               request_map: 'root = this.relatedItems.relatedItem.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.related = this.map_each(x -> { "name": (if ["isNewVersionOf","isDerivedFrom","isPartOf"].contains(x."-relationType") { x."-relationType" } else { "isRelatedTo" }),
-                                                        "data": x."#text" })
+                    root.related = this.fold({}, x -> x.tally.merge({ match x.value."-relationType" { "isNewVersionOf" => "isNewVersionOf",
+                                                                                                      "isDerivedFrom"  => "isDerivedFrom",
+                                                                                                      "isPartOf"       => "isPartOf",
+                                                                                                      _                => "isRelatedTo" }: x.value."#text" }))
               result_map: 'root.dataasee.related = this.related.concat(root.dataasee.related.or([]))'
 
             'gather':

@@ -1,23 +1,23 @@
-# DatAasee 0.2
+# DatAasee 0.3
 # ============
 #
 # Infos: https://github.com/ulbmuenster/dataasee
 #
 # Setup:
 #   $ mkdir -p backup
-#   $ wget https://raw.githubusercontent.com/ulbmuenster/dataasee/0.2/compose.yaml
-#   $ echo -n 'password1' > dl_pass && echo -n 'password2' > db_pass && docker compose up -d; rm -f dl_pass db_pass; history -d $(history 1)
+#   $  DB_PASS=password1 DL_PASS=password2 docker compose up -d
 
 name: "dataasee"
 
 networks:
-  "internal":
+  "persistence":
+  "application":
 
 secrets:
   "database":
-    file: "db_pass"
+    environment: "DB_PASS"
   "datalake":
-    file: "dl_pass"
+    environment: "DL_PASS"
 
 volumes:
   "backup":
@@ -43,16 +43,19 @@ services:
           memory: "2G"
     environment:
       TZ: "CET"
-      DB_PASS: "/run/secrets/database"
-    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.2}"
+      DB_PASS: "/db/secret"
+    expose:
+      - "2480"
+    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.3}"
     init: true
     networks:
-      - "internal"
-    ports: []
+      - "persistence"
     restart: "unless-stopped"
     secrets:
-      - "database"
-    stop_grace_period: "180s"
+      - source: "database"
+        target: "/db/secret"
+        mode: "444"
+    stop_grace_period: "300s"
     volumes:
       - "backup:/backup"
 
@@ -72,20 +75,27 @@ services:
           memory: "1G"
     environment:
       TZ: "CET"
-      DL_BASE: ${DL_BASE-}
-      DL_USER: ${DL_USER-admin}
-      DL_PASS: "/run/secrets/datalake"
-      DB_PASS: "/run/secrets/database"
-    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.2}"
+      DL_BASE: "${DL_BASE-}"
+      DL_USER: "${DL_USER-admin}"
+      DL_PASS: "/dl/secret"
+      DB_PASS: "/db/secret"
+    expose:
+      - "4195"
+    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.3}"
     init: true
     networks:
-      - "internal"
+      - "persistence"
+      - "application"
     ports:
       - "${DL_PORT-8343}:8343"
     restart: "unless-stopped"
     secrets:
-      - "database"
-      - "datalake"
+      - source: "database"
+        target: "/db/secret"
+        mode: "444"
+      - source: "datalake"
+        target: "/dl/secret"
+        mode: "444"
 
 ## Frontend ####################################################################
 
@@ -99,10 +109,10 @@ services:
         reservations:
           cpus: "1.0"
           memory: "1G"
-    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.2}"
+    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.3}"
     init: true
     networks:
-      - "internal"
+      - "application"
     ports:
       - "${FE_PORT-80}:3000"
     restart: "unless-stopped"

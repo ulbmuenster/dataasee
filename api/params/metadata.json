@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataasee:api?params=metadata",
+
+  "title": "DatAasee Metadata Endpoint Parameters", "type": "object", "properties": {
+
+    "id": { "type": "string", "title": "Record identifier", "maxLength": 255 },
+
+    "source": { "type": "string", "title": "Source list", "maxLength": 4095 },
+
+    "search": { "type": "string", "title": "Full-text search", "maxLength": 255 },
+
+    "query": { "type": "string", "title": "Custom query", "maxLength": 4095 },
+
+    "language": { "type": "string", "title": "Filter by language OR set custom query language", "maxLength": 255 },
+
+    "resourcetype": { "type": "string", "title": "Filter by resource type", "maxLength": 255 },
+
+    "license": { "type": "string", "title": "Filter by license", "maxLength": 255 },
+
+    "category": { "type": "string", "title": "Filter by category", "maxLength": 255 },
+
+    "format": { "type": "string", "title": "Filter by metadata format", "maxLength": 255 },
+
+    "from": { "type": "number", "title": "Filter by publication date (after)", "minimum": -9999, "maximum": 9999 },
+
+    "till": { "type": "number", "title": "Filter by publication date (before)", "minimum": -9999, "maximum": 9999 },
+
+    "page": { "type": "number", "title": "Return N-th page of results", "minimum": 0 },
+
+    "newest": { "type": "boolean", "title": "Sort by newest first?" } }
+}

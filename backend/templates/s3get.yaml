@@ -20,10 +20,10 @@ fields:
     description: 'Has to be "bucket" or "object".'
     type: 'string'
   - name: 'access'
-    description: 'Metadata key holding the S3 access key.'
+    description: 'Metadata key holding S3 access key.'
     type: 'string'
   - name: 'secret'
-    description: 'Metadata key holding the S3 secret key.'
+    description: 'Metadata key holding S3 secret key.'
     type: 'string'
 
 mapping: |
@@ -40,9 +40,9 @@ mapping: |
 
   root.branch.processors = [{}]
 
-  root.branch.processors.0.http.url = """${! this.url }"""
+  root.branch.processors.0.http.url = "${! this.url }"
   root.branch.processors.0.http.verb = "GET"
   root.branch.processors.0.http.timeout = "30s"
   root.branch.processors.0.http.metadata.include_patterns = ["Content-Type","Date","Authorization"]
 
-  root.branch.result_map = """root = content()"""
+  root.branch.result_map = "root = content()"

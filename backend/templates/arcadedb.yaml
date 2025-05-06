@@ -36,6 +36,10 @@ fields:
     description: 'Number of retries after a failed attempt.'
     type: 'int'
     default: 1
+  - name: 'silent'
+    description: 'Boolean deciding if an internal error is forwarded and logged.'
+    type: 'bool'
+    default: false
   - name: 'request'
     description: 'A bloblang mapping constructing the request message.'
     type: 'string'
@@ -55,6 +59,7 @@ mapping: |
   root.branch.processors.0.http.basic_auth.username = this.username
   root.branch.processors.0.http.basic_auth.password = file(this.password).string()
   root.branch.processors.0.http.retries = this.retries
+  root.branch.processors.0.http.successful_on = if this.silent { [500] } else { [] }
   root.branch.processors.0.http.timeout = "30s"
 
   root.branch.result_map = this.response

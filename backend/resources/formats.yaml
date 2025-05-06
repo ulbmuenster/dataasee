@@ -3,18 +3,22 @@
 processor_resources:
   - label: 'formats'
     switch:
-      - check: 'metadata("format") == "datacite" || metadata("format") == "oai_datacite"'
+      - check: 'metadata("ingest").format == "datacite" || metadata("ingest").format == "oai_datacite"'
         processors:
           - resource: 'datacite'
 
-      - check: 'metadata("format") == "dc" || metadata("format") == "oai_dc"'
+      - check: 'metadata("ingest").format == "dc" || metadata("ingest").format == "oai_dc"'
         processors:
           - resource: 'dc'
 
-      - check: 'metadata("format") == "marc21" || metadata("format") == "marcxml"'
+      - check: 'metadata("ingest").format == "lido"'
+        processors:
+          - resource: 'lido'
+
+      - check: 'metadata("ingest").format == "marc21" || metadata("ingest").format == "marcxml"'
         processors:
           - resource: 'marc'
 
-      - check: 'metadata("format") == "mods" || metadata("format") == "rawmods"'
+      - check: 'metadata("ingest").format == "mods" || metadata("ingest").format == "rawmods"'
         processors:
           - resource: 'mods'
