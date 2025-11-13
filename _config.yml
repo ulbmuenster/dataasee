@@ -1,10 +1,7 @@
 # DatAasee Github Pages Configuration
 
-plugins:
-  - jekyll-relative-links
-relative_links:
-  enabled: true
-  collections: true
+title: DatAasee - A Metadatalake for Libraries
+description: DatAasee centralizes and interlinks distributed library/research metadata into an API‑first union catalog.
 include:
   - README.md
   - CONTRIBUTORS.md
@@ -14,3 +11,8 @@ include:
   - docs/deps.md
   - docs/schema.md
 theme: jekyll-theme-slate
+plugins:
+  - jekyll-relative-links
+relative_links:
+  enabled: true
+  collections: true

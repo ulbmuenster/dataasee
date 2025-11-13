@@ -5,20 +5,20 @@ processor_resources:
     switch:
       - check: 'metadata("ingest").format == "datacite" || metadata("ingest").format == "oai_datacite"'
         processors:
-          - resource: 'datacite'
+          - resource: 'format_datacite'
 
       - check: 'metadata("ingest").format == "dc" || metadata("ingest").format == "oai_dc"'
         processors:
-          - resource: 'dc'
+          - resource: 'format_dc'
 
       - check: 'metadata("ingest").format == "lido"'
         processors:
-          - resource: 'lido'
+          - resource: 'format_lido'
 
       - check: 'metadata("ingest").format == "marc21" || metadata("ingest").format == "marcxml"'
         processors:
-          - resource: 'marc'
+          - resource: 'format_marc'
 
       - check: 'metadata("ingest").format == "mods" || metadata("ingest").format == "rawmods"'
         processors:
-          - resource: 'mods'
+          - resource: 'format_mods'

@@ -1,30 +1,163 @@
 <records>
-	<metadata>
-    <dc:format>application/pdf</dc:format>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar: Legend of the Fortress</dc:title>
+    <dc:title>Ishar 1</dc:title>
+    <dc:title>Ishar I</dc:title>
+    <dc:creator>Einsweiler, Pascal</dc:creator>
+    <dc:creator>Pernot, Michel</dc:creator>
+    <dc:creator>Rocques, André</dc:creator>
+    <dc:creator>Rocques, Louis-Marie</dc:creator>
+    <dc:creator>Charter, Jean-Christophe</dc:creator>
+    <dc:creator>Hautecloque, Fabrice</dc:creator>
+    <dc:publisher>Silmarils</dc:publisher>
+    <dc:date>1992</dc:date>
+    <dc:identifier>10.5555/mobyid-1003</dc:identifier>
+    <dc:identifier>3430921017028</dc:identifier>
+    <dc:type>Software</dc:type>
+    <dc:description>Ishar a mysterious fortress haunted by a brooding evil, spreading corruption and decay throughout the kingdom.</dc:description>
+    <dc:language>en</dc:language>
+    <dc:rights>Copyright 1992 Silmarils</dc:rights>
+    <dc:rights>Cover Art: Mark Harrison</dc:rights>
+    <dc:subject>Fantasy</dc:subject>
+    <dc:subject>Role-Play</dc:subject>
+    <dc:subject>First-Person</dc:subject>
+    <dc:subject>Real-Time</dc:subject>
+    <dc:subject>cRPG</dc:subject>
+    <dc:subject>Urshurak</dc:subject>
+    <dc:relation>https://en.wikipedia.org/wiki/Ishar:_Legend_of_the_Fortress</dc:relation>
+    <dc:relation>https://www.mobygames.com/game/1003/ishar-legend-of-the-fortress/</dc:relation>
+  </metadata>
 
-		<dc:title>Toward a Unified Theory of High-Energy Metaphysics: Silly String Theory</dc:title>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar 2: Messengers of Doom</dc:title>
+    <dc:title>Ishar 2</dc:title>
+    <dc:title>Ishar II</dc:title>
+    <dc:title>Ishar 2: Legions of Chaos</dc:title>
+    <dc:creator>Einsweiler, Pascal</dc:creator>
+    <dc:creator>Pernot, Michel</dc:creator>
+    <dc:creator>Rocques, André</dc:creator>
+    <dc:creator>Rocques, Louis-Marie</dc:creator>
+    <dc:creator>Charter, Jean-Christophe</dc:creator>
+    <dc:creator>Hautecloque, Fabrice</dc:creator>
+    <dc:creator>Galand, Eric</dc:creator>
+    <dc:creator>Mathiot, Stephane</dc:creator>
+    <dc:publisher>Silmarils</dc:publisher>
+    <dc:date>1993</dc:date>
+    <dc:identifier>10.5555/mobyid-7701</dc:identifier>
+    <dc:identifier>5025904008025</dc:identifier>
+    <dc:type>Software</dc:type>
+    <dc:description>Following the incredible success of ISHAR, Silmarils bring you a new unmissable RPG, even closer to reality.</dc:description>
+    <dc:language>ENG</dc:language>
+    <dc:rights>Copyright 1993 Silmarils</dc:rights>
+    <dc:rights>Cover Art: Timo Hildebrandt</dc:rights>
+    <dc:subject>Fantasy</dc:subject>
+    <dc:subject>RPG</dc:subject>
+    <dc:subject>1st-Person</dc:subject>
+    <dc:subject>Realtime</dc:subject>
+    <dc:subject>cRPG</dc:subject>
+    <dc:relation>https://en.wikipedia.org/wiki/Ishar_2:_Messengers_of_Doom</dc:relation>
+    <dc:relation>https://www.mobygames.com/game/7701/ishar-2-messengers-of-doom/</dc:relation>
+    <dc:relation>10.5555/mobyid-1003</dc:relation>
+  </metadata>
 
-    <dc:creator>Carberry, Josiah</dc:creator>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar 3: Seven Gates of Infinity</dc:title>
+    <dc:title>Ishar 3</dc:title>
+    <dc:title>Ishar III</dc:title>
+    <dc:title>Ishar 3: Alliance of Evil</dc:title>
+    <dc:creator>Pascal Einsweiler</dc:creator>
+    <dc:creator>Michel Pernot</dc:creator>
+    <dc:creator>Jean-François Trevien</dc:creator>
+    <dc:creator>Guillaume Maginot</dc:creator>
+    <dc:creator>André Rocques</dc:creator>
+    <dc:creator>Louis-Marie Rocques</dc:creator>
+    <dc:creator>Jean-Christophe Charter</dc:creator>
+    <dc:creator>Fabrice Hautecloque</dc:creator>
+    <dc:creator>Eric Galand</dc:creator>
+    <dc:creator>Cécile Guyard</dc:creator>
+    <dc:publisher>Silmarils</dc:publisher>
+    <dc:date>1994</dc:date>
+    <dc:identifier>10.5555/mobyid-7702</dc:identifier>
+    <dc:type>Software</dc:type>
+    <dc:description>The shadows of chaos once more darken the spires of the citadel, for the evil spirit of Shandar seeks reincarnation in the vast body of the lord of Sith - last and most powerful of the ancient black dragons.</dc:description>
+    <dc:language>English</dc:language>
+    <dc:rights>Copyright 1994 Silmarils</dc:rights>
+    <dc:rights>Cover Art: Ciruelo Cabral</dc:rights>
+    <dc:subject>fantasy</dc:subject>
+    <dc:subject>roleplay</dc:subject>
+    <dc:subject>1st person</dc:subject>
+    <dc:subject>real time</dc:subject>
+    <dc:subject>CRPG</dc:subject>
+    <dc:subject>time travel</dc:subject>
+    <dc:relation>https://en.wikipedia.org/wiki/Ishar_3:_The_Seven_Gates_of_Infinity</dc:relation>
+    <dc:relation>https://www.mobygames.com/game/7702/ishar-3-the-seven-gates-of-infinity/</dc:relation>
+    <dc:relation>10.5555/mobyid-7701</dc:relation>
+  </metadata>
 
-    <dc:publisher>Open Journal System</dc:publisher>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar 3 Elite Team</dc:title>
+    <dc:publisher>Silmarils</dc:publisher>
+    <dc:date>[1994]</dc:date>
+    <dc:type>data-set</dc:type>
+    <dc:identifier>10.5555/elite-team.sav</dc:identifier>
+    <dc:relation>10.5555/mobyid-7702</dc:relation>
+  </metadata>
 
-    <dc:date>2008-02-29</dc:date>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar Trilogy</dc:title>
+    <dc:creator>Pascal Einsweiler</dc:creator>
+    <dc:creator>Michel Pernot</dc:creator>
+    <dc:creator>Jean-François Trevien</dc:creator>
+    <dc:creator>Guillaume Maginot</dc:creator>
+    <dc:creator>André Rocques</dc:creator>
+    <dc:creator>Louis-Marie Rocques</dc:creator>
+    <dc:creator>Jean-Christophe Charter</dc:creator>
+    <dc:creator>Fabrice Hautecloque</dc:creator>
+    <dc:creator>Eric Galand</dc:creator>
+    <dc:creator>Cécile Guyard</dc:creator>
+    <dc:creator>Christophe Fagot</dc:creator>
+    <dc:publisher>Silmarils</dc:publisher>
+    <dc:date>1995</dc:date>
+    <dc:identifier>10.5555/mobyid-3118</dc:identifier>
+    <dc:identifier>3430920026083</dc:identifier>
+    <dc:type>Software</dc:type>
+    <dc:description>Enter the world of Ishar and discover 3 of the most extraordinary role play games ever made.</dc:description>
+    <dc:language>ENGLISH</dc:language>
+    <dc:rights>Copyright 1995 Silmarils</dc:rights>
+    <dc:rights>Cover Art: Tim White</dc:rights>
+    <dc:subject>Compilation</dc:subject>
+    <dc:subject>cRPG</dc:subject>
+    <dc:relation>https://en.wikipedia.org/wiki/Ishar</dc:relation>
+    <dc:relation>https://www.mobygames.com/game/3118/ishar-trilogy/</dc:relation>
+    <dc:relation>10.5555/mobyid-1003</dc:relation>
+    <dc:relation>10.5555/mobyid-7701</dc:relation>
+    <dc:relation>10.5555/mobyid-7702</dc:relation>
+  </metadata>
 
-    <dc:identifier>doi:10.5555/12345678</dc:identifier>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar Trilogy</dc:title>
+    <dc:creator>Pascal Einsweiler</dc:creator>
+    <dc:creator>Michel Pernot</dc:creator>
+    <dc:creator>Jean-François Trevien</dc:creator>
+    <dc:creator>Guillaume Maginot</dc:creator>
+    <dc:creator>André Rocques</dc:creator>
+    <dc:creator>Louis-Marie Rocques</dc:creator>
+    <dc:creator>Jean-Christophe Charter</dc:creator>
+    <dc:creator>Fabrice Hautecloque</dc:creator>
+    <dc:creator>Eric Galand</dc:creator>
+    <dc:creator>Cécile Guyard</dc:creator>
+    <dc:creator>Christophe Fagot</dc:creator>
+    <dc:publisher>Silmarils</dc:publisher>
+    <dc:date>1996</dc:date>
+    <dc:identifier>3430920026083</dc:identifier>
+    <dc:type>Software</dc:type>
+    <dc:relation>https://ogdb.eu/index.php?section=compilation&amp;compid=2313</dc:relation>
+    <dc:relation>10.5555/mobyid-3318</dc:relation>
+  </metadata>
 
-    <dc:type>article</dc:type>
-
-    <dc:description>The characteristic theme of the works of Stone is the bridge between culture and society. Several narratives concerning the fatal flaw, and subsequent dialectic, of semioticist class may be found. Thus, Debord uses the term ‘the subtextual paradigm of consensus’ to denote a cultural paradox. The subject is interpolated into a neocultural discourse that includes sexuality as a totality. But Marx’s critique of prepatriarchialist nihilism states that consciousness is capable of significance. The main theme of Dietrich’s model of cultural discourse is not construction, but neoconstruction.
-Thus, any number of narratives concerning the textual paradigm of narrative exist. Pretextual cultural theory suggests that context must come from the collective unconscious.</dc:description>
-
-    <dc:language>eng</dc:language>
-
-    <dc:rights>CC-BY-4.0</dc:rights>
-
-    <dc:subject>Psychoceramics</dc:subject>
-
-    <dc:relation>https://ojs33.crossref.publicknowledgeproject.org/index.php/test/article/view/2</dc:relation>
-
-    <dc:source>Journal of Psychoceramics, Vol.1, No.1 (2008); Issue 1</dc:source>
-	</metadata>
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:title>Ishar 4: Genesis</dc:title>
+    <dc:relation>https://en.wikipedia.org/wiki/Ishar#Ishar_4:_Ishar_Genesis</dc:relation>
+    <dc:relation>10.5555/mobyid-7702</dc:relation>
+  </metadata>
 </records>

@@ -3,10 +3,23 @@
 # Footer
 blocks:
   - id: "footer"
-    type: "Markdown"
-    properties:
-      content:
-        _string.concat:
-          - "[DatAasee](https://github.com/ulbmuenster/dataasee) (Version: **"
-          - _request: "ready_request.data.meta.version"
-          - "**)"
+    type: "Content"
+    blocks:
+      - id: "dataasee_link"
+        type: "Anchor"
+        layout:
+          span: 1
+        properties:
+          newTab: true
+          title: "DatAasee"
+          url: "https://github.com/ulbmuenster/dataasee"
+      - id: "dataasee_slug"
+        type: "Markdown"
+        layout:
+          span: 5
+        properties:
+          content:
+            _string.concat:
+              - "&nbsp;\\- A Metadata-Lake for Libraries (Version: **"
+              - _request: "ready_request.data.meta.version"
+              - "**)"

@@ -14,7 +14,6 @@ definitions:
   mandatory: "mandatory true"
   notnull: "notnull true"
   readonly: "readonly true"
-  hidden: "hidden true"
   tiny: "max 255"
   small: "max 4095"
   normal: "max 65535"
@@ -24,7 +23,7 @@ definitions:
 
 documents:
   pair:
-    name: "string (mandatory, notnull, tiny)"
+    name: "string (mandatory, notnull, tiny, min 1)"
     data: "string (small, url)"
 
 vertexes:
@@ -33,20 +32,20 @@ vertexes:
     # Process
     schemaVersion: "integer (notnull, min 1, max 1, default 1)"
     recordId: "string (mandatory, notnull, readonly, max 31)"
-    metadataChecksum: "string (tiny)"
+    metadataFormat: "string (tiny)"
     metadataQuality: "string (mandatory, notnull, tiny)"
     dataSteward: "string (mandatory, notnull, small)"
-    source: "string (mandatory, notnull, readonly, small)"
-    createdAt: "datetime (mandatory, notnull, default sysdate('YYYY-MM-DD HH:MM:SS'))"
+    source: "link of pair (mandatory)"
+    sourceRights: "string (mandatory, notnull, readonly, small)"
+    createdAt: "datetime (mandatory, notnull, default sysdate)"
 
     # Technical
-    metadataFormat: "string (tiny)"
     sizeBytes: "integer (nonnegative)"
     dataFormat: "string (tiny)"
     dataLocation: "string (small, url)"
 
     # Social
-    numberViews: "integer (notnull, nonnegative, default 0)"
+    numberViews: "integer (mandatory, notnull, nonnegative, default 0)"
     keywords: "string (tiny, default '')"
     categories: "list of string (max 4)"
 
@@ -67,15 +66,16 @@ vertexes:
     rights: "string (normal)"
     fundings: "list of pair (max 255)"
     description: "string (mandatory, normal, default '')"
-    message: "string (normal)"
     externalItems: "list of pair (max 255)"
 
     # Raw Metadata
-    rawMetadata: "string (mandatory, max 2097151, default '')"
+    rawMetadata: "string (mandatory, max 262144, default '')"
+    rawChecksum: "string (tiny)"
 
     # Internal
-    related: "map of list (hidden)"
-    visited: "boolean (hidden, default false)"
+    related: "map of list (default null)"
+    selfies: "list of string (default [])"
+    visited: "boolean (default false)"
 
 edges:
   isRelatedTo:
@@ -88,7 +88,13 @@ edges:
   isDerivedFrom:
     @extends: "isRelatedTo"
 
+  isDescribedBy:
+    @extends: "isRelatedTo"
+
   isPartOf:
+    @extends: "isRelatedTo"
+
+  hasPart:
     @extends: "isRelatedTo"
 
   commonExpression:
@@ -107,9 +113,12 @@ indexes:
     - "metadata.publicationYear"
     - "metadata.resourceType"
     - "metadata.language"
-    - "metadata.subjects"
     - "metadata.license"
     - "metadata.metadataFormat"
+    - "metadata.source"
+    - "metadata.identifiers"
+    - "metadata.subjects"
+    - "metadata.selfies"
 
   full_text:
     - "metadata.keywords"
@@ -118,4 +127,3 @@ indexes:
 
 @endyaml
 ```
-  

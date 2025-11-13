@@ -1,50 +1,334 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <resources>
-	<resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://datacite.org/schema/kernel-4" xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar: Legend of the Fortress</title>
+      <title titleType="Abbreviated">Ishar 1</title>
+      <title titleType="Alternative">Ishar I</title>
+    </titles>
 
-		<identifier identifierType="DOI">10.5555/12345678</identifier>
+    <creators>
+      <creator><creatorName nameType="Personal">Einsweiler, Pascal</creatorName></creator>
+      <creator><creatorName nameType="Personal">Pernot, Michel</creatorName></creator>
+      <creator><creatorName nameType="Personal">Rocques, André</creatorName></creator>
+      <creator><creatorName nameType="Personal">Rocques, Louis-Marie</creatorName></creator>
+      <creator><creatorName nameType="Personal">Charter, Jean-Christophe</creatorName></creator>
+      <creator><creatorName nameType="Personal">Hautecloque, Fabrice</creatorName></creator>
+    </creators>
 
-		<creators>
-			<creator>
-				<creatorName nameType="Personal">Carberry, Josiah</creatorName>
-        <nameIdentifier schemeURI="https://orcid.org/" nameIdentifierScheme="ORCID">0000-0002-1825-0097</nameIdentifier>
-			</creator>
+    <publisher>Silmarils</publisher>
 
-			<creator>
-				<givenName>Ed</givenName>
-        <familyName>Pentz</familyName>
-        <nameIdentifier schemeURI="https://orcid.org/" nameIdentifierScheme="ORCID">0000-0002-5993-8592</nameIdentifier>
-			</creator>
-		</creators>
+    <publicationYear>1992</publicationYear>
 
-		<titles>
-			<title xml:lang="en">Toward a Unified Theory of High-Energy Metaphysics: Silly String Theory</title>
-      <title xml:lang="en" titleType="Subtitle">DataCite Edition</title>
-		</titles>
+    <resourceType>Software</resourceType>
 
-		<publisher>Open Journal System</publisher>
+    <identifier identifierType="DOI">10.5555/mobyid-1003</identifier>
 
-		<publicationYear>2008</publicationYear>
+    <language>en</language>
 
-		<resourceType>Article</resourceType>
+    <subjects>
+      <subject valueURI="https://www.mobygames.com/genre/fantasy/">Fantasy</subject>
+      <subject valueURI="https://www.mobygames.com/genre/role-playing-rpg/">Role-Play</subject>
+      <subject valueURI="https://www.mobygames.com/genre/1st-person/">First-Person</subject>
+      <subject valueURI="https://www.mobygames.com/genre/real-time/">Real-Time</subject>
+      <subject>cRPG</subject>
+      <subject>Urshurak</subject>
+    </subjects>
 
-		<subjects>
-			<subject>Psychoceramics</subject>
-		</subjects>
+    <version>DOS</version>
 
-		<language>en</language>
+    <rightsList>
+      <rights rightsURI="https://rightsstatements.org/vocab/InC/1.0/">Copyright 1992 Silmarils</rights>
+      <rights>Cover Art: Mark Harrison</rights>
+    </rightsList>
 
-		<formats>
-			<format>application/pdf</format>
-		</formats>
+    <fundingReferences>
+      <fundingReference><funderName>Daze Marketing</funderName></fundingReference>
+      <fundingReference><funderName>Prism Leisure</funderName></fundingReference>
+    </fundingReferences>
 
-		<rightsList>
-			<rights rightsURI="https://spdx.org/licenses/CC-BY-4.0">CC-BY-4.0</rights>
-		</rightsList>
+    <descriptions>
+      <description descriptionType="Abstract">Ishar a mysterious fortress haunted by a brooding evil, spreading corruption and decay throughout the kingdom.</description>
+    </descriptions>
 
-		<descriptions>
-			<description xml:lang="en" descriptionType="Abstract">The characteristic theme of the works of Stone is the bridge between culture and society. Several narratives concerning the fatal flaw, and subsequent dialectic, of semioticist class may be found. Thus, Debord uses the term ‘the subtextual paradigm of consensus’ to denote a cultural paradox. The subject is interpolated into a neocultural discourse that includes sexuality as a totality. But Marx’s critique of prepatriarchialist nihilism states that consciousness is capable of significance. The main theme of Dietrich’s model of cultural discourse is not construction, but neoconstruction. Thus, any number of narratives concerning the textual paradigm of narrative exist. Pretextual cultural theory suggests that context must come from the collective unconscious.</description>
-		</descriptions>
+    <alternateIdentifiers>
+      <alternateIdentifier alternateIdentifierType="EAN">3430921017028</alternateIdentifier>
+    </alternateIdentifiers>
 
-	</resource>
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="describes">https://en.wikipedia.org/wiki/Ishar:_Legend_of_the_Fortress</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="hasMetadata">https://www.mobygames.com/game/1003/ishar-legend-of-the-fortress/</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
+
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar 2: Messengers of Doom</title>
+      <title titleType="Short">Ishar 2</title>
+      <title titleType="Alternative">Ishar II</title>
+      <title titleType="Working">Ishar 2: Legions of Chaos</title>
+    </titles>
+
+    <creators>
+      <creator><givenName>Pascal</givenName><familyName>Einsweiler</familyName></creator>
+      <creator><givenName>Michel</givenName><familyName>Pernot</familyName></creator>
+      <creator><givenName>André</givenName><familyName>Rocques</familyName></creator>
+      <creator><givenName>Louis-Marie</givenName><familyName>Rocques</familyName></creator>
+      <creator><givenName>Jean-Christophe</givenName><familyName>Charter</familyName></creator>
+      <creator><givenName>Fabrice</givenName><familyName>Hautecloque</familyName></creator>
+      <creator><givenName>Eric</givenName><familyName>Galand</familyName></creator>
+      <creator><givenName>Stephane</givenName><familyName>Mathiot</familyName></creator>
+    </creators>
+
+    <publisher>Silmarils</publisher>
+
+    <publicationYear>1993</publicationYear>
+
+    <resourceType>Software</resourceType>
+
+    <identifier identifierType="DOI">10.5555/mobyid-7701</identifier>
+
+    <language>ENG</language>
+
+    <subjects>
+      <subject valueURI="https://www.mobygames.com/genre/fantasy/">Fantasy</subject>
+      <subject valueURI="https://www.mobygames.com/genre/role-playing-rpg/">RPG</subject>
+      <subject valueURI="https://www.mobygames.com/genre/1st-person/">1st-Person</subject>
+      <subject valueURI="https://www.mobygames.com/genre/real-time/">Realtime</subject>
+      <subject>cRPG</subject>
+    </subjects>
+
+    <version>DOS</version>
+
+    <rightsList>
+      <rights rightsIdentifier="In Copyright">Copyright 1993 Silmarils</rights>
+      <rights>Cover Art: Timo Hildebrandt</rights>
+    </rightsList>
+
+    <fundingReferences>
+      <fundingReference><funderName>Daze Marketing</funderName></fundingReference>
+      <fundingReference><funderName>Prism Leisure</funderName></fundingReference>
+    </fundingReferences>
+
+    <descriptions>
+      <description descriptionType="Abstract">Following the incredible success of ISHAR, Silmarils bring you a new unmissable RPG, even closer to reality.</description>
+    </descriptions>
+
+    <alternateIdentifiers>
+      <alternateIdentifier alternateIdentifierType="EAN">5025904008025</alternateIdentifier>
+    </alternateIdentifiers>
+
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="describes">https://en.wikipedia.org/wiki/Ishar_2:_Messengers_of_Doom</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="hasMetadata">https://www.mobygames.com/game/7701/ishar-2-messengers-of-doom/</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="isRelatedTo">10.5555/mobyid-1003</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
+
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar 3: Seven Gates of Infinity</title>
+      <title titleType="Abbreviated">Ishar 3</title>
+      <title titleType="Alternative">Ishar III</title>
+      <title titleType="Working">Ishar 3: Alliance of Evil</title>
+    </titles>
+
+    <creators>
+      <creator><creatorName>Pascal Einsweiler</creatorName></creator>
+      <creator><creatorName>Michel Pernot</creatorName></creator>
+      <creator><creatorName>Jean-François Trevien</creatorName></creator>
+      <creator><creatorName>Guillaume Maginot</creatorName></creator>
+      <creator><creatorName>André Rocques</creatorName></creator>
+      <creator><creatorName>Louis-Marie Rocques</creatorName></creator>
+      <creator><creatorName>Jean-Christophe Charter</creatorName></creator>
+      <creator><creatorName>Fabrice Hautecloque</creatorName></creator>
+      <creator><creatorName>Eric Galand</creatorName></creator>
+      <creator><creatorName>Cécile Guyard</creatorName></creator>
+    </creators>
+
+    <publisher>Silmarils</publisher>
+
+    <publicationYear>1994</publicationYear>
+
+    <resourceType>Software</resourceType>
+
+    <identifier identifierType="DOI">10.5555/mobyid-7702</identifier>
+
+    <language>English</language>
+
+    <subjects>
+      <subject valueURI="https://www.mobygames.com/genre/fantasy/">fantasy</subject>
+      <subject valueURI="https://www.mobygames.com/genre/role-playing-rpg/">roleplay</subject>
+      <subject valueURI="https://www.mobygames.com/genre/1st-person/">1st person</subject>
+      <subject valueURI="https://www.mobygames.com/genre/real-time/">real time</subject>
+      <subject>CRPG</subject>
+      <subject>time travel</subject>
+    </subjects>
+
+    <version>DOS</version>
+
+    <rightsList>
+      <rights>Copyright 1994 Silmarils</rights>
+      <rights>Cover Art: Ciruelo Cabral</rights>
+    </rightsList>
+
+    <fundingReferences>
+      <fundingReference><funderName>ReadySoft</funderName></fundingReference>
+      <fundingReference><funderName>Prism Leisure</funderName></fundingReference>
+    </fundingReferences>
+
+    <descriptions>
+      <description descriptionType="Abstract">The shadows of chaos once more darken the spires of the citadel, for the evil spirit of Shandar seeks reincarnation in the vast body of the lord of Sith - last and most powerful of the ancient black dragons.</description>
+    </descriptions>
+
+    <alternateIdentifiers>
+      <alternateIdentifier alternateIdentifierType="EAN">3430920025017</alternateIdentifier>
+      <alternateIdentifier alternateIdentifierType="ISBN">1551880059</alternateIdentifier>
+    </alternateIdentifiers>
+
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="describes">https://en.wikipedia.org/wiki/Ishar_3:_The_Seven_Gates_of_Infinity</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="hasMetadata">https://www.mobygames.com/game/7702/ishar-3-the-seven-gates-of-infinity/</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="isRelatedTo">10.5555/mobyid-7701</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
+
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar 3 Elite Team</title>
+    </titles>
+
+    <publisher>Silmarils</publisher>
+
+    <publicationYear>[1994]</publicationYear>
+
+    <resourceType>data-set</resourceType>
+
+    <identifier>10.5555/elite-team.sav</identifier>
+
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="isRelatedTo">10.5555/mobyid-7702</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
+
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar Trilogy</title>
+    </titles>
+
+    <creators>
+      <creator><creatorName>Pascal Einsweiler</creatorName></creator>
+      <creator><creatorName>Michel Pernot</creatorName></creator>
+      <creator><creatorName>Jean-François Trevien</creatorName></creator>
+      <creator><creatorName>Guillaume Maginot</creatorName></creator>
+      <creator><creatorName>André Rocques</creatorName></creator>
+      <creator><creatorName>Louis-Marie Rocques</creatorName></creator>
+      <creator><creatorName>Jean-Christophe Charter</creatorName></creator>
+      <creator><creatorName>Fabrice Hautecloque</creatorName></creator>
+      <creator><creatorName>Eric Galand</creatorName></creator>
+      <creator><creatorName>Cécile Guyard</creatorName></creator>
+      <creator><creatorName>Christophe Fagot</creatorName></creator>
+    </creators>
+
+    <publisher>Silmarils</publisher>
+
+    <publicationYear>1995</publicationYear>
+
+    <resourceType>Software</resourceType>
+
+    <identifier identifierType="DOI">10.5555/mobyid-3118</identifier>
+
+    <language>ENGLISH</language>
+
+    <subjects>
+      <subject valueURI="https://www.mobygames.com/genre/compilation-shovelware/">Compilation</subject>
+      <subject>cRPG</subject>
+    </subjects>
+
+    <version>DOS</version>
+
+    <rightsList>
+      <rights>Copyright 1995 Silmarils</rights>
+      <rights>Cover Art: Tim White</rights>
+    </rightsList>
+
+    <fundingReferences>
+      <fundingReference><funderName>Prism Leisure</funderName></fundingReference>
+    </fundingReferences>
+
+    <descriptions>
+      <description descriptionType="Abstract">Enter the world of Ishar and discover 3 of the most extraordinary role play games ever made.</description>
+    </descriptions>
+
+    <alternateIdentifiers>
+      <alternateIdentifier alternateIdentifierType="EAN">3430920026083</alternateIdentifier>
+    </alternateIdentifiers>
+
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="describes">https://en.wikipedia.org/wiki/Ishar</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="hasMetadata">https://www.mobygames.com/game/3118/ishar-trilogy/</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="hasPart">10.5555/mobyid-1003</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="hasPart">10.5555/mobyid-7701</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="hasPart">10.5555/mobyid-7702</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
+
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar Trilogy</title>
+    </titles>
+
+    <creators>
+      <creator><creatorName>Pascal Einsweiler</creatorName></creator>
+      <creator><creatorName>Michel Pernot</creatorName></creator>
+      <creator><creatorName>Jean-François Trevien</creatorName></creator>
+      <creator><creatorName>Guillaume Maginot</creatorName></creator>
+      <creator><creatorName>André Rocques</creatorName></creator>
+      <creator><creatorName>Louis-Marie Rocques</creatorName></creator>
+      <creator><creatorName>Jean-Christophe Charter</creatorName></creator>
+      <creator><creatorName>Fabrice Hautecloque</creatorName></creator>
+      <creator><creatorName>Eric Galand</creatorName></creator>
+      <creator><creatorName>Cécile Guyard</creatorName></creator>
+      <creator><creatorName>Christophe Fagot</creatorName></creator>
+    </creators>
+
+    <publisher>Silmarils</publisher>
+
+    <publicationYear>1996</publicationYear>
+
+    <resourceType>Software</resourceType>
+
+    <identifier identifierType="EAN">3430920026083</identifier>
+
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="describes">https://ogdb.eu/index.php?section=compilation&amp;compid=2313</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="isRelatedTo">10.5555/mobyid-3318</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
+
+  <resource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="http://datacite.org/schema/kernel-4"
+            xsi:schemaLocation="http://datacite.org/schema/kernel-4 http://schema.datacite.org/meta/kernel-4/metadata.xsd">
+    <titles>
+      <title>Ishar 4: Genesis</title>
+    </titles>
+
+    <relatedIdentifiers>
+      <relatedIdentifier relatedIdentifierType="URL" relationType="describes">https://en.wikipedia.org/wiki/Ishar#Ishar_4:_Ishar_Genesis</relatedIdentifier>
+      <relatedIdentifier relatedIdentifierType="DOI" relationType="isRelatedTo">10.5555/mobyid-7702</relatedIdentifier>
+    </relatedIdentifiers>
+  </resource>
 </resources>

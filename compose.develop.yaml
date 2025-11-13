@@ -49,7 +49,7 @@ services:
           cpus: "2.0"
           memory: "2G"
     environment:
-      TZ: "CET"
+      TZ: "${TZ-CET}"
       DB_PASS: "/run/secrets/database"
     image: "$REGISTRY/$DL_REPO/database:$DL_VERSION"
     init: true
@@ -61,7 +61,7 @@ services:
     restart: "unless-stopped"
     secrets:
       - "database"
-    stop_grace_period: "200s"
+    stop_grace_period: "300s"
     volumes:
       - "backup:/backup"
 
@@ -99,7 +99,7 @@ services:
           cpus: "1.0"
           memory: "1G"
     environment:
-      TZ: "CET"
+      TZ: "${TZ-CET}"
       DL_BASE: "${DL_BASE-}"
       DL_USER: "${DL_USER-admin}"
       DL_PASS: "/run/secrets/datalake"
@@ -129,6 +129,8 @@ services:
         BUILDKIT_INLINE_CACHE: 1
         IMGREPO: "${ORIGIN:-}"
         VERSION: "$FE_VERSION"
+        DL_HOST: "backend"
+        DL_PORT: "8343"
         DL_PATH: "$DL_PATH"
         DL_VERSION: "$DL_VERSION"
       cache_from:
@@ -147,12 +149,14 @@ services:
         reservations:
           cpus: "1.0"
           memory: "1G"
+    environment:
+      TZ: "${TZ-CET}"
     image: "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
     init: true
     networks:
       - "application"
     ports:
-      - "${FE_PORT-8000}:3000"
+      - "${FE_PORT-8000}:8000"
     restart: "unless-stopped"
     volumes:
       - "./frontend:/yaml:ro"

@@ -1,1293 +1,1058 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
 <collection>
-  <lido:lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.lido-schema.org"
-  xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-  xmlns:gml="http://www.opengis.net/gml" xmlns:doc="http://www.mda.org.uk/spectrumXML/Documentation"
-  xmlns:sch="http://purl.oclc.org/dsdl/schematron" xmlns:skos="http://www.w3.org/2004/02/skos/core#"
-  xmlns:lido="http://www.lido-schema.org"
-  xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1-profile-paintingandsculpture-v1.0.xsd">
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
 
-  <lido:lidoRecID lido:source="LIDO-DE AG" lido:type="http://terminology.lido-schema.org/lido00100">LIDO-DE-AG/LIDODE0001</lido:lidoRecID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">https://collections.louvre.fr/en/ark:/53355/cl010062370</lido:objectPublishedID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">https://www.pop.culture.gouv.fr/notice/joconde/000PE025604</lido:objectPublishedID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">https://agorha.inha.fr/ark:/54721/8e279ee1-f842-4eb3-994d-797ca8562c09</lido:objectPublishedID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">https://rkd.nl/explore/images/302327</lido:objectPublishedID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">http://vocab.getty.edu/page/cona/700000213</lido:objectPublishedID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q12418</lido:objectPublishedID>
-  <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00099">https://d-nb.info/gnd/4074156-4</lido:objectPublishedID>
+    <lido:lidoRecID lido:source="dataasee" lido:type="http://terminology.lido-schema.org/lido00100">ishar1</lido:lidoRecID>
 
-  <lido:category>
-    <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00096">
-      <skos:prefLabel xml:lang="en">Human-made object</skos:prefLabel>
-      <skos:altLabel xml:lang="en">Man-made object</skos:altLabel>
-      <skos:prefLabel xml:lang="de">Künstlicher Gegenstand</skos:prefLabel>
-      <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300386957"/>
-      <skos:exactMatch rdf:resource="http://erlangen-crm.org/current/E22_Human-Made_Object"/>
-    </skos:Concept>
-  </lido:category>
-  <lido:applicationProfile lido:type="http://terminology.lido-schema.org/lido00099"
-    >https://lido-schema.org/profiles/v1.1/lido-v1.1-profile-paintingandsculpture-v1.0.xsd</lido:applicationProfile>
+    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00100">3430921017028</lido:objectPublishedID>
+    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00100">https://doi.org/10.5555/mobyid-1003</lido:objectPublishedID>
 
-  <lido:descriptiveMetadata xml:lang="en">
-    <lido:objectClassificationWrap>
-      <lido:objectWorkTypeWrap>
-        <!-- LTE:lido00766 "Object by form" -->
-        <lido:objectWorkType lido:type="http://terminology.lido-schema.org/lido00766">
-          <skos:Concept rdf:about="http://vocab.getty.edu/aat/300033656">
-            <skos:prefLabel xml:lang="en">panel paintings (paintings by form)</skos:prefLabel>
-            <skos:prefLabel xml:lang="de">Tafelbild (Gemälde)</skos:prefLabel>
-            <skos:prefLabel xml:lang="fr">peintures sur panneau</skos:prefLabel>
-            <skos:altLabel xml:lang="en">panel painting (painting by form)</skos:altLabel>
-            <skos:altLabel xml:lang="en">paintings, panel (paintings by form)</skos:altLabel>
-            <skos:altLabel xml:lang="en">panel-paintings (paintings by form)</skos:altLabel>
-            <skos:altLabel xml:lang="en">panels (panel paintings)</skos:altLabel>
-            <skos:altLabel xml:lang="de">Tafelmalerei (Gemälde)</skos:altLabel>
-            <skos:altLabel xml:lang="de">Tafelmalereien (Gemälde)</skos:altLabel>
-            <skos:altLabel xml:lang="de">Tafelbild (Gemälde)</skos:altLabel>
-            <skos:altLabel xml:lang="de">Tafelbilder (Gemälde)</skos:altLabel>
-            <skos:altLabel xml:lang="de">Tafel (Tafelgemälde)</skos:altLabel>
-            <skos:altLabel xml:lang="fr">peinture sur panneau</skos:altLabel>
-            <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q55439"/>
-            <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4037220-0"/>
-            <skos:exactMatch rdf:resource="http://ark.bnf.fr/ark:/12148/cb11966947p"/>
-            <skos:exactMatch rdf:resource="http://id.loc.gov/authorities/subjects/sh85097407"/>
-          </skos:Concept>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="en">panel painting</lido:term>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="de">Tafelgemälde</lido:term>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="fr">Panneaux peints</lido:term>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="fr">Tableaux sur bois</lido:term>
-          <!-- LTE:lido00526 "Display label" -->
-           <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">panel painting</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Tafelbild</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">peinture sur bois</lido:term>
-        </lido:objectWorkType>
-        <!-- LTE:lido00789 "Object by material or technique" -->
-        <lido:objectWorkType lido:type="http://terminology.lido-schema.org/lido00789">
-          <skos:Concept rdf:about="http://vocab.getty.edu/aat/300033799">
-            <skos:prefLabel xml:lang="en">oil paintings (visual works)</skos:prefLabel>
-            <skos:prefLabel xml:lang="de">Ölgemälde</skos:prefLabel>
-            <skos:prefLabel xml:lang="fr">peintures à l'huile (œuvres visuelles)</skos:prefLabel>
-            <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q56676227"/>
-            <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4043238-5"/>
-            <skos:exactMatch rdf:resource="https://data.bnf.fr/ark:/12148/cb119329442"/>
-          </skos:Concept>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="de">Ölbild</lido:term>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="de">Ölmalereien</lido:term>
-          <!-- LTE:lido00526 "Display label" -->
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">oil painting</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Ölgemälde</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">peinture à l'huile</lido:term>
-        </lido:objectWorkType>
-        <!-- LTE:lido00768 "Object by subject" -->
-        <lido:objectWorkType lido:type="http://terminology.lido-schema.org/lido00768">
-          <skos:Concept rdf:about="http://vocab.getty.edu/aat/300404138">
-            <skos:prefLabel xml:lang="en">single-sitter portraits</skos:prefLabel>
-            <skos:altLabel xml:lang="en">single sitter portrait</skos:altLabel>
-          </skos:Concept>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="de">Einzelportrait</lido:term>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="de">Einzelbildnis</lido:term>
-          <lido:term lido:addedSearchTerm="yes" xml:lang="fr">portrait d'une seule personne</lido:term>
-          <!-- LTE:lido00526 "Display label" -->
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">single-sitter portrait</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Einzelporträt</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">portrait individuel</lido:term>
-        </lido:objectWorkType>
-      </lido:objectWorkTypeWrap>
-      <lido:classificationWrap>
-        <!-- LTE:lido00853 "Object genre" -->
-        <lido:classification lido:type="http://terminology.lido-schema.org/lido00853">
-          <skos:Concept rdf:about="http://vocab.getty.edu/aat/300033618">
-            <skos:prefLabel xml:lang="en">paintings (visual works)</skos:prefLabel>
-            <skos:prefLabel xml:lang="de">Gemälde</skos:prefLabel>
-            <skos:altLabel xml:lang="de">Malereien (visuelle Werke)</skos:altLabel>
-            <skos:prefLabel xml:lang="fr">peintures (oeuvres visuelles)</skos:prefLabel>
-          </skos:Concept>
-           <!-- LTE:lido00526 "Display label" -->
-          <lido:term lido:pref="http://terminology.lido-schema.org/" xml:lang="en">painting</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Gemälde</lido:term>
-          <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">peinture</lido:term>
-        </lido:classification>
-        <!-- LTE:lido00932 "Subject category" [by discipline] -->
-        <lido:classification lido:type="http://terminology.lido-schema.org/lido00932">
-          <skos:Concept rdf:about="https://d-nb.info/standards/vocab/gnd/gnd-sc#13.3">
-            <skos:prefLabel xml:lang="en">Painting</skos:prefLabel>
-            <skos:prefLabel xml:lang="de">Malerei</skos:prefLabel>
-            <skos:notation>13.3</skos:notation>
-            <skos:closeMatch rdf:resource="http://id.loc.gov/authorities/classification/ND25-ND3416"/>
-          </skos:Concept>
-        </lido:classification>
-      </lido:classificationWrap>
-    </lido:objectClassificationWrap>
-    <lido:objectIdentificationWrap>
-      <lido:titleWrap> 
-        <!-- AAT "titles (general, names)" | LTE:lido00169 "Preferred title" -->
-         <lido:titleSet lido:type="http://vocab.getty.edu/aat/300417193" lido:pref="http://terminology.lido-schema.org/lido00169">
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Mona Lisa</lido:appellationValue>
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Mona Lisa</lido:appellationValue>
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">La Joconde</lido:appellationValue>
-          <lido:sourceAppellation xml:lang="en">Getty Vocabulary Program, CONA [online], Mona Lisa. URL: http://vocab.getty.edu/page/cona/700000213 [2022-07-04]</lido:sourceAppellation>
-          <lido:sourceAppellation xml:lang="de">German National Library, GND, Mona Lisa. URL: https://d-nb.info/gnd/4074156-4 [2022-07-04]</lido:sourceAppellation>
-           <lido:sourceAppellation xml:lang="fr">Bibliothèque nationale de France, La Joconde. URL: http://ark.bnf.fr/ark:/12148/cb1194 [2024-07-01]</lido:sourceAppellation>
-        </lido:titleSet>
-        <!-- AAT "descriptive titles" | LTE:lido00170 "Alternative title" -->
-        <lido:titleSet lido:type="http://vocab.getty.edu/aat/300417199" lido:pref="http://terminology.lido-schema.org/lido00170">
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00170" xml:lang="en">Portrait of Lisa Gherardini</lido:appellationValue>
-          <lido:sourceAppellation xml:lang="en">Getty Vocabulary Program, CONA [online], Mona Lisa. URL: http://vocab.getty.edu/page/cona/700000213 [2022-07-04]</lido:sourceAppellation>
-        </lido:titleSet>
-        <!-- AAT "published titles" | LTE:lido00170 "Alternative title" -->
-        <lido:titleSet lido:type="http://vocab.getty.edu/aat/300417206" lido:pref="http://terminology.lido-schema.org/lido00170">
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">PORTRAIT DE MONA LISA (1479-1528) ; DITE LA JOCONDE</lido:appellationValue>
-          <lido:sourceAppellation xml:lang="fr">Collections des musées de France (Joconde), Portrait de Mona Lisa. URL: https://www.pop.culture.gouv.fr/notice/joconde/000PE025604 [2022-07-04]</lido:sourceAppellation>
-        </lido:titleSet>
-        <!-- AAT "repository titles" | LTE:lido00170 "Alternative title" -->
-        <lido:titleSet lido:type="http://vocab.getty.edu/aat/300417200" lido:pref="http://terminology.lido-schema.org/lido00170">
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Portrait de Lisa Gherardini, épouse de Francesco del Giocondo, dit La Joconde ou Monna Lisa</lido:appellationValue>
-          <lido:sourceAppellation xml:lang="fr">Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/ark:/53355/cl010062370 [2022-07-04]</lido:sourceAppellation>
-        </lido:titleSet>
-        <!-- AAT "popular titles" | LTE:lido00170 "Alternative title" -->
-        <lido:titleSet lido:type="http://vocab.getty.edu/aat/300417218" lido:pref="http://terminology.lido-schema.org/lido00170">
-          <lido:appellationValue lido:encodinganalog="Type de titre" lido:label="titre d'usage" lido:pref="http://terminology.lido-schema.org/lido00170" xml:lang="fr">Monna Lisa</lido:appellationValue>
-          <lido:sourceAppellation xml:lang="fr">Institut national d'histoire de l'art, Portrait de Lisa Gherardini. URL: https://agorha.inha.fr/ark:/54721/8e279ee1-f842-4eb3-994d-797ca8562c09 [2022-09-06]</lido:sourceAppellation>
-        </lido:titleSet>
-        <!-- AAT "popular titles" | LTE:lido00170 "Alternative title" -->
-        <lido:titleSet lido:type="http://vocab.getty.edu/aat/300417218" lido:pref="http://terminology.lido-schema.org/lido00170">
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="it">La Gioconda</lido:appellationValue>
-          <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00170" xml:lang="it">Monna Lisa</lido:appellationValue>
-          <sourceAppellation>Q12418. (2024, June 11). Wikidata. Retrieved 17:09, June 14, 2024 from https://w.wiki/AXTS.</sourceAppellation>
-        </lido:titleSet>
-      </lido:titleWrap>
-      <lido:repositoryWrap>
-        <!-- LTE:lido01017 "Current repository" -->
-        <lido:repositorySet lido:type="http://terminology.lido-schema.org/lido01017">
-          <lido:displayRepository xml:lang="fr">Musée du Louvre, Département des Peintures</lido:displayRepository>
-          <lido:repositoryName>
-            <lido:legalBodyID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q3044768</lido:legalBodyID>
-            <lido:legalBodyName>
-              <lido:appellationValue xml:lang="en">Department of Paintings of the Louvre</lido:appellationValue>
-              <lido:appellationValue xml:lang="de">Gemäldeabteilung des Louvre</lido:appellationValue>
-              <lido:appellationValue xml:lang="fr">Département des peintures du musée du Louvre</lido:appellationValue>
-            </lido:legalBodyName>
-            <legalBodyWeblink>https://www.louvre.fr/</legalBodyWeblink>
-          </lido:repositoryName>
-          <!-- LTE:lido00113 "Inventory number" -->
-          <lido:workID lido:encodinganalog="Numéro principal" lido:type="http://terminology.lido-schema.org/lido00113">INV 779</lido:workID>
-          <lido:workID lido:encodinganalog="Autre numéro d'inventaire" lido:type="http://terminology.lido-schema.org/lido00113">MR 316</lido:workID>
-          <lido:repositoryLocation lido:politicalEntity="" lido:geographicalEntity="">
-            <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q19675</lido:placeID>
-            <owl:sameAs rdf:resource="https://sws.geonames.org/2997319/"/>
-            <owl:sameAs rdf:resource="https://d-nb.info/gnd/1006837-5"/>
-           <lido:namePlaceSet>
-              <lido:appellationValue xml:lang="en">Louvre Museum</lido:appellationValue>
-              <lido:appellationValue xml:lang="de">Louvre</lido:appellationValue>
-              <lido:appellationValue xml:lang="fr">Musée du Louvre</lido:appellationValue>
-            </lido:namePlaceSet>
-            <lido:gml>
-              <gml:Point>
-                <gml:pos>48.86102 2.33587</gml:pos>
-              </gml:Point>
-            </lido:gml>
-            <lido:partOfPlace>
-              <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q90</lido:placeID>
-              <owl:sameAs rdf:resource="https://sws.geonames.org/2968815/"/>
-              <owl:sameAs rdf:resource="https://d-nb.info/gnd/4044660-8"/>
-              <lido:namePlaceSet>
-                <lido:appellationValue xml:lang="en">Paris</lido:appellationValue>
-                <lido:appellationValue xml:lang="de">Paris</lido:appellationValue>
-                <lido:appellationValue xml:lang="fr">Paris</lido:appellationValue>
-              </lido:namePlaceSet>
-              <lido:partOfPlace>
-                <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q142</lido:placeID>
-                <owl:sameAs rdf:resource="https://sws.geonames.org/3017382/"/>
-                <owl:sameAs rdf:resource="https://d-nb.info/gnd/4018145-5"/>
-                <lido:namePlaceSet>
-                  <lido:appellationValue xml:lang="en">France</lido:appellationValue>
-                  <lido:appellationValue xml:lang="de">Frankreich</lido:appellationValue>
-                  <lido:appellationValue xml:lang="fr">France</lido:appellationValue>
-                </lido:namePlaceSet>
-                 <lido:placeClassification>
-                  <skos:Concept rdf:about="http://www.wikidata.org/entity/Q6256">
-                    <skos:prefLabel xml:lang="de">Land</skos:prefLabel>
-                    <skos:altLabel xml:lang="de">Staat</skos:altLabel>
-                    <skos:prefLabel xml:lang="en">country</skos:prefLabel>
-                    <skos:prefLabel xml:lang="fr">pays</skos:prefLabel>
-                    <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4056618-3"/>
-                  </skos:Concept>
-                </lido:placeClassification>
-              </lido:partOfPlace>
-              <lido:placeClassification>
-                <skos:Concept rdf:about="http://www.wikidata.org/entity/Q515">
-                  <skos:prefLabel xml:lang="en">city</skos:prefLabel>
-                  <skos:prefLabel xml:lang="de">Stadt</skos:prefLabel>
-                  <skos:prefLabel xml:lang="fr">ville</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4056723-0"/>
-                </skos:Concept>
-              </lido:placeClassification>
-              <lido:placeClassification>
-                <skos:Concept rdf:about="http://www.wikidata.org/entity/Q207694">
-                  <skos:prefLabel xml:lang="en">art museum</skos:prefLabel>
-                  <skos:prefLabel xml:lang="de">Kunstmuseum</skos:prefLabel>
-                  <skos:prefLabel xml:lang="fr">musée d'art</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4166041-9"/>
-                </skos:Concept>
-              </lido:placeClassification>
-            </lido:partOfPlace>
-          </lido:repositoryLocation>
-        </lido:repositorySet>
-      </lido:repositoryWrap>
-      <lido:objectDescriptionWrap>
-        <!-- LTE:lido01110 "Provenance description" -->
-        <lido:objectDescriptionSet lido:type="http://terminology.lido-schema.org/lido01110">
-          <lido:descriptiveNoteValue xml:lang="en">
-               - Collector / Previous owner: François Ier, roi de France
-               - Commissioner: Giocondo, Francesco del
-               - Acquisition details: ancienne collection royale/de la Couronne
-               - Acquisition date: 1793
-               - Owned by: Etat
-               - Held by: Musée du Louvre, Département des Peintures
-             </lido:descriptiveNoteValue>
-          <lido:descriptiveNoteValue xml:lang="fr">
-               "Provenance: Ce tableau fut commencé vers 1503 au moins, sans doute pour 
-               Francesco del Giocondo, gentilhomme florentin (1460-1539), mais fut 
-               conservé par Léonard de Vinci jusqu'à la fin de sa vie pour en pursuivre 
-               l'exécution picturale toujours inachevée à sa mort ; il fut très 
-               probablement acquis par François Ier en 1518."
-               - Détenteur précédent: François Ier, roi de France
-               - Commanditaire: Giocondo, Francesco del
-               - Mode d’acquisition: ancienne collection royale/de la Couronne
-               - Date d’acquisition: 1793
-               - Propriétaire: Etat
-               - Détenu par: Musée du Louvre, Département des Peintures
-             </lido:descriptiveNoteValue>
-             <lido:sourceDescriptiveNote xml:lang="en">Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]</lido:sourceDescriptiveNote>
-        </lido:objectDescriptionSet>
-        <lido:objectDescriptionSet>
-          <!-- 
-            The following information has been added according to the source
-            https://collections.louvre.fr/en/ark:/53355/cl010062370            
-          -->
-          <lido:descriptiveNoteValue xml:lang="de">
-            Beauftragung durch Francesco del Giocondo (1460–1542), Ehemann der dargestellten 
-            Lisa Gherardini (1479–1542) an Leonardo da Vinci.  
-            Beginn des Malprozesses um 1503 (gemäß einer Randnotiz von Agostino Vespucci in 
-            einer Heidelberger Inkunabel). Das Gemälde bleibt zunächst unvollendet, Leonardo 
-            überarbeitet es mehrere Male. 
-            1516 nimmt Leonardo es mit, als er auf Einladung des französischen Königs Franz I. 
-            von Florenz nach Amboise reist. 
-            Sehr wahrscheinlich kauft Franz I. 1518 das Gemälde zum Preis von 2604 Livres. 
-            Die Zahlung wird an Salaj, einen Schüler Leonardos, geleistet.
-            Seit Ende des 17. Jahrhunderts Aufbewahrung im Schloss von Versailles. 
-            Seit 1773 Eigentum des französischen Staates. 
-            Am 12. August 1797 Transport in den Louvre.  
-            Seit dem 3. April 2005 hängt das Gemälde in einer Vitrine im Salle des États im Louvre. 
-          </lido:descriptiveNoteValue>
-          <lido:sourceDescriptiveNote xml:lang="fr">Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]</lido:sourceDescriptiveNote>
-          <lido:sourceDescriptiveNote xml:lang="fr">Vincent Delieuvin. Les accrochages de la Joconde de 1797 à nos jours. Média dossiers du Louvre. URL: https://grandpalais-immersif.fr/ressources-pedagogiques-expo-joconde [2024-09-17]</lido:sourceDescriptiveNote>
-          <lido:sourceDescriptiveNote xml:lang="de">Veit Probst. Zur Entstehungsgeschichte der Mona Lisa. URL: http://archiv.ub.uni-heidelberg.de/artdok/volltexte/2008/410 [2024-09-17] </lido:sourceDescriptiveNote>
-        </lido:objectDescriptionSet>    
-      </lido:objectDescriptionWrap>
-      <lido:objectMeasurementsWrap>
-        <lido:objectMeasurementsSet>
-          <lido:displayObjectMeasurements xml:lang="en">Height x width: 0.794 x 0.534 m</lido:displayObjectMeasurements>
-          <lido:displayObjectMeasurements xml:lang="de">Höhe x Breite: 0,794 x 0,534 m</lido:displayObjectMeasurements>
-          <lido:displayObjectMeasurements xml:lang="fr">Hauteur: 0,794 m ; Largeur: 0,534 m</lido:displayObjectMeasurements>
-          <lido:objectMeasurements>
-            <lido:measurementsSet>
-              <lido:measurementType>
-                <skos:Concept rdf:about="http://www.wikidata.org/entity/Q208826">
-                  <skos:prefLabel xml:lang="en">height</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300055644"/>
-                  <skos:exactMatch rdf:resource="http://d-nb.info/gnd/4229619-5"/>
-                </skos:Concept>
-              </lido:measurementType>
-              <lido:measurementUnit>
-                <skos:Concept rdf:about="http://www.wikidata.org/entity/Q11573">
-                  <skos:prefLabel xml:lang="en">metre</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300379099"/>
-                </skos:Concept>
-              </lido:measurementUnit>
-              <lido:measurementValue>0.79</lido:measurementValue>
-            </lido:measurementsSet>
-            <lido:measurementsSet>
-              <lido:measurementType>
-                <skos:Concept rdf:about="http://www.wikidata.org/entity/Q35059">
-                  <skos:prefLabel xml:lang="en">width</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300055647"/>
-                </skos:Concept>
-              </lido:measurementType>
-              <lido:measurementUnit>
-                <skos:Concept rdf:about="http://www.wikidata.org/entity/Q11573">
-                  <skos:prefLabel xml:lang="en">metre</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300379099"/>
-                </skos:Concept>
-              </lido:measurementUnit>
-              <lido:measurementValue>0.53</lido:measurementValue>
-            </lido:measurementsSet>
-            <lido:extentMeasurements>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300014657">
-                <skos:prefLabel xml:lang="en">panel (wood by form)</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q106857709"/>
-              </skos:Concept>
-            </lido:extentMeasurements>
-            <lido:shapeMeasurements>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300263831">
-                <skos:prefLabel xml:lang="en">rectangular</skos:prefLabel>
-              </skos:Concept>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">rectangular</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">rechteckig</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">rectangulaire</lido:term>
-            </lido:shapeMeasurements>
-          </lido:objectMeasurements>
-        </lido:objectMeasurementsSet>
-      </lido:objectMeasurementsWrap>
-      <lido:objectMaterialsTechWrap>
-        <lido:objectMaterialsTechSet>
-          <lido:displayMaterialsTech xml:lang="en">Oil on poplar panel</lido:displayMaterialsTech>
-          <lido:displayMaterialsTech xml:lang="de">Öl auf Pappelholz</lido:displayMaterialsTech>
-          <lido:displayMaterialsTech xml:lang="fr">huile sur bois (peuplier)</lido:displayMaterialsTech>
-          <lido:materialsTech>
-            <!-- LTE:lido00513 "Medium" -->
-            <lido:termMaterialsTech lido:type="http://terminology.lido-schema.org/lido00513">
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300015050">
-                <skos:prefLabel xml:lang="en">oil paints (paints)</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q296955"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="en">oil paint</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Ölfarbe</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">peinture à l'huile</lido:term>
-            </lido:termMaterialsTech>
-            <!-- LTE:lido00514 "Support" -->
-            <lido:termMaterialsTech lido:type="http://terminology.lido-schema.org/lido00514">
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300012363">
-                <skos:prefLabel xml:lang="en">poplar (wood)</skos:prefLabel>
-                <skos:altLabel xml:lang="en">populus (poplar, wood)</skos:altLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q291034"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4203514-4"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="en">poplar wood</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Pappelholz</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">bois de peuplier</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="en">wood, poplar</lido:term>
-            </lido:termMaterialsTech>
-            <!-- LTE:lido00514 "Support" -->
-            <lido:termMaterialsTech lido:type="http://terminology.lido-schema.org/lido00514">
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300014657">
-                <skos:prefLabel xml:lang="en">panel (wood by form)</skos:prefLabel>
-                <skos:altLabel xml:lang="en">wood panel</skos:altLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q106857709"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Holztafel</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Holzplatte</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">panneau de bois</lido:term>
-             </lido:termMaterialsTech>
-            <!-- LTE:lido00131 "Technique" -->
-            <lido:termMaterialsTech lido:type="http://terminology.lido-schema.org/lido00131">
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300178675">
-                <skos:prefLabel xml:lang="en">panel painting (image-making)</skos:prefLabel>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Tafelmalerei (Technik)</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">panel painting</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Tafelmalerei</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">peinture de panneaux</lido:term>
-            </lido:termMaterialsTech>
-            <lido:sourceMaterialsTech xml:lang="en">Getty Vocabulary Program, CONA [online], Mona Lisa. Page Link: http://vocab.getty.edu/page/cona/700000213 [2022-07-20]</lido:sourceMaterialsTech>
-          </lido:materialsTech>
-          <lido:materialsTech>
-            <!-- LTE lido00131 "Technique" -->
-            <lido:termMaterialsTech lido:type="http://terminology.lido-schema.org/lido00131">
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300053421">
-                <skos:prefLabel xml:lang="en">sfumato</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q210788"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/111610668X"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">estompage</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">sfumato</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Sfumato</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">sfumato</lido:term>
-            </lido:termMaterialsTech>
-            <lido:sourceMaterialsTech xml:lang="fr">Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370</lido:sourceMaterialsTech>
-          </lido:materialsTech>
-        </lido:objectMaterialsTechSet>
-      </lido:objectMaterialsTechWrap>
-    </lido:objectIdentificationWrap>
-    <lido:eventWrap>
-      <lido:eventSet lido:sortorder="1">
-        <lido:displayEvent xml:lang="en">Commissioned by Francesco del Giocondo, 1503 at the latest</lido:displayEvent>
-        <lido:displayEvent xml:lang="de">Beauftragt von Francesco del Giocondo, 1503 spätestens</lido:displayEvent>
-        <lido:displayEvent xml:lang="fr">Commandé par Francesco del Giocondo, 1503 au plus tard</lido:displayEvent>
-        <lido:event>
-          <lido:eventType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00226">
-              <skos:prefLabel xml:lang="en">Commissioning</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">Beauftragung</skos:prefLabel>
-              <skos:prefLabel xml:lang="fr">Commande</skos:prefLabel>
-              <skos:closeMatch rdf:resource="http://www.wikidata.org/entity/Q566889"/>
-              <skos:closeMatch rdf:resource="http://vocab.getty.edu/aat/300393199"/>              
-              <skos:closeMatch rdf:resource="http://d-nb.info/gnd/4003557-8"/>
-            </skos:Concept>
-          </lido:eventType>
-          <lido:eventActor>
-            <lido:displayActorInRole xml:lang="en">Commissioner: Francesco del Giocondo</lido:displayActorInRole>
-            <lido:displayActorInRole xml:lang="de">Auftraggeber: Francesco del Giocondo</lido:displayActorInRole>
-            <lido:displayActorInRole xml:lang="fr">Commanditaire: Francesco del Giocondo</lido:displayActorInRole>
-            <lido:actorInRole>
-              <!-- LTE:lido00163 "Person" -->
-              <lido:actor lido:type="http://terminology.lido-schema.org/lido00163">
-                <lido:actorID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q1395822</lido:actorID>
-                <owl:sameAs rdf:resource="http://viaf.org/viaf/46164055"/>
-                <lido:nameActorSet>
-                  <!-- LTE:lido00169 "Preferred label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169">Del Giocondo, Francesco (1465–1538)</lido:appellationValue>
-                  <!-- LTE:lido00170 "Alternative label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00170">Francesco di Bartolomeo di Zanobi del Giocondo</lido:appellationValue>
-                  <!-- LTE:lido00526 "Display label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00526">Francesco del Giocondo</lido:appellationValue>
-                </lido:nameActorSet>
-              </lido:actor>
-              <lido:roleActor>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300400903">
-                  <skos:prefLabel xml:lang="en">commissioners (people who order works)</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q760086"/>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4143425-0"/>
-                </skos:Concept>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="en">commissioner</lido:term>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="de">Auftraggeber</lido:term>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="fr">commanditaire</lido:term>
-              </lido:roleActor>
-            </lido:actorInRole>
-          </lido:eventActor>
-          <lido:eventDate>
-            <lido:date>
-              <!-- LTE:lido00529 "Estimated date" -->
-              <lido:earliestDate lido:type="http://terminology.lio-schema.org/lido00529" lido:source="Francesco del Giocondo. In: Wikipedia. URL: https://de.wikipedia.org/w/index.php?title=Francesco_del_Giocondo&amp;oldid=225857332 [2022-10-25]">1502</lido:earliestDate>
-              <!-- LTE:lido00529 "Estimated date" -->
-              <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00529" lido:source="Collections des musées de France (Joconde), Portrait de Mona Lisa. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-04-15]">1503</lido:latestDate>
-            </lido:date>
-          </lido:eventDate>
-        </lido:event>
-      </lido:eventSet>
-      <lido:eventSet lido:sortorder="2" lido:mostNotableEvent="1">
-        <lido:displayEvent xml:lang="en">Painted by Leonardo da Vinci, probably 1503–1519</lido:displayEvent>
-        <lido:displayEvent xml:lang="de">Gemalt von Leonardo da Vinci, wahrscheinlich 1503–1519</lido:displayEvent>
-        <lido:displayEvent xml:lang="fr">Peint par Léonard de Vinci, probablement 1503–1519</lido:displayEvent>
-        <lido:event>
-          <lido:eventType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00007">
-              <skos:prefLabel xml:lang="en">Production</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">Herstellung</skos:prefLabel>
-              <skos:prefLabel xml:lang="fr">Production</skos:prefLabel>
-              <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q739302"/>
-              <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300054713"/>
-              <skos:closeMatch rdf:resource="http://d-nb.info/gnd/4159653-5"/>              
-            </skos:Concept>
-          </lido:eventType>
-          <lido:eventActor>
-            <lido:displayActorInRole xml:lang="en">Painter: Leonardo da Vinci (1452–1519)</lido:displayActorInRole>
-            <lido:displayActorInRole xml:lang="de">Maler: Leonardo da Vinci (1452–1519)</lido:displayActorInRole>
-            <lido:displayActorInRole xml:lang="fr">Peintre: Léonard de Vinci (1452–1519)</lido:displayActorInRole>
-            <lido:actorInRole>
-              <!-- LTE:lido00163 "Person" -->
-              <lido:actor lido:type="http://terminology.lido-schema.org/lido00163">
-                <lido:actorID lido:type="http://terminology.lido-schema.org/lido00099">http://viaf.org/viaf/24604287</lido:actorID>
-                <owl:sameAs rdf:resource="http://www.wikidata.org/entity/Q762"/>
-                <owl:sameAs rdf:resource="http://vocab.getty.edu/ulan/500010879"/>
-                <owl:sameAs rdf:resource="https://d-nb.info/gnd/118640445"/>
-                <owl:sameAs rdf:resource="http://ark.bnf.fr/ark:/12148/cb11912491s"/>
-                <owl:sameAs rdf:resource="https://id.loc.gov/authorities/n79034525"/>
-                 <lido:nameActorSet>
-                  <!-- LTE:lido00169 "Preferred label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Leonardo, da Vinci, 1452-1519</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Leonardo, da Vinci</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Léonard de Vinci (1452-1519)</lido:appellationValue>
-                  <!-- LTE:lido00170 "Alternative label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00170" xml:lang="it">Leonardo di Ser Piero da Vinci</lido:appellationValue>
-                  <!-- LTE:lido00961 "Index label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00961">Leonardo, da Vinci (1452-1519)</lido:appellationValue>
-                </lido:nameActorSet>
-                <!-- LTE:lido01027 "Cultural affiliation" -->
-                <lido:nationalityActor lido:type="http://terminology.lido-schema.org/lido01027">
-                  <skos:Concept rdf:about="http://vocab.getty.edu/aat/300111198">
-                    <skos:prefLabel xml:lang="en">Italian (culture or style)</skos:prefLabel>
-                  </skos:Concept>
-                  <!-- LTE:lido00526 "Display label" -->
-                  <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">Italian</lido:term>
-                  <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">italienisch</lido:term>
-                  <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">italien</lido:term>
-                </lido:nationalityActor>
-                <!-- LTE:lido00786 "Birth date" -->
-                <lido:vitalDatesActor lido:type="http://terminology.lido-schema.org/lido00786">
-                  <!-- LTE:lido00528 "Exact date" -->
-                  <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00528" lido:source="Wikidata 'Q762' (2022, October 24). URL: https://w.wiki/AXYs">1452-04-15</lido:earliestDate>
-                  <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00528">1452-04-15</lido:latestDate>
-                </lido:vitalDatesActor>
-                <!-- LTE:lido00787 "Death date" -->
-                <lido:vitalDatesActor lido:type="http://terminology.lido-schema.org/lido00787">
-                  <!-- LTE:lido00528 "Exact date" -->
-                  <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00528">1519-05-02</lido:earliestDate>
-                  <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00528">1519-05-02</lido:latestDate>
-                </lido:vitalDatesActor>
-                <!-- LTE:lido00780 "Birth place" -->
-                <lido:vitalPlaceActor lido:type="http://terminology.lido-schema.org/lido00780">
-                  <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q154184</lido:placeID>
-                   <lido:namePlaceSet>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Anchiano</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Anchiano</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Anchiano</lido:appellationValue>
-                  </lido:namePlaceSet>
-                  <lido:gml>
-                    <gml:Point>
-                      <gml:pos>43.799167 10.938133</gml:pos>
-                    </gml:Point>
-                  </lido:gml>
-                </lido:vitalPlaceActor>
-                <!-- LTE:lido00783 "Death place" -->
-                <lido:vitalPlaceActor lido:type="http://terminology.lido-schema.org/lido00783">
-                  <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q205116</lido:placeID>
-                  <owl:sameAs rdf:resource="https://d-nb.info/gnd/4079744-2"/>
-                  <lido:namePlaceSet>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Amboise</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Amboise</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Amboise</lido:appellationValue>
-                  </lido:namePlaceSet>
-                  <lido:gml>
-                    <gml:Point>
-                      <gml:pos>47.411389 0.9825</gml:pos>
-                    </gml:Point>
-                  </lido:gml>
-                </lido:vitalPlaceActor>
-                <!-- LTE:lido00867 "Sex or gender" -->
-                <lido:genderActor lido:type="http://terminology.lido-schema.org/lido00867">
-                  <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00774">
-                    <skos:prefLabel xml:lang="en">Male</skos:prefLabel>
-                    <skos:prefLabel xml:lang="de">Männlich</skos:prefLabel>
-                    <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q6581097"/>
-                    <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300189559"/>
-                    <skos:exactMatch rdf:resource="https://d-nb.info/standards/vocab/gnd/gender#male"/>
-                  </skos:Concept>
-                </lido:genderActor>
-              </lido:actor>
-              <lido:roleActor>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300025136">
-                  <skos:prefLabel xml:lang="en">painters (artists)</skos:prefLabel>
-                  <skos:altLabel xml:lang="en">painter (artist)</skos:altLabel>
-                  <skos:prefLabel xml:lang="de">Maler</skos:prefLabel>
-                  <skos:altLabel xml:lang="de">Kunstmaler</skos:altLabel>
-                  <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q1028181"/>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4037215-7"/>
-                </skos:Concept>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="fr">peintre</lido:term>
-              </lido:roleActor>
-            </lido:actorInRole>
-          </lido:eventActor>
-          <lido:culture>
-            <skos:Concept rdf:about="http://vocab.getty.edu/aat/300111198">
-              <skos:prefLabel xml:lang="en">Italian (culture or style)</skos:prefLabel>
-            </skos:Concept>
-          </lido:culture>
-          <lido:eventDate>
-            <lido:displayDate xml:lang="en">1st quarter of the 16th century</lido:displayDate>
-            <lido:displayDate xml:lang="de">1. Viertel des 16. Jahrhunderts</lido:displayDate>
-            <lido:displayDate xml:lang="fr">1er quart 16e siècle</lido:displayDate>
-            <lido:date>
-              <!-- LTE:lido00529 "Estimated date" -->
-              <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00529" lido:source="Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]">1503</lido:earliestDate>
-              <!-- LTE:lido00529 "Estimated date" -->
-              <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00529" lido:source="Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]">1519</lido:latestDate>
-            </lido:date>
-          </lido:eventDate>
-          <!-- LTE:lido00731 "Period" -->
-          <lido:periodName lido:type="http://terminology.lido-schema.org/lido00731">
-            <skos:Concept rdf:about="http://vocab.getty.edu/aat/300021142">
-              <skos:prefLabel xml:lang="en">High Renaissance</skos:prefLabel>
-              <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q1474884"/>
-              <skos:broadMatch rdf:resource="https://d-nb.info/gnd/4049450-0"/>
-            </skos:Concept>
-            <!-- LTE:lido00526 "Display label" -->
-            <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">High Renaissance</lido:term>
-            <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Hochrenaissance</lido:term>
-            <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">Haute Renaissance</lido:term>
-          </lido:periodName>
-          <lido:eventPlace>
-            <lido:displayPlace xml:lang="en">Started in Florence</lido:displayPlace>
-            <lido:displayPlace xml:lang="de">Begonnen in Florenz</lido:displayPlace>
-            <lido:displayPlace xml:lang="fr">Commencé a Florence</lido:displayPlace>
-            <!-- Wikidata Term "city" -->
-            <lido:place lido:politicalEntity="http://www.wikidata.org/entity/Q515">
-              <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q2044</lido:placeID>
-              <owl:sameAs rdf:resource="https://d-nb.info/gnd/4017581-9"/>
-              <owl:sameAs rdf:resource="http://vocab.getty.edu/tgn/7000457"/>
-              <owl:sameAs rdf:resource="https://www.geonames.org/6542285"/>
-              <owl:sameAs rdf:resource="https://viaf.org/viaf/158387156/"/>
-              <lido:namePlaceSet>
-                <!-- LTE:lido00169 "Preferred label" -->
-                <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Florence</lido:appellationValue>
-                <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Florenz</lido:appellationValue>
-                <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Florenz</lido:appellationValue>
-              </lido:namePlaceSet>
-              <lido:gml>
-                <gml:Point>
-                  <gml:pos>43.771389 11.254167</gml:pos>
-                </gml:Point>
-              </lido:gml>
-            </lido:place>
-          </lido:eventPlace>
-	<lido:eventDescriptionSet>
-            <lido:descriptiveNoteValue xml:lang="fr">"Ce tableau fut commencé vers 1503 au moins, sans doute pour Francesco del Giocondo, gentilhomme florentin (1460-1539), mais fut conservé par Léonard de Vinci jusqu'à la fin de sa vie pour en pursuivre l'exécution picturale toujours inachevée à sa mort ; il fut très probablement acquis par François Ier en 1518."</lido:descriptiveNoteValue>
-            <lido:sourceDescriptiveNote>Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]</lido:sourceDescriptiveNote>
-          </lido:eventDescriptionSet>
-        </lido:event>
-      </lido:eventSet>
-      <lido:eventSet lido:sortorder="3">
-        <lido:displayEvent xml:lang="en">Probably: Acquisition by Francis I, 1518</lido:displayEvent>
-        <lido:displayEvent xml:lang="de">Wahrscheinlich: Erwerb durch Franz I., 1518</lido:displayEvent>
-        <lido:displayEvent xml:lang="fr">Probablement: Acquisition par François Ier, 1518</lido:displayEvent>
-        <lido:event>
-          <lido:eventType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00001">
-              <skos:prefLabel xml:lang="en">Change of legal title</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">Eigentumswechsel</skos:prefLabel>
-              <skos:prefLabel xml:lang="fr">Changement de propriété</skos:prefLabel>
-              <skos:closeMatch rdf:resource="http://www.wikidata.org/entity/Q3604747"/>
-              <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4212536-4"/>
-            </skos:Concept>
-          </lido:eventType>
-          <lido:eventActor>
-            <lido:displayActorInRole xml:lang="en">Buyer: Francis I, king of France</lido:displayActorInRole>
-            <lido:displayActorInRole xml:lang="de">Käufer: Franz I., König von Frankreich</lido:displayActorInRole>
-            <lido:displayActorInRole xml:lang="fr">Acheteur: François Ier, roi de France</lido:displayActorInRole>
-            <lido:actorInRole>
-              <lido:actor lido:type="http://terminology.lido-schema.org/lido00163">
-                <lido:actorID lido:type="http://terminology.lido-schema.org/lido00099">http://vocab.getty.edu/ulan/500122500</lido:actorID>
-                <owl:sameAs rdf:resource="http://www.wikidata.org/entity/Q129857"/>
-                <owl:sameAs rdf:resource="https://d-nb.info/gnd/118534947"/>
-                <owl:sameAs rdf:resource="http://id.loc.gov/authorities/names/n50038638"/>
-                <owl:sameAs rdf:resource="https://catalogue.bnf.fr/ark:/12148/cb120127827"/>
-                <lido:nameActorSet>
-                  <!-- LTE:lido00169 "Preferred label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Francis I, King of France, 1494-1547</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Franz I. Frankreich, König</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00969" xml:lang="fr">François Ier (1494-1547 ; roi de France)</lido:appellationValue>
-                  <!-- LTE:lido00526 "Display label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">Francis I of France</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Franz I. von Frankreich</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">François Ier, roi de France</lido:appellationValue>
-                </lido:nameActorSet>
-              </lido:actor>
-              <lido:roleActor>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300445695">
-                  <skos:prefLabel xml:lang="en">buyers (people by activity)</skos:prefLabel>
-                  <skos:altLabel xml:lang="en">buyer (people by activity)</skos:altLabel>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4162993-0"/>
-                </skos:Concept>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="en">buyer</lido:term>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="de">Käufer</lido:term>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="fr">acheteur</lido:term>
-              </lido:roleActor>
-            </lido:actorInRole>
-          </lido:eventActor>
-          <lido:eventDate>
-            <lido:date>
-              <!-- LTE:lido00529 "Estimated date" -->
-              <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00529">1518</lido:earliestDate>
-              <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00529">1518</lido:latestDate>
-            </lido:date>
-          </lido:eventDate>
-          <lido:eventMethod>
-            <skos:Concept rdf:about="http://vocab.getty.edu/aat/300417642">
-              <skos:prefLabel xml:lang="en">purchase (method of acquisition)</skos:prefLabel>
-              <skos:closeMatch rdf:resource="https://d-nb.info/gnd/4128692-3"/>
-            </skos:Concept>
-            <lido:term lido:addedSearchTerm="yes" xml:lang="en">purchase</lido:term>
-            <lido:term lido:addedSearchTerm="yes" xml:lang="de">Kauf</lido:term>
-            <lido:term lido:addedSearchTerm="yes" xml:lang="fr">achat</lido:term>
-          </lido:eventMethod>
-	        <lido:eventDescriptionSet>
-            <lido:descriptiveNoteValue xml:lang="fr">"Ce tableau fut commencé vers 1503 au moins, sans doute pour Francesco del Giocondo, gentilhomme florentin (1460-1539), mais fut conservé par Léonard de Vinci jusqu'à la fin de sa vie pour en pursuivre l'exécution picturale toujours inachevée à sa mort ; il fut très probablement acquis par François Ier en 1518."</lido:descriptiveNoteValue>
-            <lido:sourceDescriptiveNote>Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]</lido:sourceDescriptiveNote>
-          </lido:eventDescriptionSet>
-          <lido:eventDescriptionSet>
-            <lido:descriptiveNoteValue xml:lang="fr">"[Il y a] un document aux Archives nationales à Paris, 
-              attestant d’un paiement considérable de 2604 livres, de François Ier à Salaì, un des plus 
-              fidèles élèves de Léonard, en 1518 [...]"</lido:descriptiveNoteValue>
-            <lido:sourceDescriptiveNote>Musée du Louvre, Portrait de Lisa Gherardini. URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2024-09-17]</lido:sourceDescriptiveNote>
-          </lido:eventDescriptionSet>
-        </lido:event>
-      </lido:eventSet>
-      <lido:eventSet lido:sortorder="4">
-        <lido:displayEvent xml:lang="en">Acquisition by the French State of the former Royal Collection, 1793</lido:displayEvent>
-        <lido:displayEvent xml:lang="de">Erwerb der ehemaligen Königlichen Sammlung durch den französischen Staat, 1793</lido:displayEvent>
-        <lido:displayEvent xml:lang="fr">Acquisition par l´État français de l'ancienne collection royale/de la Couronne, 1793</lido:displayEvent>
-        <lido:event>
-          <lido:eventType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido01151">
-              <skos:prefLabel xml:lang="en">Change of physical control or legal title</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">Besitz- oder Eigentumswechsel</skos:prefLabel>
-            </skos:Concept>
-          </lido:eventType>
-          <lido:eventActor>
-            <lido:actorInRole>
-              <!-- LTE:lido00413 "Organization (Group of persons)" -->
-              <lido:actor lido:type="http://terminology.lido-schema.org/lido00413">
-                <lido:actorID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q142</lido:actorID>
-                <owl:sameAs rdf:resource="https://catalogue.bnf.fr/ark:/12148/cb152383070"/>
-                <owl:sameAs rdf:resource="https://d-nb.info/gnd/4018145-5"/>
-                <owl:sameAs rdf:resource="http://nomisma.org/id/france"/>
-                <lido:nameActorSet>
-                  <!-- LTE:lido00169 "Preferred label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">France</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Frankreich</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">France</lido:appellationValue>
-                </lido:nameActorSet>
-              </lido:actor>
-              <lido:roleActor>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300203630">
-                  <skos:prefLabel xml:lang="en">owners</skos:prefLabel>
-                  <skos:altLabel xml:lang="en">owner</skos:altLabel>
-                  <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q1686912"/>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4037215-7"/>
-	      </skos:Concept>
-	      <lido:term lido:addedSearchTerm="yes" xml:lang="en">proprietor</lido:term>
-	      <lido:term lido:addedSearchTerm="yes" xml:lang="de">Eigentümer</lido:term>
-	      <lido:term lido:addedSearchTerm="yes" xml:lang="fr">propriétaire</lido:term>
-	      <!-- LTE "Display label" -->
-	      <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">proprietor</lido:term>
-	      <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Eigentümer</lido:term>
-                <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">propriétaire</lido:term>
-	    </lido:roleActor>
-            </lido:actorInRole>
-          </lido:eventActor>
-          <lido:eventDate>
-            <lido:displayDate>1793</lido:displayDate>
-            <lido:date>
-              <!-- LTE:lido00528 "Exact date" -->
-              <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00528">1793</lido:earliestDate>
-              <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00528">1793</lido:latestDate>
-            </lido:date>
-          </lido:eventDate>
-          <eventMethod>  
-            <skos:Concept rdf:about="http://ddb.vocnet.org/provenance/p0028">
-              <skos:prefLabel xml:lang="en">Research desideratum</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">Forschungsdesiderat</skos:prefLabel>
-            </skos:Concept>
-          </eventMethod>
-        </lido:event>
-      </lido:eventSet>
-    </lido:eventWrap>
-    <lido:objectRelationWrap>
-      <lido:subjectWrap>
-        <lido:subjectSet>
-          <lido:displaySubject xml:lang="en">Half-length portrait of Lisa del Giocondo against the backdrop of a landscape</lido:displaySubject>
-          <lido:displaySubject xml:lang="de">Halbfigurenporträt der Lisa del Giocondo vor dem Hintergrund einer Landschaft</lido:displaySubject>
-          <lido:displaySubject xml:lang="fr">Portrait en demi-figure de Lisa del Giocondo sur fond de paysage</lido:displaySubject>
-          <!-- LTE:lido00525 "Description" -->
-          <lido:subject lido:type="http://terminology.lido-schema.org/lido00525">
-            <lido:extentSubject>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300056367">
-                <skos:prefLabel xml:lang="en">foreground</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q2533752"/>
-              </skos:Concept>
-              <!-- LTE:00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">foreground</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Vordergrund</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">premier plan</lido:term>
-            </lido:extentSubject>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300263970">
-                <skos:prefLabel xml:lang="en">sitting</skos:prefLabel>
-                <skos:altLabel xml:lang="en">seated</skos:altLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q1144593"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4128909-2"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Sitzen</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">sitzend</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">position assise</lido:term>
-              <!-- LTE:00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">sitting</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Sitzen</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">assis</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300025943">
-                <skos:prefLabel xml:lang="en">women (human figures)</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q467"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4018202-2"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Frauen</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">femmes</lido:term>
-              <!-- LTE:00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">woman</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Frau</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">femme</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300040237">
-                <skos:prefLabel xml:lang="en">arms (furniture components)</skos:prefLabel>
-                <skos:altLabel xml:lang="en">arm (furniture component)</skos:altLabel>
-                <skos:altLabel xml:lang="en">armrests (arms)</skos:altLabel>
-                <skos:altLabel xml:lang="en">elbows (furniture components)</skos:altLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q2822867"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Armstütze</lido:term>
-              <!-- LTE:00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">armrest</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Armlehne</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">accotoir</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300004137">
-                <skos:prefLabel xml:lang="en">loggias</skos:prefLabel>
-                <skos:altLabel xml:lang="en">loggia</skos:altLabel>
-                <skos:prefLabel xml:lang="en">Loggia (Halle)</skos:prefLabel>
-                <skos:altLabel xml:lang="en">Loggien (Hallen)</skos:altLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q466544"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4199876-5"/>
-              </skos:Concept>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">loggia</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Loggia</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">loggia</lido:term>
-            </lido:subjectConcept>
-          </lido:subject>
-        </lido:subjectSet>
-        <lido:subjectSet>
-          <!-- LTE:lido00525 "Description" -->
-          <lido:subject lido:type="http://terminology.lido-schema.org/lido00525">
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300047469">
-                <skos:prefLabel xml:lang="en">half figures</skos:prefLabel>
-                <skos:altLabel xml:lang="en">half figure</skos:altLabel>
-                <skos:prefLabel xml:lang="de">Halbfigur</skos:prefLabel>
-                <skos:altLabel xml:lang="de">Halbfiguren</skos:altLabel>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4704660-0"/>
-              </skos:Concept>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">half figure</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Halbfigur</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">à mi-corps</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300117363">
-                <skos:prefLabel xml:lang="en">three-quarter views</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q111290955"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">de trois quarts</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">three-quarter view</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Dreiviertelansicht</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">vue de trois-quarts</lido:term>
-            </lido:subjectConcept>
-          </lido:subject>
-        </lido:subjectSet>
-        <lido:subjectSet>
-          <!-- LTE:lido00525 "Description" -->
-          <lido:subject lido:type="http://terminology.lido-schema.org/lido00525">
-            <lido:extentSubject>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300056369">
-                <skos:prefLabel xml:lang="en">background</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q3258659"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/7642812-6"/>
-              </skos:Concept>
-              <!-- LTE "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">background</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Hintergrund</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">lointain</lido:term>
-            </lido:extentSubject>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300008626">
-                <skos:prefLabel xml:lang="en">landscapes (environments)</skos:prefLabel>
-                <skos:prefLabel xml:lang="de">Landschaft (Lebensraum)</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q107425"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4034343-1"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="de">Landschaften</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">paysage</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">paysages</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">landscape</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Landschaft</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">fond de paysage</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300007838">
-                <skos:prefLabel xml:lang="en">arch bridges</skos:prefLabel>
-                <skos:altLabel xml:lang="en">arch bridge</skos:altLabel>
-                <skos:prefLabel xml:lang="de">Bogenbrücke</skos:prefLabel>
-                <skos:altLabel xml:lang="de">Bogenbrücken</skos:altLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q158438"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4146212-9"/>
-                <skos:exactMatch rdf:resource="http://catalogue.bnf.fr/ark:/12148/cb119827018"/>
-                <skos:exactMatch rdf:resource="http://id.loc.gov/authorities/sh85016862"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">ponts en arc</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">arch bridge</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Bogenbrücke</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">pont en arc</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300008795">
-                <skos:prefLabel xml:lang="en">mountains (landforms)</skos:prefLabel>
-                <skos:prefLabel xml:lang="de">Berg</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q8502"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4144619-7"/>
-                <skos:exactMatch rdf:resource="http://id.loc.gov/authorities/subjects/sh85087823"/>
-                <skos:exactMatch rdf:resource="http://data.bnf.fr/ark:/12148/cb119323641"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">montagne</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">mountains</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Berge</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">montagnes</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300263064">
-                <skos:prefLabel xml:lang="en">sky</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q527"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4132524-2"/>
-                <skos:exactMatch rdf:resource="http://catalogue.bnf.fr/ark:/12148/cb11977198t"/>
-                <skos:exactMatch rdf:resource="http://id.loc.gov/authorities/subjects/sh85123252"/>                
-              </skos:Concept>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">sky</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Himmel</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">ciel</lido:term>
-            </lido:subjectConcept>
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300266059">
-                <skos:prefLabel xml:lang="en">bodies of water (natural)</skos:prefLabel>
-                <skos:prefLabel xml:lang="de">Gewässer</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q15324"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4020820-5"/>
-                <skos:exactMatch rdf:resource="http://catalogue.bnf.fr/ark:/12148/cb12117099d"/>
-                <skos:exactMatch rdf:resource="http://id.loc.gov/authorities/sh2003004821"/>
-              </skos:Concept>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">étendue d'eau</lido:term>
-              <lido:term lido:addedSearchTerm="yes" xml:lang="fr">plans d'eau</lido:term>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">body of water</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Gewässer</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">cours d'eau</lido:term>
-            </lido:subjectConcept>
-          </lido:subject>
-        </lido:subjectSet>
-        <lido:subjectSet>
-          <!-- LTE:lido00524 "Interpretation" -->
-          <lido:subject lido:type="http://terminology.lido-schema.org/lido00524">
-            <lido:subjectConcept>
-              <skos:Concept rdf:about="http://vocab.getty.edu/aat/300417502">
-                <skos:prefLabel xml:lang="en">smiling</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q487"/>
-                <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4034011-9"/>
-              </skos:Concept>
-              <!-- LTE:lido00526 "Display label" -->
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">smile</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">Lächeln</lido:term>
-              <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">sourire</lido:term>
-            </lido:subjectConcept>
-          </lido:subject>
-        </lido:subjectSet>
-        <lido:subjectSet>
-          <!-- LTE:lido00136 "Identification" -->
-          <lido:subject lido:type="http://terminology.lido-schema.org/lido00136">
-            <lido:subjectActor>
-              <lido:displayActor xml:lang="en">Sitter: Lisa del Giocondo (1479–1542)</lido:displayActor>
-              <lido:displayActor xml:lang="de">Modell: Lisa del Giocondo (1479–1542)</lido:displayActor>
-              <lido:displayActor xml:lang="fr">Modèle: Lisa del Giocondo (1479–1542)</lido:displayActor>
-              <!-- LTE:lido00163 "Person" -->
-              <lido:actor lido:type="http://terminology.lido-schema.org/lido00163">
-                <lido:actorID lido:type="http://terminology.lido-schema.org/lido00099">http://viaf.org/viaf/50517148</lido:actorID>
-                <owl:sameAs rdf:resource="http://www.wikidata.org/entity/Q153032"/>
-                <owl:sameAs rdf:resource="http://vocab.getty.edu/ulan/500341678"/>
-                <owl:sameAs rdf:resource="https://d-nb.info/gnd/119218011"/>
-                <lido:nameActorSet>
-                  <!-- LTE:lido00169 "Preferred label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Del Giocondo, Lisa</lido:appellationValue>
-                  <!-- LTE:lido00170 "Alternative label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00170">Gherardini, Lisa</lido:appellationValue>
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00170">Lisa di Noldo Gherardini</lido:appellationValue>
-                  <!-- LTE:lido00526 "Display label" -->
-                  <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">Lisa del Giocondo</lido:appellationValue>
-                </lido:nameActorSet>
-                <!-- LTE:lido01027 "Cultural affiliation" -->
-                <lido:nationalityActor lido:type="http://terminology.lido-schema.org/lido01027">
-                  <skos:Concept rdf:about="http://vocab.getty.edu/aat/300111198">
-                    <skos:prefLabel xml:lang="en">Italian (culture or style)</skos:prefLabel>
-                    <skos:prefLabel xml:lang="fr">italienne</skos:prefLabel>
-                  </skos:Concept>
-                  <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="en">Italian</lido:term>
-                  <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="de">italienisch</lido:term>
-                  <lido:term lido:pref="http://terminology.lido-schema.org/lido00526" xml:lang="fr">italienne</lido:term>
-                </lido:nationalityActor>
-                <!-- LTE:lido00786 "Birth date" -->
-                <lido:vitalDatesActor lido:type="http://terminology.lido-schema.org/lido00786">
-                  <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00528" lido:source="Wikidata,'Q153032' (accessed October 25, 2022)">1479-06-15</lido:earliestDate>
-                  <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00528" lido:source="Wikidata,'Q153032' (accessed October 25, 2022)">1479-06-15</lido:latestDate>
-                </lido:vitalDatesActor>
-                <!-- LTE:lido00876 "Death date" -->
-                <lido:vitalDatesActor lido:type="http://terminology.lido-schema.org/lido00786">
-                  <lido:earliestDate lido:type="http://terminology.lido-schema.org/lido00528" lido:source="Wikidata,'Q153032' (accessed October 25, 2022)">1542-07-25</lido:earliestDate>
-                  <lido:latestDate lido:type="http://terminology.lido-schema.org/lido00528" lido:source="Wikidata,'Q153032' (accessed October 25, 2022)">1542-07-25</lido:latestDate>
-                </lido:vitalDatesActor>
-                <!-- LTE:lido00780 "Birth place" -->
-                <lido:vitalPlaceActor lido:type="http://terminology.lido-schema.org/lido00780">
-                  <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q2044</lido:placeID>
-                  <owl:sameAs rdf:resource="https://d-nb.info/gnd/4017581-9"/>
-                  <lido:namePlaceSet>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Florence</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Florenz</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Florence</lido:appellationValue>
-                  </lido:namePlaceSet>
-                  <lido:gml>
-                    <gml:Point>
-                      <gml:pos>43.771389 11.254167</gml:pos>
-                    </gml:Point>
-                  </lido:gml>
-                </lido:vitalPlaceActor>
-                <!-- LTE:lido00783 "Death place" -->
-                <lido:vitalPlaceActor lido:type="http://terminology.lido-schema.org/lido00783">
-                  <lido:placeID lido:type="http://terminology.lido-schema.org/lido00099">http://www.wikidata.org/entity/Q2044</lido:placeID>
-                  <owl:sameAs rdf:resource="https://d-nb.info/gnd/4017581-9"/>
-                  <lido:namePlaceSet>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Florence</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="de">Florenz</lido:appellationValue>
-                    <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Florence</lido:appellationValue>
-                  </lido:namePlaceSet>
-                  <lido:gml>
-                    <gml:Point>
-                      <gml:pos>43.771389 11.254167</gml:pos>
-                    </gml:Point>
-                  </lido:gml>
-                </lido:vitalPlaceActor>
-                <!-- LTE:lido00867 "Sex or gender" -->
-                <lido:genderActor lido:type="http://terminology.lido-schema.org/lido00867">
-                  <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00773">
-                    <skos:prefLabel xml:lang="en">Female</skos:prefLabel>
-                    <skos:prefLabel xml:lang="de">Weiblich</skos:prefLabel>
-                    <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q6581072"/>
-                    <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300189557"/>
-                    <skos:exactMatch rdf:resource="https://d-nb.info/standards/vocab/gnd/gender#female"/>
-                  </skos:Concept>
-                </lido:genderActor>
-              </lido:actor>
-            </lido:subjectActor>
-          </lido:subject>
-        </lido:subjectSet>
-      </lido:subjectWrap>
-      <lido:relatedWorksWrap>
-        <lido:relatedWorkSet lido:sortorder="1">
-          <lido:displayRelatedWork xml:lang="en">Gabriel Ferrier (1847–1914), Mona Lisa (after Leonardo da Vinci)</lido:displayRelatedWork>
-          <lido:displayRelatedWork xml:lang="de">Gabriel Ferrier (1847–1914), Mona Lisa (nach Leonardo da Vinci)</lido:displayRelatedWork>
-          <lido:displayRelatedWork xml:lang="fr">Gabriel Ferrier (1847–1914), La Joconde (d'après Léonard de Vinci)</lido:displayRelatedWork>
-          <lido:relatedWork>
-            <lido:object>
-              <lido:objectWebResource lido:formatResource="text/html" xml:lang="fr">https://collections.louvre.fr/en/ark:/53355/cl010067266</lido:objectWebResource>
-              <!-- LTE:lido00100 "Local identifier" -->
-              <lido:objectID lido:type="http://terminology.lido-schema.org/lido00100" lido:source="Musée du Louvre. Département des Peintures. URL: https://collections.louvre.fr/en/ark:/53355/cl010067266 [2023-08-28]">RF 2005 8</lido:objectID>
-              <lido:objectType>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300033799"/>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="de">Ölgemälde</lido:term>
-              </lido:objectType>
-              <lido:objectName>
-                <lido:appellationValue xml:lang="fr">La Joconde (d'après Léonard de Vinci)</lido:appellationValue>
-                <lido:sourceAppellation xml:lang="fr">Musée du Louvre. Département des Peintures. URL: https://collections.louvre.fr/ark:/53355/cl010067266</lido:sourceAppellation>
-              </lido:objectName>
-              <lido:objectNote xml:lang="fr">Titre: La Joconde (d'après Léonard de Vinci)</lido:objectNote>
-            </lido:object>
-          </lido:relatedWork>
-          <lido:relatedWorkRelType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00600">
-              <skos:prefLabel xml:lang="en">has copy</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">hat Kopie</skos:prefLabel>
-            </skos:Concept>
-          </lido:relatedWorkRelType>
-          <lido:sourceRelatedWorkSet xml:lang="en">Musée du Louvre, La Joconde. URL: https://collections.louvre.fr/en/ark:/53355/cl010067266 [2022-10-05]</lido:sourceRelatedWorkSet>
-        </lido:relatedWorkSet>
-        <lido:relatedWorkSet lido:sortorder="2">
-          <lido:displayRelatedWork xml:lang="en">Leonardo da Vinci, Study for Mona Lisa, drawing</lido:displayRelatedWork>
-          <lido:displayRelatedWork xml:lang="de">Leonardo da Vinci, Studie zur Mona Lisa, Zeichnung</lido:displayRelatedWork>
-          <lido:relatedWork>
-            <lido:object>
-              <lido:objectWebResource lido:formatResource="text/html" xml:lang="de">http://foto.biblhertz.it/obj08012138</lido:objectWebResource>
-              <lido:objectID lido:type="http://terminology.lido-schema.org/lido00100" lido:source="Bibliotheka Hertziana">08012138</lido:objectID>
-              <lido:objectType>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300081078">
-                  <skos:prefLabel xml:lang="en">preparatory studies</skos:prefLabel>
-                </skos:Concept>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="de">vorbereitende Studie</lido:term>
-              </lido:objectType>
-              <lido:objectName>
-                <lido:appellationValue xml:lang="de">Studie zur Mona Lisa</lido:appellationValue>
-                <lido:sourceAppellation xml:lang="de">Bibliotheka Hertziana. URL: http://foto.biblhertz.it/obj08012138</lido:sourceAppellation>
-              </lido:objectName>
-              <lido:objectNote xml:lang="en">Location unknown, Leonardo da Vinci, Study for Mona Lisa, drawing</lido:objectNote>
-              <lido:objectNote xml:lang="de">Ort unbekannt, Leonardo da Vinci, Studie zur Mona Lisa, Zeichnung</lido:objectNote>
-            </lido:object>
-          </lido:relatedWork>
-          <lido:relatedWorkRelType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00259">
-              <skos:prefLabel xml:lang="en">has preparatory study</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">hat vorbereitende Studie</skos:prefLabel>
-            </skos:Concept>
-          </lido:relatedWorkRelType>
-        </lido:relatedWorkSet>
-        <lido:relatedWorkSet lido:sortorder="3">
-          <lido:displayRelatedWork xml:lang="en">Marcel Duchamp, L.H.O.O.Q., Ready-made, 1919</lido:displayRelatedWork>
-          <lido:displayRelatedWork xml:lang="de">Marcel Duchamp, L.H.O.O.Q., Readymade, 1919</lido:displayRelatedWork>
-          <lido:relatedWork>
-            <lido:object>
-              <lido:objectWebResource lido:formatResource="text/html" xml:lang="en">https://www.imj.org.il/en/collections/199796-0</lido:objectWebResource>
-              <lido:objectID lido:type="http://terminology.lido-schema.org/lido00100" lido:source="Israel Museum, Jerusalem">B99.0575</lido:objectID>
-              <owl:sameAs rdf:resource="https://www.europeana.eu/de/item/2024918/photography_ProvidedCHO_The_Israel_Museum__Jerusalem_199796"/>
-              <lido:objectType>
-                <skos:Concept rdf:about="http://vocab.getty.edu/aat/300185153">
-                  <skos:prefLabel xml:lang="en">ready-mades (found objects)</skos:prefLabel>
-                  <skos:exactMatch rdf:resource="http://www.wikidata.org/entity/Q572916"/>
-                  <skos:exactMatch rdf:resource="https://d-nb.info/gnd/4177111-4"/>                  
-                </skos:Concept>
-                <lido:term lido:addedSearchTerm="yes" xml:lang="de">Ready-made</lido:term>
-              </lido:objectType>
-              <lido:objectName>
-                <lido:appellationValue xml:lang="en">L.H.O.O.Q.</lido:appellationValue>
-                <lido:appellationValue xml:lang="de">L.H.O.O.Q.</lido:appellationValue>
-                <lido:appellationValue xml:lang="fr">L.H.O.O.Q.</lido:appellationValue>
-                <lido:sourceAppellation xml:lang="de">Israel Museum, Jerusalem. URL: https://www.imj.org.il/en/collections/199796-0</lido:sourceAppellation>
-              </lido:objectName>
-              <lido:objectNote xml:lang="en">"The original 1919 version of L.H.O.O.Q is a cheap color photographic reproduction of 
-                Leonardo da Vinci's Mona Lisa (ca. 1505), on which Duchamp drew a mustache and beard. L.H.O.O.Q is an early example of Duchamp's readymades
-                (mass-produced objects defined as works of art simply by virtue of their selection by an artist)." [Cited from "Marcel Duchamp. L.H.O.O.Q." 
-                Israel Museum. URL: https://www.imj.org.il/en/collections/199796-0, accessed 2022-11-02]</lido:objectNote>
-            </lido:object>
-          </lido:relatedWork>
-          <lido:relatedWorkRelType>
-            <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00608">
-              <skos:prefLabel xml:lang="en">has reproduction</skos:prefLabel>
-              <skos:prefLabel xml:lang="de">hat Reproduktion</skos:prefLabel>
-            </skos:Concept>
-          </lido:relatedWorkRelType>
-        </lido:relatedWorkSet>
-      </lido:relatedWorksWrap>
-    </lido:objectRelationWrap>
-  </lido:descriptiveMetadata>
-  <lido:administrativeMetadata xml:lang="en">
-    <lido:rightsWorkWrap>
-      <lido:rightsWorkSet>
-        <!-- LTE:lido00921 "Specific rights information" -->
-        <lido:rightsType lido:type="http://terminology.lido-schema.org/lido00921">
-          <skos:Concept rdf:about="https://creativecommons.org/publicdomain/mark/1.0/">
-            <skos:prefLabel xml:lang="en">Public Domain Mark 1.0</skos:prefLabel>
-          </skos:Concept>
-        </lido:rightsType>
-      </lido:rightsWorkSet>
-    </lido:rightsWorkWrap>
-    <lido:recordWrap>
-      <lido:recordID lido:source="LIDO-DE AG" lido:type="http://terminology.lido-schema.org/lido00100">LIDODE0001</lido:recordID>
-      <lido:recordType>
-        <skos:Concept rdf:about="http://terminology.lido-schema.org/lido00141">
-          <skos:prefLabel xml:lang="en">Item-level record</skos:prefLabel>
-          <skos:prefLabel xml:lang="de">Einzelobjekt (Katalogisierungsebene)</skos:prefLabel>
-        </skos:Concept>
-      </lido:recordType>
-      <!-- LTE:lido00165 "Group of persons" -->
-      <lido:recordSource lido:type="http://terminology.lido-schema.org/lido00165">
-        <lido:legalBodyName>
-          <lido:appellationValue>LIDO-DE AG</lido:appellationValue>
-        </lido:legalBodyName>
-        <lido:legalBodyWeblink>https://www.museumsbund.de/fachgruppe-dokumentation/arbeitsgruppen/ag-datenaustausch/</lido:legalBodyWeblink>
-      </lido:recordSource>
-      <lido:recordRights>
-        <!-- LTE:lido00921 "Specific rights information" -->
-        <lido:rightsType lido:type="http://terminology.lido-schema.org/lido00921">
-          <skos:Concept rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
-            <skos:prefLabel xml:lang="en">CC0 1.0 Public Domain Dedication</skos:prefLabel>
-          </skos:Concept>
-        </lido:rightsType>
-      </lido:recordRights>
-      <!-- LTE:00470 "LIDO Record" -->
-      <lido:recordInfoSet lido:type="http://terminology.lido-schema.org/lido00470">
-        <lido:recordInfoLink lido:formatResource="text/xml" xml:lang="en">http://www.lido-schema.org/documents/examples/LIDO-v1.1-Example_LIDODE0001_Mona-Lisa.xml</lido:recordInfoLink>
-        <!-- LTE:lido00473 "modified" -->
-        <lido:recordMetadataDate lido:type="http://terminology.lido-schema.org/lido00473">2024-11-01</lido:recordMetadataDate>
-      </lido:recordInfoSet>
-    </lido:recordWrap>
-    <lido:resourceWrap>
-      <lido:resourceSet>
-        <lido:resourceID lido:type="http://terminology.lido-schema.org/lido00100" lido:source="Musée du Louvre, Portrait de Lisa Gherardini. 
-               URL: https://collections.louvre.fr/en/ark:/53355/cl010062370 [2022-11-12]">0000136308_OG</lido:resourceID>
-        <!-- LTE:lido00464 "Preview image" -->
-        <lido:resourceRepresentation lido:type="http://terminology.lido-schema.org/lido00464">
-          <lido:linkResource lido:formatResource="image/jpeg">https://collections.louvre.fr/media/cache/small/0000000021/0000062370/0000136308_OG.JPG</lido:linkResource>
-          <lido:resourceMeasurementsSet>
-            <lido:measurementType>
-              <skos:Concept rdf:about="http://www.wikidata.org/wiki/Q208826">
-                <skos:prefLabel xml:lang="en">height</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300055644"/>
-                <skos:exactMatch rdf:resource="http://d-nb.info/gnd/4229619-5"/>
-              </skos:Concept>
-            </lido:measurementType>
-            <lido:measurementUnit>
-              <skos:Concept rdf:about="http://www.wikidata.org/entity/Q355198">
-                <skos:prefLabel xml:lang="en">pixels</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300266190"/>
-              </skos:Concept>
-            </lido:measurementUnit>
-            <lido:measurementValue>480</lido:measurementValue>
-          </lido:resourceMeasurementsSet>
-          <lido:resourceMeasurementsSet>
-            <lido:measurementType>
-              <skos:Concept rdf:about="http://www.wikidata.org/wiki/Q35059">
-                <skos:prefLabel xml:lang="en">width</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300055647"/>
-              </skos:Concept>
-            </lido:measurementType>
-            <lido:measurementUnit>
-              <skos:Concept rdf:about="http://www.wikidata.org/entity/Q355198">
-                <skos:prefLabel xml:lang="en">pixels</skos:prefLabel>
-                <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300266190"/>
-              </skos:Concept>
-            </lido:measurementUnit>
-            <lido:measurementValue>326</lido:measurementValue>
-          </lido:resourceMeasurementsSet>
-        </lido:resourceRepresentation>
-        <lido:resourceType>
-          <skos:Concept rdf:about="http://www.wikidata.org/wiki/Q1250322">
-            <skos:prefLabel xml:lang="en">digital image</skos:prefLabel>
-            <skos:prefLabel xml:lang="de">Digitales Bild</skos:prefLabel>
-            <skos:altLabel xml:lang="de">Digitalbild</skos:altLabel>
-            <skos:prefLabel xml:lang="fr">image numérique</skos:prefLabel>
-            <skos:exactMatch rdf:resource="http://vocab.getty.edu/aat/300215302"/>
-          </skos:Concept>
-        </lido:resourceType>
-        <lido:resourceSource>
-          <lido:legalBodyID lido:type="http://terminology.lido-schema.org/lido00099" lido:source="ISNI">https://isni.org/isni/000000012260177X</lido:legalBodyID>
-          <owl:sameAs rdf:resource="http://www.wikidata.org/entity/Q19675"/>
-          <owl:sameAs rdf:resource="https://d-nb.info/gnd/1006837-5"/>
-          <lido:legalBodyName>
-            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="fr">Musée du Louvre</lido:appellationValue>
-          </lido:legalBodyName>
-          <lido:legalBodyWeblink>https://collections.louvre.fr/en/ark:/53355/cl010062370</lido:legalBodyWeblink>
-        </lido:resourceSource>
-        <lido:rightsResource>
-          <lido:rightsType lido:type="http://terminology.lido-schema.org/lido00920">
-            <skos:Concept rdf:about="http://vocab.getty.edu/aat/300435434">
-              <skos:prefLabel xml:lang="en">copyright/licensing statement</skos:prefLabel>
-              <skos:note>See terms of use at https://collections.louvre.fr/en/page/cgu</skos:note>
-            </skos:Concept>
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+          <lido:objectWorkType>
+            <lido:term>cRPG</lido:term>
+          </lido:objectWorkType>
+          <lido:objectWorkType>
+            <lido:term>Urshurak</lido:term>
+          </lido:objectWorkType>
+        </lido:objectWorkTypeWrap>
+
+        <lido:classificationWrap>
+          <lido:classification lido:type="language">
+            <lido:term>en</lido:term>
+          </lido:classification>
+        </lido:classificationWrap>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar: Legend of the Fortress</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 1</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar I</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:repositoryWrap>
+          <lido:repositorySet>
+            <lido:repositoryName>
+              <lido:legalBodyName>
+                <lido:appellationValue>Silmarils</lido:appellationValue>
+              </lido:legalBodyName>
+            </lido:repositoryName>
+          </lido:repositorySet>
+        </lido:repositoryWrap>
+
+        <lido:objectDescriptionWrap>
+          <lido:objectDescriptionSet>
+            <lido:descriptiveNoteValue>Ishar a mysterious fortress haunted by a brooding evil, spreading corruption and decay throughout the kingdom.</lido:descriptiveNoteValue>
+          </lido:objectDescriptionSet>
+        </lido:objectDescriptionWrap>
+
+        <lido:displayStateEditionWrap>
+          <lido:displayEdition>DOS</lido:displayEdition>
+        </lido:displayStateEditionWrap>
+
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap>
+        <lido:eventSet>
+          <lido:event>
+            <lido:eventType>
+              <lido:conceptID type="http://terminology.lido-schema.org/lido00007">Production</lido:conceptID>
+            </lido:eventType>
+            <lido:eventDate>
+              <lido:date>
+                <lido:earliestDate>1992</lido:earliestDate>
+              </lido:date>
+            </lido:eventDate>
+            <lido:eventActor>
+              <lido:actorInRole>
+                <lido:actor>
+                  <lido:nameActorSet>
+                    <lido:appellationValue>Einsweiler, Pascal</lido:appellationValue>
+                  </lido:nameActorSet>
+                </lido:actor>
+              </lido:actorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:actorInRole>
+                <lido:actor>
+                  <lido:nameActorSet>
+                    <lido:appellationValue>Pernot, Michel</lido:appellationValue>
+                  </lido:nameActorSet>
+                </lido:actor>
+              </lido:actorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:actorInRole>
+                <lido:actor>
+                  <lido:nameActorSet>
+                    <lido:appellationValue>Rocques, André</lido:appellationValue>
+                  </lido:nameActorSet>
+                </lido:actor>
+              </lido:actorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:actorInRole>
+                <lido:actor>
+                  <lido:nameActorSet>
+                    <lido:appellationValue>Rocques, Louis-Marie</lido:appellationValue>
+                  </lido:nameActorSet>
+                </lido:actor>
+              </lido:actorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:actorInRole>
+                <lido:actor>
+                  <lido:nameActorSet>
+                    <lido:appellationValue>Charter, Jean-Christophe</lido:appellationValue>
+                  </lido:nameActorSet>
+                </lido:actor>
+              </lido:actorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:actorInRole>
+                <lido:actor>
+                  <lido:nameActorSet>
+                    <lido:appellationValue>Hautecloque, Fabrice</lido:appellationValue>
+                  </lido:nameActorSet>
+                </lido:actor>
+              </lido:actorInRole>
+            </lido:eventActor>
+          </lido:event>
+        </lido:eventSet>
+      </lido:eventWrap>
+
+      <lido:objectRelationWrap>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://en.wikipedia.org/wiki/Ishar:_Legend_of_the_Fortress</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://www.mobygames.com/game/1003/ishar-legend-of-the-fortress/</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+        </lido:relatedWorksWrap>
+
+        <lido:subjectWrap>
+          <lido:subjectSet>
+            <lido:subject>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/fantasy/</lido:conceptID><lido:term>Fantasy</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/role-playing-rpg/</lido:conceptID><lido:term>Role-Play</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/1st-person/</lido:conceptID><lido:term>First-Person</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/real-time/</lido:conceptID><lido:term>Real-Time</lido:term>
+              </lido:subjectConcept>
+            </lido:subject>
+          </lido:subjectSet>
+        </lido:subjectWrap>
+
+      </lido:objectRelationWrap>
+
+    </lido:descriptiveMetadata>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap>
+        <lido:rightsWorkSet>
+          <lido:rightsType>
+            <lido:conceptID lido:type="http://terminology.lido-schema.org/lido00099">https://rightsstatements.org/vocab/InC/1.0/</lido:conceptID>
           </lido:rightsType>
-          <lido:rightsHolder>
-            <lido:legalBodyID lido:type="http://terminology.lido-schema.org/lido00099" lido:source="Archival Resource Key. URL: http://n2t.net/ark: [2022-11-13]">http://n2t.net/ark:/36255</lido:legalBodyID>
-            <owl:sameAs rdf:resource="http://www.wikidata.org/entity/Q206456"/>
-            <owl:sameAs rdf:resource="https://d-nb.info/gnd/16165182-3"/>
-            <lido:legalBodyName>
-              <lido:appellationValue xml:lang="fr">Réunion des musées nationaux et du Grand Palais des Champs-Élysées</lido:appellationValue>
-            </lido:legalBodyName>
-            <lido:legalBodyWeblink lido:formatResource="text/html" xml:lang="fr">https://rmngp.fr/</lido:legalBodyWeblink>
-          </lido:rightsHolder>
-          <lido:creditLine xml:lang="fr">© 2018 RMN-Grand Palais (musée du Louvre) / Michel Urtado</lido:creditLine>
-        </lido:rightsResource>
-      </lido:resourceSet>
-    </lido:resourceWrap>
-  </lido:administrativeMetadata>
-  </lido:lido>
+
+          <lido:creditLine>Copyright 1992 Silmarils</lido:creditLine>
+        </lido:rightsWorkSet>
+        <lido:rightsWorkSet>
+          <lido:creditLine>Cover Art: Mark Harrison</lido:creditLine>
+        </lido:rightsWorkSet>
+      </lido:rightsWorkWrap>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+  </lido>
+
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
+
+    <lido:lidoRecID lido:source="mobygames" lido:type="http://terminology.lido-schema.org/lido00100">ishar2</lido:lidoRecID>
+
+    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00100">https://doi.org/10.5555/mobyid-7701</lido:objectPublishedID>
+
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+          <lido:objectWorkType>
+            <lido:term>cRPG</lido:term>
+          </lido:objectWorkType>
+        </lido:objectWorkTypeWrap>
+
+        <lido:classificationWrap>
+          <lido:classification lido:type="language">
+            <lido:term>ENG</lido:term>
+          </lido:classification>
+        </lido:classificationWrap>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 2: Messengers of Doom</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 2</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar II</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 2: Legions of Chaos</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:repositoryWrap>
+          <lido:repositorySet>
+            <lido:repositoryName>
+              <lido:legalBodyName>
+                <lido:appellationValue>Silmarils</lido:appellationValue>
+              </lido:legalBodyName>
+            </lido:repositoryName>
+          </lido:repositorySet>
+        </lido:repositoryWrap>
+
+        <lido:objectDescriptionWrap>
+          <lido:objectDescriptionSet>
+            <lido:descriptiveNoteValue>Following the incredible success of ISHAR, Silmarils bring you a new unmissable RPG, even closer to reality.</lido:descriptiveNoteValue>
+          </lido:objectDescriptionSet>
+        </lido:objectDescriptionWrap>
+
+        <lido:displayStateEditionWrap>
+          <lido:displayEdition>DOS</lido:displayEdition>
+        </lido:displayStateEditionWrap>
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap>
+        <lido:eventSet>
+          <lido:event>
+            <lido:eventType>
+              <Concept about="http://terminology.lido-schema.org/lido00007">Production</Concept>
+            </lido:eventType>
+            <lido:eventDate>
+              <lido:date>
+                <lido:latestDate>1993</lido:latestDate>
+              </lido:date>
+            </lido:eventDate>
+            <lido:eventActor>
+              <lido:displayActorInRole>Pascal Einsweiler</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Michel Pernot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>André Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Louis-Marie Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-Christophe Charter</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Fabrice Hautecloque</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Eric Galand</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Stephane Mathiot</lido:displayActorInRole>
+            </lido:eventActor>
+          </lido:event>
+        </lido:eventSet>
+      </lido:eventWrap>
+
+      <lido:objectRelationWrap>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://en.wikipedia.org/wiki/Ishar_2:_Messengers_of_Doom</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://www.mobygames.com/game/7701/ishar-2-messengers-of-doom/</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>ishar1</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+        </lido:relatedWorksWrap>
+
+        <lido:subjectWrap>
+          <lido:subjectSet>
+            <lido:subject>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/fantasy/</lido:conceptID><lido:term>Fantasy</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/role-playing-rpg/</lido:conceptID><lido:term>RPG</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/1st-person/</lido:conceptID><lido:term>1st-Person</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/real-time/</lido:conceptID><lido:term>Realtime</lido:term>
+              </lido:subjectConcept>
+            </lido:subject>
+          </lido:subjectSet>
+        </lido:subjectWrap>
+
+      </lido:objectRelationWrap>
+
+    </lido:descriptiveMetadata>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap>
+        <lido:rightsWorkSet>
+          <lido:rightsType>
+            <lido:term>In Copyright</lido:term>
+          </lido:rightsType>
+
+          <lido:creditLine>Copyright 1993 Silmarils</lido:creditLine>
+        </lido:rightsWorkSet>
+        <lido:rightsWorkSet>
+          <lido:creditLine>Cover Art: Timo Hildebrandt</lido:creditLine>
+        </lido:rightsWorkSet>
+      </lido:rightsWorkWrap>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+  </lido>
+
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
+
+    <lido:lidoRecID lido:source="dataasee" lido:type="http://terminology.lido-schema.org/lido00100">ishar3</lido:lidoRecID>
+
+    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00100">10.5555/mobyid-7702</lido:objectPublishedID>
+
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+          <lido:objectWorkType>
+            <lido:term>cRPG</lido:term>
+            <lido:term>time-travel</lido:term>
+          </lido:objectWorkType>
+        </lido:objectWorkTypeWrap>
+
+        <lido:classificationWrap>
+          <lido:classification lido:type="language">
+            <lido:term>English</lido:term>
+          </lido:classification>
+        </lido:classificationWrap>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 3: Seven Gates of Infinity</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 3</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar III</lido:appellationValue>
+          </lido:titleSet>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00170">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 3: Alliance of Evil</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:repositoryWrap>
+          <lido:repositorySet>
+            <lido:repositoryName>
+              <lido:legalBodyName>
+                <lido:appellationValue>Silmarils</lido:appellationValue>
+              </lido:legalBodyName>
+            </lido:repositoryName>
+          </lido:repositorySet>
+        </lido:repositoryWrap>
+
+        <lido:objectDescriptionWrap>
+          <lido:objectDescriptionSet>
+            <lido:descriptiveNoteValue>The shadows of chaos once more darken the spires of the citadel, for the evil spirit of Shandar seeks reincarnation in the vast body of the lord of Sith - last and most powerful of the ancient black dragons.</lido:descriptiveNoteValue>
+          </lido:objectDescriptionSet>
+        </lido:objectDescriptionWrap>
+
+        <lido:displayStateEditionWrap>
+          <lido:displayEdition>DOS</lido:displayEdition>
+        </lido:displayStateEditionWrap>
+
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap>
+        <lido:eventSet>
+          <lido:event>
+            <lido:eventType>
+              <lido:term>Production</lido:term>
+            </lido:eventType>
+            <lido:eventDate>
+              <lido:displayDate>1994</lido:displayDate>
+            </lido:eventDate>
+            <lido:eventActor>
+              <lido:displayActorInRole>Pascal Einsweiler</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Michel Pernot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-François Trevien</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Guillaume Maginot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>André Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Louis-Marie Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-Christophe Charter</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Fabrice Hautecloque</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Eric Galand</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Cécile Guyard</lido:displayActorInRole>
+            </lido:eventActor>
+          </lido:event>
+        </lido:eventSet>
+      </lido:eventWrap>
+
+      <lido:objectRelationWrap>
+
+        <lido:subjectWrap>
+          <lido:subjectSet>
+            <lido:subject>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/fantasy/</lido:conceptID><lido:term>fantasy</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/role-playing-rpg/</lido:conceptID><lido:term>role-play</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/1st-person/</lido:conceptID><lido:term>first-person</lido:term>
+              </lido:subjectConcept>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/real-time/</lido:conceptID><lido:term>real-time</lido:term>
+              </lido:subjectConcept>
+            </lido:subject>
+          </lido:subjectSet>
+        </lido:subjectWrap>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://en.wikipedia.org/wiki/Ishar_3:_The_Seven_Gates_of_Infinity</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://www.mobygames.com/game/7702/ishar-3-the-seven-gates-of-infinity/</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>ishar2</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+        </lido:relatedWorksWrap>
+
+      </lido:objectRelationWrap>
+
+    </lido:descriptiveMetadata>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap>
+        <lido:rightsWorkSet>
+          <lido:rightsType>
+            <lido:term>In Copyright</lido:term>
+          </lido:rightsType>
+
+          <lido:creditLine>Copyright 1994 Silmarils</lido:creditLine>
+        </lido:rightsWorkSet>
+        <lido:rightsWorkSet>
+          <lido:creditLine>Cover Art: Ciruelo Cabral</lido:creditLine>
+        </lido:rightsWorkSet>
+      </lido:rightsWorkWrap>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+  </lido>
+
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
+
+    <lido:lidoRecID lido:source="dataasee" lido:type="http://terminology.lido-schema.org/lido00100">ishar3e</lido:lidoRecID>
+
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+          <lido:objectWorkType>
+            <lido:term>Addon</lido:term>
+          </lido:objectWorkType>
+        </lido:objectWorkTypeWrap>
+
+        <lido:classificationWrap/>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 3 Elite Team</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:repositoryWrap>
+          <lido:repositorySet>
+            <lido:displayRepository>Silmarils</lido:displayRepository>
+          </lido:repositorySet>
+        </lido:repositoryWrap>
+
+        <lido:displayStateEditionWrap/>
+
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap>
+        <lido:eventSet>
+          <lido:displayEvent>[1994]</lido:displayEvent>
+        </lido:eventSet>
+      </lido:eventWrap>
+
+      <lido:objectRelationWrap>
+
+        <lido:subjectWrap/>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWork>
+            <lido:object>
+              <lido:objectID>ishar3</lido:objectID>
+            </lido:object>
+          </lido:relatedWork>
+        </lido:relatedWorksWrap>
+
+      </lido:objectRelationWrap>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap/>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+
+    </lido:descriptiveMetadata>
+  </lido>
+
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
+
+    <lido:lidoRecID lido:source="dataasee" lido:type="http://terminology.lido-schema.org/lido00100">isharT</lido:lidoRecID>
+
+    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00100">10.5555/mobyid-3118</lido:objectPublishedID>
+
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+          <lido:objectWorkType>
+            <lido:term>...</lido:term>
+          </lido:objectWorkType>
+        </lido:objectWorkTypeWrap>
+
+        <lido:classificationWrap/>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar Trilogy</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:repositoryWrap>
+          <lido:repositorySet>
+            <lido:repositoryName>
+              <lido:legalBodyName>
+                <lido:appellationValue>Silmarils</lido:appellationValue>
+              </lido:legalBodyName>
+            </lido:repositoryName>
+          </lido:repositorySet>
+        </lido:repositoryWrap>
+
+        <lido:objectDescriptionWrap>
+          <lido:objectDescriptionSet>
+            <lido:descriptiveNoteValue>Enter the world of Ishar and discover 3 of the most extraordinary role play games ever made.</lido:descriptiveNoteValue>
+          </lido:objectDescriptionSet>
+        </lido:objectDescriptionWrap>
+
+        <lido:displayStateEditionWrap/>
+
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap>
+        <lido:eventSet>
+          <lido:event>
+            <lido:eventType>
+              <lido:term>Production</lido:term>
+            </lido:eventType>
+            <lido:eventDate>
+              <lido:displayDate>1995</lido:displayDate>
+            </lido:eventDate>
+            <lido:eventActor>
+              <lido:displayActorInRole>Pascal Einsweiler</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Michel Pernot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-François Trevien</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Guillaume Maginot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>André Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Louis-Marie Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-Christophe Charter</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Fabrice Hautecloque</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Eric Galand</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Cécile Guyard</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Christophe Fagot</lido:displayActorInRole>
+            </lido:eventActor>
+          </lido:event>
+        </lido:eventSet>
+      </lido:eventWrap>
+
+      <lido:objectRelationWrap>
+
+        <lido:subjectWrap>
+          <lido:subjectSet>
+            <lido:subject>
+              <lido:subjectConcept>
+                <lido:conceptID>https://www.mobygames.com/genre/compilation-shovelware/</lido:conceptID><lido:term>compilation</lido:term>
+              </lido:subjectConcept>
+            </lido:subject>
+          </lido:subjectSet>
+        </lido:subjectWrap>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://en.wikipedia.org/wiki/Ishar</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectWebResource>https://www.mobygames.com/game/3118/ishar-trilogy/</lido:objectWebResource>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>ishar1</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>ishar2</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>ishar3</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+        </lido:relatedWorksWrap>
+
+      </lido:objectRelationWrap>
+
+    </lido:descriptiveMetadata>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap>
+        <lido:rightsWorkSet>
+          <lido:rightsType>
+            <lido:term>In Copyright</lido:term>
+          </lido:rightsType>
+
+          <lido:creditLine>Copyright 1995 Silmarils</lido:creditLine>
+          <lido:creditLine>Cover Art: Tim White</lido:creditLine>
+        </lido:rightsWorkSet>
+      </lido:rightsWorkWrap>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+  </lido>
+
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
+
+    <lido:lidoRecID lido:source="dataasee" lido:type="http://terminology.lido-schema.org/lido00100">isharTa</lido:lidoRecID>
+
+    <lido:objectPublishedID lido:type="http://terminology.lido-schema.org/lido00100">3430920026083</lido:objectPublishedID>
+
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+
+          <lido:objectWorkType>
+            <lido:term>...</lido:term>
+          </lido:objectWorkType>
+
+          <lido:classificationWrap/>
+
+        </lido:objectWorkTypeWrap>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar Trilogy</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:repositoryWrap>
+          <lido:repositorySet>
+            <lido:displayRepository>Silmarils</lido:displayRepository>
+          </lido:repositorySet>
+        </lido:repositoryWrap>
+
+        <lido:displayStateEditionWrap/>
+
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap>
+        <lido:eventSet>
+          <lido:event>
+            <lido:eventType>
+              <lido:term>Production</lido:term>
+            </lido:eventType>
+            <lido:eventDate>
+              <lido:displayDate>1996</lido:displayDate>
+            </lido:eventDate>
+            <lido:eventActor>
+              <lido:displayActorInRole>Pascal Einsweiler</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Michel Pernot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-François Trevien</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Guillaume Maginot</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>André Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Louis-Marie Rocques</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Jean-Christophe Charter</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Fabrice Hautecloque</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Eric Galand</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Cécile Guyard</lido:displayActorInRole>
+            </lido:eventActor>
+            <lido:eventActor>
+              <lido:displayActorInRole>Christophe Fagot</lido:displayActorInRole>
+            </lido:eventActor>
+          </lido:event>
+        </lido:eventSet>
+      </lido:eventWrap>
+
+      <lido:objectRelationWrap>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>isharT</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+        </lido:relatedWorksWrap>
+
+      </lido:objectRelationWrap>
+
+    </lido:descriptiveMetadata>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap>
+        <lido:rightsWorkSet>
+          <lido:rightsType>
+            <lido:term>In Copyright</lido:term>
+          </lido:rightsType>
+        </lido:rightsWorkSet>
+      </lido:rightsWorkWrap>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+  </lido>
+
+  <lido xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:lido="http://www.lido-schema.org"
+        xsi:schemaLocation="http://www.lido-schema.org https://lido-schema.org/profiles/v1.1/lido-v1.1.xsd">
+
+    <lido:lidoRecID lido:source="dataasee" lido:type="http://terminology.lido-schema.org/lido00100">ishar4</lido:lidoRecID>
+
+    <lido:category>
+      <lido:conceptID>http://terminology.lido-schema.org/lido01193</lido:conceptID>
+      <lido:term>Software</lido:term>
+    </lido:category>
+
+    <lido:descriptiveMetadata xml:lang="en">
+
+      <lido:objectClassificationWrap>
+
+        <lido:objectWorkTypeWrap>
+          <lido:objectWorkType>
+            <lido:term>...</lido:term>
+          </lido:objectWorkType>
+        </lido:objectWorkTypeWrap>
+
+        <lido:classificationWrap/>
+
+      </lido:objectClassificationWrap>
+
+      <lido:objectIdentificationWrap>
+
+        <lido:titleWrap>
+          <lido:titleSet lido:pref="http://terminology.lido-schema.org/lido00169">
+            <lido:appellationValue lido:pref="http://terminology.lido-schema.org/lido00169" xml:lang="en">Ishar 4: Genesis</lido:appellationValue>
+          </lido:titleSet>
+        </lido:titleWrap>
+
+        <lido:displayStateEditionWrap/>
+
+      </lido:objectIdentificationWrap>
+
+      <lido:eventWrap/>
+
+      <lido:objectRelationWrap>
+
+        <lido:subjectWrap/>
+
+        <lido:relatedWorksWrap>
+          <lido:relatedWorkSet>
+            <lido:relatedWork>
+              <lido:object>
+                <lido:objectID>ishar3</lido:objectID>
+              </lido:object>
+            </lido:relatedWork>
+          </lido:relatedWorkSet>
+        </lido:relatedWorksWrap>
+
+      </lido:objectRelationWrap>
+
+    </lido:descriptiveMetadata>
+
+    <lido:administrativeMetadata xml:lang="en">
+
+      <lido:rightsWorkWrap/>
+
+      <lido:recordWrap>
+        <lido:recordID type="...">...</lido:recordID>
+        <lido:recordType>
+          <lido:term></lido:term>
+        </lido:recordType>
+        <lido:recordSource>
+          <lido:legalBodyName>dataasee</lido:legalBodyName>
+        </lido:recordSource>
+      </lido:recordWrap>
+
+    </lido:administrativeMetadata>
+  </lido>
 </collection>

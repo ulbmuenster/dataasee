@@ -5,9 +5,10 @@ processor_resources:
     mapping: |
       root = this
       root.metadataFormat = metadata("ingest").format.or(deleted())
-      root.metadataChecksum = this.rawMetadata.hash("md5").catch(deleted())
+      root.rawChecksum = this.rawMetadata.hash("md5").encode("hex").catch(deleted())
       root.recordId = (metadata("ingest").source.string() + "/" + metadata("ingest").format.string() + "/" + metadata("sourceid").or(this.publisher.string()) + "/" + this.publicationYear.string() + "/" + this.name.string() + "/" + this.version.string()).hash("xxhash64").encode("base64rawurl")
-      root.source = metadata("ingest").source.or("dataasee")
+      root.source = metadata("source_rid")
+      root.sourceRights = metadata("ingest").rights.or("not known")
       root.dataSteward = metadata("ingest").steward.or("dataasee admin")
       root.schemaVersion = 1
       root.numberViews = 0                                     # TODO: Remove once 'APPLY DEFAULTS' is implemented in ArcadeDB

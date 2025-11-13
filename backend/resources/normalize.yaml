@@ -3,7 +3,9 @@
 processor_resources:
   - label: 'normalize'
     try:
-      - mutation: |
+      - mutation: |  # NOTE: This is not a workflow because of the many extra nesting objects and huge amount of duplicate code (particularly, the maps cannot be resources due their scalar arguments)
+          # Local Functions
+
           map prep_str {
             root = this.or("").string().trim().replace_all_many(["\\","\\\\","'","\\'","\"","\\\"",";","\u037E","--","\u2013"])
           }
@@ -11,6 +13,24 @@ processor_resources:
           map prep_uri {
             let url = this.or("").string().trim().replace_all_many(["\\","%5C","'","%27","\"","%22",";","%3B"," ","%20"])
             root = if $url.re_match("^(http)[s]?(:\\/\\/)[^\\s\\/$.?#].[^\\s]*$") && $url.length() < 4096 { $url } else { null }
+          }
+
+          map strip_id {
+            root = match this.or("").string() { this.has_prefix("http://dx.doi.org/") => this.lowercase().trim_prefix("http://dx.doi.org/"),
+                                                this.has_prefix("http://doi.org/")    => this.lowercase().trim_prefix("http://doi.org/"),
+                                                this.lowercase().has_prefix("doi:")   => this.lowercase().trim_prefix("doi:"),
+                                                _                                     => this
+                                              }
+          }
+
+          map name_id {
+            root = match this.or("").string() { this.lowercase().re_match("^10\\.1002\\/[^\\s]+|10\\.\\d{4,9}\\/[-.;()\\/:a-zA-Z0-9]+$") => "doi",
+                                                this.has_prefix("http://dx.doi.org/") => "doi",
+                                                this.has_prefix("http://doi.org/")    => "doi",
+                                                this.lowercase().has_prefix("doi:")   => "doi",
+                                                this.lowercase().has_prefix("arxiv:") => "arxiv",
+                                                _                                     => null
+                                              }
           }
 
           map id2url {
@@ -35,76 +55,128 @@ processor_resources:
             root = if this.length() < 65536 { this } else { this.slice(0,65534) + "…" }
           }
 
-          map prune {
+          map optional {
             root = this.not_empty().catch(deleted())
           }
 
-          root.categories = this.categories.or([]).slice(0,4).map_each(x -> x.apply("prep_str").apply("tiny_str"))
+          map mandatory {
+            root = this.not_empty().catch(null)
+          }
 
-          root.keywords = this.keywords.or("").split(",").map_each(x -> x.trim()).filter(x -> x != "").join(",").apply("prep_str").apply("tiny_str")
+          #
+          # Numeric properties
+          #
 
-          root.name = if this.name.type() == "string" && this.name.length() > 0 { this.name.apply("prep_str").apply("tiny_str") } else { "" }
-
-          root.creators = if this.creators.type() == "array" && this.creators.length() > 0 { this.creators.filter(x -> x.name != null).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
-                                                                                                                                                       "data": if x.exists("data") { x.data.apply("id2url").apply("prep_uri") | deleted() } else { deleted() },
-                                                                                                                                                       "@type": "pair" }).not_empty().catch(null) } else { null }
-
+          # Publication Year (Integer, Mandatory)
           root.publicationYear = match { this.publicationYear.type() == "number" && this.publicationYear > -10000 && this.publicationYear < 10000 => this.publicationYear,
-                                         this.publicationYear.type() == "string" && this.publicationYear.length() > 0 && this.publicationYear.trim().trim_prefix("[").slice(0,4).re_match("^-?[1-9]\\d{0,3}") => this.publicationYear.trim().trim_prefix("[").re_find_all("^-?[1-9]\\d{0,3}").0.number(),
+                                         this.publicationYear.type() == "string" && this.publicationYear.length() > 0 && this.publicationYear.trim().trim_prefix("[").trim_prefix("ca.").trim().slice(0,4).re_match("^-?[1-9]\\d{0,3}") => this.publicationYear.trim().trim_prefix("[").trim_prefix("ca.").trim().re_find_all("^-?[1-9]\\d{0,3}").0.number(),
                                          _ => null }
 
-          root.publisher = if this.publisher.type() == "string" && this.publisher.length() > 0 { this.publisher.apply("prep_str").apply("tiny_str") } else { null }
+          #
+          # String properties
+          #
 
-          root.resourceType = if this.resourceType.type() == "string" && this.resourceType.length() > 0 { this.resourceType.apply("prep_str").apply("tiny_str") } else { null }
+          # Publisher (String, Tiny, Mandatory)
+          root.publisher = this.publisher.apply("prep_str").apply("tiny_str").apply("mandatory")
 
-          root.identifiers = if this.identifiers.type() == "array" && this.identifiers.length() > 0 { this.identifiers.map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase(),
-                                                                                                                                       "data": x.data.apply("id2url").apply("prep_str").apply("small_str"),
-                                                                                                                                       "@type": "pair" }).filter(x -> x.data != "").map_each(x -> if x.data.has_prefix("https://doi.org/") { x.assign({"name":"doi"}) } else { x }).not_empty().catch(null) } else { null }
+          # Resource Type (String, Tiny, Mandatory)
+          root.resourceType = this.resourceType.apply("prep_str").apply("tiny_str").apply("mandatory")
 
-          root.synonyms = this.synonyms.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
-                                                               "data": x.data.apply("prep_str").apply("small_str"),
-                                                               "@type": "pair" })
-          root.synonyms = if this.name.or("").length() > 255 { root.synonyms.append({ "name": "fulltitle",
-                                                                                      "data": this.name.apply("prep_str").apply("small_str"),
-                                                                                      "@type": "pair" }) }
-          root.synonyms = root.synonyms.slice(0,256).apply("prune")
+          # Data Location (URI, Optional)
+          root.dataLocation = this.dataLocation.apply("id2url").apply("prep_uri").apply("optional")
 
-          root.language = this.language.apply("prep_str").apply("tiny_str")
+          # Data Format (String, Tiny, Optional)
+          root.dataFormat = this.dataFormat.apply("prep_str").apply("tiny_str").apply("optional")
 
-          # TODO: filter subjects without URL and move to keywords?
-          root.subjects = this.subjects.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
-                                                               "data": if x.exists("data") { x.data.apply("prep_uri") | deleted() } else { deleted() },
-                                                               "@type": "pair" }).unique(x -> x.name).slice(0,256).filter(x -> x.name != "").apply("prune")
+          # Language (String, Tiny, Optional)
+          root.language = this.language.apply("prep_str").apply("tiny_str").apply("optional")
 
-          root.version = this.version.apply("prep_str").apply("tiny_str").apply("prune")
+          # Version (String, Tiny, Optional)
+          root.version = this.version.apply("prep_str").apply("tiny_str").apply("optional")
 
-          root.license = this.license.apply("prep_str").apply("tiny_str").apply("prune")
+          # License (String, Tiny, Optional)
+          root.license = this.license.apply("prep_str").apply("tiny_str").apply("optional")
 
-          root.rights = this.rights.apply("prep_str").apply("text_str").apply("prune")
+          # Rights (String, Normal, Optional)
+          root.rights = this.rights.apply("prep_str").apply("text_str").apply("optional")
 
-          root.project = if this.project != null { { "name": this.project.name.apply("prep_str").apply("tiny_str"),
-                                                     "data": if this.project.exists("data") { this.project.data.apply("prep_uri") | deleted() } else { deleted() },
-                                                     "@type": "pair" } }
+          # Message (String, Normal, Optional)
+          root.message = this.message.apply("prep_str").apply("text_str").apply("optional")
 
-          root.fundings = this.fundings.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
-                                                               "data": if x.exists("data") && x.data != null { x.data.apply("prep_str").apply("small_str") } else { deleted() },
-                                                               "@type": "pair" }).slice(0,256).apply("prune")
+          #
+          # Full-text properties
+          #
 
+          # Name (String, Tiny, Mandatory, Notnull)
+          root.name = this.name.apply("prep_str").apply("tiny_str")
+
+          # Description (String, Normal, Optional, Notnull)
           root.description = this.description.apply("prep_str").apply("text_str")
 
-          root.message = this.message.apply("prep_str").apply("text_str").apply("prune")
+          # Keywords (String, Tiny, Optional, Notnull)
+          root.keywords = this.keywords.or("").split(",").map_each(x -> x.trim()).filter(x -> x != "").join(",").apply("prep_str").apply("tiny_str")
 
-          root.externalItems = this.externalItems.or([]).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
-                                                                         "data": x.data.apply("id2url").apply("prep_uri"),
-                                                                         "@type": "pair" }).filter(x -> x.data != null).slice(0,256).apply("prune")
+          #
+          # Pair-array properties
+          #
 
-          root.rawMetadata = if root.rawMetadata != null && root.rawMetadata.length() < 1048576 { this.rawMetadata.or("").string().trim().replace_all_many(["'","\\'","\"","\\\""]) } else { "" }
+          # TODO: assign categories here
+          # Categories (Array of Strings, Optional)
+          root.categories = this.categories.or([]).slice(0,4).map_each(x -> x.apply("prep_str").apply("tiny_str")).filter(x -> x != "").apply("optional")
 
-          root.dataLocation = this.dataLocation.apply("id2url").apply("prep_uri").apply("prune")
+          # Creators (Array of Pairs, Mandatory)
+          root.creators = this.creators.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(null),
+                                                                            "data": if x.exists("data") { x.data.apply("id2url").apply("prep_uri") | deleted() } else { deleted() },
+                                                                            "@type": "pair" }).filter(x -> x.name != "").apply("mandatory")
 
-          root.dataFormat = this.dataFormat.apply("prep_str").apply("tiny_str").apply("prune")
+          # Identifiers (Array of Pairs, Mandatory)
+          root.identifiers = this.identifiers.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase().not_empty().catch(x.data.apply("name_id")),
+                                                                                  "data": x.data.apply("strip_id").apply("prep_str").apply("small_str"),
+                                                                                  "@type": "pair" }).filter(x -> x.data != "").map_each(x -> if x.data.has_prefix("https://doi.org/")
+                                                                                                                                               { x.assign({"name":"doi"}) }
+                                                                                                                                             else
+                                                                                                                                               { x }).apply("mandatory")
 
-          root.related = this.related.or({}).map_each(x -> x.value.array().map_each(y -> y.apply("prep_str").apply("small_str")))
+          # Synonyms (Array of Pairs, Optional)
+          root.synonyms = this.synonyms.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase().not_empty().catch(null),
+                                                                            "data": x.data.apply("prep_str").apply("small_str"),
+                                                                            "@type": "pair" }).apply("optional")
+
+          # Append over-long title as synonym
+          root.synonyms = if this.name.or("").length() > 255 { [{ "name": "fulltitle",
+                                                                  "data": this.name.apply("prep_str").apply("small_str"),
+                                                                  "@type": "pair" }].concat(root.synonyms.or([]).slice(0,254)) }
+
+          # Subjects (Array of Pairs, Optional)
+          root.subjects = this.subjects.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase().not_empty().catch(null),
+                                                                            "data": if x.exists("data") { x.data.apply("prep_uri") | deleted() } else { deleted() },
+                                                                            "@type": "pair" }).filter(x -> x.name != null).apply("optional")
+
+          # Fundings (Array of Pairs, Optional)
+          root.fundings = this.fundings.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(null),
+                                                                            "data": if x.exists("data") && x.data != null { x.data.apply("prep_str").apply("small_str") } else { deleted() },
+                                                                            "@type": "pair" }).apply("optional")
+
+          # External Items (Array of Pairs, Optional)
+          root.externalItems = this.externalItems.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(null),
+                                                                                      "data": x.data.apply("id2url").apply("prep_uri"),
+                                                                                      "@type": "pair" }).filter(x -> x.data != null).apply("optional")
+
+          #
+          # Special properties
+          #
+
+          # Raw Metadata (String)
+          root.rawMetadata = if root.rawMetadata != null && root.rawMetadata.length() < 262144
+                               { this.rawMetadata.or("").string().trim().replace_all_many(["'","\\'","\"","\\\""]) }
+                             else
+                               { "" }
+
+          # Related (Map of Array of String)
+          root.related = this.related.or({}).map_each(x -> x.value.array().map_each(y -> y.apply("strip_id").apply("prep_str").apply("small_str")))
+
+          # Selfies (List of Strings)
+          root.selfies = root.identifiers.or([]).map_each(x -> x.data)
 
       - label: 'normalize__arcadedb_query'
         arcadedb:
@@ -116,10 +188,10 @@ processor_resources:
           password: '${DB_PASS}'
           request: |
             root.language = "sql"
-            root.params.resourcetype = this.resourceType.or("").string()
-            root.params.category = this.categories.string().replace_all_many([ "[","", "]","", ",","|", "\"","" ])
+            root.params.category = this.categories.or([]).join("|")
+            root.params.resourcetype = this.resourceType.or("").string().replace_all("-"," ")
             root.params.language = this.language.or("").string()
-            root.params.license = this.license.or("").string()
+            root.params.license = this.license.or("").string().replace_all(" ","-")
             root.command = """SELECT $resourceType[0].@rid AS resourceType,
                                      $categories.@rid AS categories,
                                      $language[0].@rid AS language,
@@ -127,7 +199,7 @@ processor_resources:
                               LET $resourceType = (SELECT @rid
                                                    FROM resourcetypes
                                                    WHERE name ILIKE :resourcetype OR
-                                                         data MATCHES '(?i).*(' + :resourcetype + ').*'),
+                                                         data MATCHES '(?i)(|.*\\s)' + :resourcetype + '(\\s.*|)'),
                                   $categories = (SELECT @rid
                                                  FROM categories
                                                  WHERE name MATCHES '(?i)(' + :category + ')'),

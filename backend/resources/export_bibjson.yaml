@@ -1,0 +1,37 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: "export_bibjson"
+    mapping: |
+      let publisher = this.publisher
+
+      root = match this.resourceType.or("Other").lowercase() {
+              "book"                  => { "entrytype": "book",
+                                           "publisher": $publisher },
+              "bookchapter"           => { "entrytype": "incollection",
+                                           "booktitle": null,
+                                           "publisher": $publisher },
+              "conferencepaper"       => { "entrytype": "inproceedings",
+                                           "booktitle": null,
+                                           "publisher": $publisher },
+              "conferenceproceedings" => { "entrytype": "proceedings",
+                                           "publisher": $publisher },
+              "datapaper"             => { "entrytype": "article",
+                                           "journal": null },
+              "dissertation"          => { "entrytype": "phdthesis",
+                                            "school": $publisher },
+              "journalarticle"        => { "entrytype": "article",
+                                            "journal": null },
+              "preprint"              => { "entrytype": "techreport",
+                                            "institution": $publisher },
+              _                       => { "entrytype": "misc",
+                                           "howpublished": $publisher }
+             }
+
+      root.cid = this.recordId
+      root.author = this.creators.map_each(x -> x.with("name")).catch(null)
+      root.title = this.name
+      root.year = this.publicationYear.not_null().string().catch(null)
+      root.identifier = this.identifiers.filter(x -> x.name != null && x.name != "").map_each(x -> { "type": x.name,
+                                                                                                     "id": x.data }).catch(deleted)
+      root.link = this.externalItems.map_each(x -> { "url": x.data }).catch(deleted())

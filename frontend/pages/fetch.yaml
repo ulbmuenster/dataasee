@@ -36,18 +36,43 @@ requests:
         id:
           _payload: "id"
 
+  - id: "export_bibjson_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _url_query: true
+    properties:
+      url: "/metadata"
+      method: "get"
+      params:
+        id:
+          _payload: "id"
+        format: "bibjson"
+
+  - id: "export_datacite_request"
+    type: "AxiosHttp"
+    connectionId: "datalake_api"
+    payload:
+      _url_query: true
+    properties:
+      url: "/metadata"
+      method: "get"
+      params:
+        id:
+          _payload: "id"
+        format: "datacite"
+
 events:
   onInit:
     - id: "schema_enter"
       type: "Request"
       params: "schema_request"
 
-  onMount:
+  onMountAsync:
     - id: "ready_enter"
       type: "Request"
       params: "ready_request"
 
-  onMountAsync:
     - id: "record_enter"
       type: "Request"
       params: "record_request"
@@ -163,6 +188,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -182,27 +209,19 @@ areas:
                             type: "List"
                             blocks:
                               - id: "creators_text.$"
-                                type: "Html"
+                                type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
-                                  html:
-                                    _if:
-                                      test:
-                                        _eq:
-                                          - _state: "creators_list.$.data"
-                                          - null
-                                      then:
-                                        _if_none:
-                                          - _state: "creators_list.$.name"
-                                          - _global: "unknown"
-                                      else:
-                                        _string.concat:
-                                          - "<a href='"
-                                          - _state: "creators_list.$.data"
-                                          - "'>"
-                                          - _state: "creators_list.$.name"
-                                          - "</a>"
+                                  title:
+                                    _if_none:
+                                      - _state: "creators_list.$.name"
+                                      - _global: "unknown"
+                                  href:
+                                    _state: "creators_list.$.data"
+                                  newTab: true
 ## Publisher
                       - id: "publisher_label"
                         type: "Label"
@@ -216,6 +235,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -234,6 +255,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -252,6 +275,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -270,11 +295,24 @@ areas:
                             type: "List"
                             blocks:
                               - id: "identifiers_text.$"
-                                type: "Paragraph"
+                                type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
-                                  content:
+                                  url:
+                                    _if:
+                                      test:
+                                        _eq:
+                                          - _state: "identifiers_list.$.name"
+                                          - "doi"
+                                      then:
+                                        _string.concat:
+                                          - "https://doi.org/"
+                                          - _state: "identifiers_list.$.data"
+                                      else: null
+                                  title:
                                     _if:
                                       test:
                                         _eq:
@@ -286,7 +324,9 @@ areas:
                                         _if:
                                           test:
                                             _eq:
-                                              - _state: "identifiers_list.$.name"
+                                              - _if_none:
+                                                  - _state: "identifiers_list.$.name"
+                                                  - ""
                                               - ""
                                           then:
                                             _state: "identifiers_list.$.data"
@@ -318,11 +358,13 @@ areas:
                             type: "List"
                             blocks:
                               - id: "synonyms_text.$"
-                                type: "Html"
+                                type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
-                                  html:
+                                  title:
                                     _if:
                                       test:
                                         _eq:
@@ -349,6 +391,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -367,33 +411,19 @@ areas:
                             type: "List"
                             blocks:
                               - id: "subjects_text.$"
-                                type: "Html"
+                                type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
-                                  html:
-                                    _if:
-                                      test:
-                                        _eq:
-                                          - _state: "subjects_list.$"
-                                          - null
-                                      then:
-                                        _global: "unknown"
-                                      else:
-                                        _if:
-                                          test:
-                                            _eq:
-                                              - _state: "subjects_list.$.data"
-                                              - null
-                                          then:
-                                            _state: "subjects_list.$.name"
-                                          else:
-                                            _string.concat:
-                                              - "<a href='"
-                                              - _state: "subjects_list.$.data"
-                                              - "'>"
-                                              - _state: "subjects_list.$.name"
-                                              - "</a>"
+                                  title:
+                                    _if_none:
+                                      - _state: "subjects_list.$.name"
+                                      - _global: "unknown"
+                                  href:
+                                    _state: "subjects_list.$.data"
+                                  newTab: true
 ## Version
                       - id: "version_label"
                         type: "Label"
@@ -407,6 +437,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -422,33 +454,19 @@ areas:
                             _request: "schema_request.data.data.attributes.license.label"
                         blocks:
                           - id: "license_text"
-                            type: "Html"
+                            type: "Anchor"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_large"
                             properties:
-                              html:
-                                _if:
-                                  test:
-                                    _eq:
-                                      - _request: "record_request.data.data.attributes.license"
-                                      - null
-                                  then:
-                                    _global: "unknown"
-                                  else:
-                                    _if:
-                                      test:
-                                        _eq:
-                                          - _request: "record_request.data.data.attributes.license.data"
-                                          - null
-                                      then:
-                                        _request: "record_request.data.data.attributes.license.name"
-                                      else:
-                                        _string.concat:
-                                          - "<a href='"
-                                          - _request: "record_request.data.data.attributes.license.data"
-                                          - "'>"
-                                          - _request: "record_request.data.data.attributes.license.name"
-                                          - "</a>"
+                              title:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.license.name"
+                                  - _global: "unknown"
+                              href:
+                                _request: "record_request.data.data.attributes.license.data"
+                              newTab: true
 ## Rights
                       - id: "rights_label"
                         type: "Label"
@@ -462,6 +480,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "medium"
+                              margin-top:
+                                _global: "offset_small"
                             properties:
                               content:
                                 _if_none:
@@ -480,11 +500,13 @@ areas:
                             type: "List"
                             blocks:
                               - id: "fundings_text.$"
-                                type: "Html"
+                                type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
-                                  html:
+                                  title:
                                     _if:
                                       test:
                                         _eq:
@@ -519,28 +541,12 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "medium"
+                              margin-top:
+                                _global: "offset_small"
                             properties:
                               content:
                                 _if_none:
                                   - _request: "record_request.data.data.attributes.description"
-                                  - _global: "unknown"
-## Message
-                      - id: "message_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.message.label"
-                        blocks:
-                          - id: "message_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.message"
                                   - _global: "unknown"
 ## Links
                       - id: "links_label"
@@ -555,33 +561,26 @@ areas:
                             type: "List"
                             blocks:
                               - id: "links_text.$"
-                                type: "Html"
+                                type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
-                                  html:
-                                    _if:
-                                      test:
-                                        _eq:
-                                          - _state: "links_list.$"
-                                          - null
-                                      then:
-                                        _global: "unknown"
-                                      else:
-                                        _string.concat:
-                                          - "<a href='"
-                                          - _state: "links_list.$.data"
-                                          - "'>"
-                                          - _state: "links_list.$.name"
-                                          - "</a>"
-
+                                  title:
+                                    _if_none:
+                                      - _state: "links_list.$.name"
+                                      - _global: "unknown"
+                                  href:
+                                    _state: "links_list.$.data"
+                                  newTab: true
 ## Relations
                   - id: "relations_card"
                     type: "Card"
                     properties:
                       bordered: false
                       size: "small"
-                      title: "Relationsships"
+                      title: "Relationships"
                       headerStyle:
                         font-size: "large"
                     blocks:
@@ -604,7 +603,9 @@ areas:
                                           from:
                                             _request: "schema_request.data.data.attributes"
                                           key:
-                                            _state: "relations_list.$.type"
+                                            _string.concat:
+                                              - "@"
+                                              - _state: "relations_list.$.type"
                                       key: "label"
                                   else:
                                     _if_none:
@@ -614,21 +615,27 @@ areas:
                                               from:
                                                 _request: "schema_request.data.data.attributes"
                                               key:
-                                                _state: "relations_list.$.type"
-                                          key: "altlabel"
+                                                _string.concat:
+                                                  - "@"
+                                                  - _state: "relations_list.$.type"
+                                          key: "label"
                                       - _get:
                                           from:
                                             _get:
                                               from:
                                                 _request: "schema_request.data.data.attributes"
                                               key:
-                                                _state: "relations_list.$.type"
+                                                _string.concat:
+                                                  - "@"
+                                                  - _state: "relations_list.$.type"
                                           key: "label"
                             blocks:
                               - id: "relations_link.$"
                                 type: "Anchor"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
                                   href:
                                     _string.concat:
@@ -674,6 +681,8 @@ areas:
                                 type: "Paragraph"
                                 style:
                                   font-size: "large"
+                                  margin-top:
+                                    _global: "offset_medium"
                                 properties:
                                   content:
                                     _if_none:
@@ -692,6 +701,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if:
@@ -715,6 +726,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _request: "record_request.data.data.attributes.numberViews"
@@ -741,6 +754,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -759,6 +774,8 @@ areas:
                             type: "Anchor"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_large"
                             properties:
                               href:
                                 _string.concat:
@@ -767,24 +784,6 @@ areas:
                               title:
                                 _if_none:
                                   - _request: "record_request.data.data.attributes.recordId"
-                                  - _global: "unknown"
-## Metadata Checksum
-                      - id: "checksum_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.metadataChecksum.label"
-                        blocks:
-                          - id: "checksum_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.metadataChecksum"
                                   - _global: "unknown"
 ## Metadata Quality
                       - id: "quality_label"
@@ -799,6 +798,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -818,6 +819,8 @@ areas:
                             style:
                               font-size: "large"
                               font-type: "monospace"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -836,10 +839,32 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
                                   - _request: "record_request.data.data.attributes.source"
+                                  - _global: "unknown"
+## Source Rights
+                      - id: "sourcerights_label"
+                        type: "Label"
+                        properties:
+                          span: 5
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.sourceRights.label"
+                        blocks:
+                          - id: "source_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.sourceRights"
                                   - _global: "unknown"
 ## Created
                       - id: "created_label"
@@ -854,6 +879,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -868,6 +895,8 @@ areas:
                       title: "Technical Metadata"
                       headerStyle:
                         font-size: "large"
+                        margin-top:
+                          _global: "offset_medium"
                     blocks:
 ## Metadata Format
                       - id: "metadataformat_label"
@@ -882,6 +911,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -900,6 +931,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -918,6 +951,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -936,6 +971,8 @@ areas:
                             type: "Paragraph"
                             style:
                               font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if_none:
@@ -950,6 +987,8 @@ areas:
                       title: "Original Metadata"
                       headerStyle:
                         font-size: "large"
+                        margin-top:
+                          _global: "offset_medium"
                     blocks:
 ## Raw Metadata
                       - id: "raw_label"
@@ -962,12 +1001,17 @@ areas:
                         blocks:
                           - id: "raw_paragraph"
                             type: "MarkdownWithCode"
+                            style:
+                              margin-top:
+                                _global: "offset_medium"
                             properties:
                               content:
                                 _if:
                                   test:
                                     _eq:
-                                      - _request: "record_request.data.data.attributes.rawMetadata"
+                                      - _if_none:
+                                          - _request: "record_request.data.data.attributes.rawMetadata"
+                                          - ""
                                       - ""
                                   then:
                                     _global: "unknown"
@@ -976,6 +1020,79 @@ areas:
                                       - "```xml\n"
                                       - _request: "record_request.data.data.attributes.rawMetadata"
                                       - "\n```"
+## Metadata Checksum
+                      - id: "checksum_label"
+                        type: "Label"
+                        properties:
+                          span: 5
+                          align: "right"
+                          title:
+                            _request: "schema_request.data.data.attributes.rawChecksum.label"
+                        blocks:
+                          - id: "checksum_text"
+                            type: "Paragraph"
+                            style:
+                              font-size: "large"
+                              margin-top:
+                                _global: "offset_medium"
+                            properties:
+                              content:
+                                _if_none:
+                                  - _request: "record_request.data.data.attributes.rawChecksum"
+                                  - _global: "unknown"
+## Export Card
+                  - id: "export"
+                    type: "Card"
+                    properties:
+                      bordered: false
+                      size: "small"
+                      title: "Export"
+                      headerStyle:
+                        font-size: "large"
+                    blocks:
+                      - id: "export_datacite"
+                        type: "Anchor"
+                        events:
+                          onClick:
+                            - id: "export_datacite_click"
+                              type: "Request"
+                              params: "export_datacite_request"
+                            - id: "export_newtab"
+                              type: "Link"
+                              params:
+                                newTab: true
+                                url:
+                                  _string.concat:
+                                    - "data:application/json,"
+                                    - _uri.encode:
+                                        _json.stringify:
+                                          on:
+                                            _request: "export_datacite_request.data.data.attributes"
+                        properties:
+                          title: "DataCite"
+                          url: ""
+
+                      - id: "export_bibjson"
+                        type: "Anchor"
+                        events:
+                          onClick:
+                            - id: "export_bibjson_click"
+                              type: "Request"
+                              params: "export_bibjson_request"
+                            - id: "export_newtab"
+                              type: "Link"
+                              params:
+                                newTab: true
+                                url:
+                                  _string.concat:
+                                    - "data:application/json,"
+                                    - _uri.encode:
+                                        _json.stringify:
+                                          on:
+                                            _request: "export_bibjson_request.data.data.attributes"
+                        properties:
+                          title: "BibJSON"
+                          url: ""
 ## Right Column
               - id: "fetch_help"
                 type: "Card"
@@ -1001,6 +1118,7 @@ areas:
                         * **Process Metadata**, properties relating to ingestion and parsing of this record.
                         * **Technical Metadata**, properties relating to the underlying data-set.
                         * **Original Metadata**, the original ingested metadata record.
+                        * **Export**, provides exports of the metadata record in other formats.
 
                         A value of `[ᴇᴍᴘᴛʏ]` corresponds to `NULL`.
 
@@ -1028,8 +1146,11 @@ areas:
                                     ```
                                     /api/v1/metadata?id=x
                                     ```
+                                3. The record data is exported by a GET request using the `format` option to:
 
-# TODO: export as here (JSON,Wikidata,...) dynamically for extras (ie BibTeX)
+                                    ```
+                                    /api/v1/metadata?id=x&format=bibjson
+                                    ```
 
   sider:
     _ref: "templates/sider.yaml"

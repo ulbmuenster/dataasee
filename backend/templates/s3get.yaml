@@ -34,15 +34,15 @@ mapping: |
   root.branch.request_map = """root.url = metadata("%s")
                                meta "Content-Type" = "application/octet-stream"
                                meta "Date" = now().ts_format("Mon, 2 Jan 2006 15:04:05 -0700", "UTC")
-                               let sign = "GET\n\n" + @."Content-Type" + "\n" + @."Date" + "\n" + "/" + root.url.split("/").slice(%s).join("/")
+                               let sign = "GET\n\n" + @."Content-Type" + "\n" + @."Date" + "\n" + "/" + root.url.split("?").index(0).split("/").slice(%s).join("/")
                                meta "Authorization" = "AWS " + metadata("%s") + ":" + $sign.hash("hmac_sha1",metadata("%s")).encode("base64")
                             """.format(this.url,$get,this.access,this.secret)
 
   root.branch.processors = [{}]
-
+  oot.branch.processors.0.label = @label + "_http"
   root.branch.processors.0.http.url = "${! this.url }"
   root.branch.processors.0.http.verb = "GET"
   root.branch.processors.0.http.timeout = "30s"
   root.branch.processors.0.http.metadata.include_patterns = ["Content-Type","Date","Authorization"]
 
-  root.branch.result_map = "root = content()"
+  root.branch.result_map = if $get == "-1" { "root = content().parse_xml()" } else { "root = content()" }

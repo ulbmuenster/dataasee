@@ -1,0 +1,79 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handlers_get'
+    switch:
+
+## API Endpoint
+      - check: 'metadata("endpoint") == "api"'
+        processors:
+          - resource: 'handler_api'
+
+## Attributes Endpoint
+      - check: 'metadata("endpoint") == "enums"'
+        processors:
+          - resource: 'handler_enums'
+
+## Metadata Endpoint
+      - check: 'metadata("endpoint") == "metadata"'
+        processors:
+          - resource: 'handler_metadata'
+
+## Ready Endpoint
+      - check: 'metadata("endpoint") == "ready"'
+        processors:
+          - resource: 'handler_ready'
+
+## Schema Endpoint
+      - check: 'metadata("endpoint") == "schema"'
+        processors:
+          - resource: 'handler_schema'
+
+## Sources Endpoint
+      - check: 'metadata("endpoint") == "sources"'
+        processors:
+          - resource: 'handler_sources'
+
+## Stats Endpoint
+      - check: 'metadata("endpoint") == "stats"'
+        processors:
+          - resource: 'handler_stats'
+
+## Unknown Endpoint
+      - processors:
+          - resource: 'unknown_endpoint'
+
+  - label: 'handlers_post'
+    switch:
+
+## Backup Endpoint
+      - check: 'metadata("endpoint") == "backup"'
+        processors:
+          - resource: 'handler_backup'
+
+## Health Endpoint
+      - check: 'metadata("endpoint") == "health"'
+        processors:
+          - resource: 'handler_health'
+
+## Ingest Endpoint
+      - check: 'metadata("endpoint") == "ingest"'
+        processors:
+          - resource: 'handler_ingest'
+
+## Insert Endpoint
+      - check: 'metadata("endpoint") == "insert"'
+        processors:
+          - resource: 'handler_insert'
+
+## Unknown Endpoint
+      - processors:
+          - resource: 'unknown_endpoint'
+
+  - label: 'unknown_endpoint'
+    processors:
+      - mapping: |
+          meta endpoint = "error"
+          meta status = "404"
+          root.errors = [ { "title": "Request Error: Not Found",
+                            "detail": "Unknown endpoint or wrong method. API documentation under `${DL_BASE}${DL_PATH}/api`." } ]

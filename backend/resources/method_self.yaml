@@ -1,7 +1,7 @@
 # Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
 
 processor_resources:
-  - label: 'self'
+  - label: 'method_self'
     while:
       at_least_once: true
       max_loops: 0
@@ -14,18 +14,19 @@ processor_resources:
                 timeout: '10s'
                 retries: 3
 
-            - mapping: 'root = this.data'
+            - mapping: |
+                meta page = if this.data.length() < 100 { null } else { metadata("page").or(0) + 1 }
+
+                root = this.data
 
             - unarchive:
                 format: 'json_array'
 
             - mapping: 'root = this.attributes'
 
+            - mapping: 'meta sourceid = this.recordId'
+
             - try:
-                - mapping: 'meta sourceid = this.recordId'
-
-                - mapping: 'root = this'
-
                 - resource: 'normalize'
 
                 - resource: 'process'
@@ -33,28 +34,13 @@ processor_resources:
             - catch:
                 - log:
                     message: |
-                      ${! error() + " : " + this.with("raw").format_json(no_indent: true).string().replace_all("\"","'") }
+                      ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
+
+                - mapping: 'root = {}'
 
             - archive:
                 format: 'json_array'
 
-            - mapping: |
-                meta page = if this.length() < 100 { null } else { metadata("page").or(0) + 1 }
-                meta count = metadata("count") + this.length()
-                root = this
-
-            - label: 'oai_pmh__arcadedb_command'
-              arcadedb:
-                host: '${DB_HOST}'
-                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                endpoint: 'command'
-                database: '${DB_NAME}'
-                username: '${DB_USER}'
-                password: '${DB_PASS}'
-                request: |
-                  root.language = "sqlscript"
-                  root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
-                response: |
-                  root = {}
+            - resource: 'submit'
 
         - catch: []

@@ -1,7 +1,7 @@
 # Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
 
 processor_resources:
-  - label: "mods"
+  - label: "format_mods"
     try:
       - label: 'format_mods__get_payload'
         mapping: 'root = this.mods'
@@ -23,92 +23,92 @@ processor_resources:
             - - 'rawMetadata'
               - 'dataLocation'
               - 'name'
-              - 'creators'
               - 'publisher'
               - 'publicationYear'
               - 'resourceType'
-              - 'identifiers'
-              - 'synonyms'
-              - 'language'
-              - 'subjects'
               - 'version'
               - 'license'
-              - 'rights'
+              - 'language'
               - 'description'
-              - 'message'
+              - 'rights'
+              - 'keywords'
+              - 'creators'
+              - 'identifiers'
+              - 'synonyms'
+              - 'subjects'
               - 'externalItems'
               - 'related'
             - - 'name_1'
-              - 'creators_1'
               - 'publicationYear_1'
-              - 'identifiers_1'
               - 'resourceType_1'
+              - 'creators_1'
+              - 'identifiers_1'
+              - 'subjects_1'
+              - 'keywords_1'
+              - 'description_1'
             - - 'gather'
           branches:
+
+            # Raw String
+
             'rawMetadata':
               request_map: 'root = this.without("dataasee")'
               processors:
                 - mapping: |
-                    root.rawMetadata = this.format_xml(no_indent: true).string()
+                    root.rawMetadata = { "mods": this }.format_xml(no_indent: true).string()
               result_map: 'root.dataasee.rawMetadata = this.rawMetadata'
+
+            # Filtered or First String
 
             'dataLocation':
               request_map: 'root = this.location.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let url = this.filter(x -> x.exists("url"))
-                    root.dataLocation = if $url.length() > 0 { url.0."#text" | $url.0.string() }
+                    let first = this.filter(x -> x.exists("url")).not_empty().0.catch(null)
+                    root.dataLocation = $first.url."#text" | $first.url
               result_map: 'root.dataasee.dataLocation = this.dataLocation | deleted()'
 
-            'name':  # TODO: # prefix "nonSort"?
+            'name':
               request_map: 'root = this.titleInfo.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let title = this.filter(x -> x.exists("title") && !x.exists("-type")).append(this.0).0.title
+                    let titleinfo = this.filter(x -> !x.exists("-type") && !x.exists("-otherType")).not_empty().catch(this).0
 
-                    let partnumber = this.filter(x -> x.exists("partNumber")).map_each(x -> x.partNumber."#text" | x.partNumber.string())
+                    let title = if $titleinfo.exists("title") { [$titleinfo.title.array().0."#text" | $titleinfo.title.array().0.string()] } else { [] }
+                    let subtitles = if $titleinfo.exists("subTitle") { [$titleinfo.subTitle.array().map_each(x -> x."#text" | x.string()).join(", ")] } else { [] }
+                    let partnumbers = if $titleinfo.exists("partNumber") { [$titleinfo.partNumber.array().map_each(x -> x."#text" | x.string()).join(", ")] } else { [] }
+                    let partnames = if $titleinfo.exists("partName") { [$titleinfo.partName.array().map_each(x -> x."#text" | x.string()).join(", ")] } else { [] }
 
-                    let partname = this.filter(x -> x.exists("partName")).map_each(x -> x.partName."#text" | x.partName.string())
-
-                    root.name = ($title."#text" | $title.string()) + $partnumber.concat($partname).not_empty().join(", ").catch("")
+                    root.name = $title.concat($subtitles).concat($partnumbers).concat($partnames).join(" - ")
               result_map: 'root.dataasee.name = this.name.not_empty().catch(null)'
-
-            'creators':
-              request_map: 'root = this.name.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    let creators = this.filter(x -> x.exists("displayForm") || x.exists("namePart"))
-                    root.creators = $creators.map_each(x -> { "name": x.displayForm."#text" | x.displayForm | x.namePart."#text" | x.namePart.fold("",y -> match { this.type == "family" => y.value."#text" + y.tally,
-                                                                                                                                                                   this.type == "given"  => y.tally + ", " + y.value,
-                                                                                                                                                                   _                     => y.tally }).catch(x.namePart.string()),
-                                                              "data": x.nameIdentifier."#text" | x."-valueURI" | deleted() })
-              result_map: 'root.dataasee.creators = this.creators.not_empty().catch(deleted())'
 
             'publisher':
               request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.publisher = match { this.0.publisher.type() == "object" => this.0.publisher."#text",
-                                             this.0.publisher.type() == "string" => this.0.publisher,
-                                             this.0.publisher.type() == "array"  => this.0.publisher.unique().map_each(x -> x."#text" | x.string()).join("; ") }
+                    let first = this.0
+                    root.publisher = match { $first.publisher.type() == "object" => $first.publisher."#text",
+                                             $first.publisher.type() == "string" => $first.publisher,
+                                             $first.publisher.type() == "array"  => $first.publisher.unique().map_each(x -> x."#text" | x.string()).join("; ") }
               result_map: 'root.dataasee.publisher = this.publisher'
 
             'publicationYear':
               request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.publicationYear = match { this.0.dateIssued.type() == "array"    => this.0.dateIssued.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
-                                                   this.0.dateIssued.type() == "object"   => this.0.dateIssued."#text",
-                                                   this.0.dateIssued.type() == "string"   => this.0.dateIssued,
-                                                   this.0.dateCreated.type() == "array"   => this.0.dateCreated.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
-                                                   this.0.dateCreated.type() == "object"  => this.0.dateCreated."#text",
-                                                   this.0.dateCreated.type() == "string"  => this.0.dateCreated,
-                                                   this.0.dateCaptured.type() == "array"  => this.0.dateCaptured.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
-                                                   this.0.dateCaptured.type() == "object" => this.0.dateCaptured."#text",
-                                                   this.0.dateCaptured.type() == "string" => this.0.dateCaptured,
-                                                   this.0.dateOther.type() == "array"     => this.0.dateOther.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
-                                                   this.0.dateOther.type() == "object"    => this.0.dateOther."#text",
-                                                   this.0.dateOther.type() == "string"    => this.0.dateOther,
+                    let first = this.0
+                    root.publicationYear = match { $first.dateIssued.type() == "array"    => $first.dateIssued.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
+                                                   $first.dateIssued.type() == "object"   => $first.dateIssued."#text",
+                                                   $first.dateIssued.type() == "string"   => $first.dateIssued,
+                                                   $first.dateCreated.type() == "array"   => $first.dateCreated.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
+                                                   $first.dateCreated.type() == "object"  => $first.dateCreated."#text",
+                                                   $first.dateCreated.type() == "string"  => $first.dateCreated,
+                                                   $first.dateCaptured.type() == "array"  => $first.dateCaptured.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
+                                                   $first.dateCaptured.type() == "object" => $first.dateCaptured."#text",
+                                                   $first.dateCaptured.type() == "string" => $first.dateCaptured,
+                                                   $first.dateOther.type() == "array"     => $first.dateOther.fold(null,x -> if x.value."-encoding".or("").lowercase() == "w3cdtf" { x.value."#text" | x.value.string() } else { x.tally.or(x.value."#text" | x.value.string()) }),
+                                                   $first.dateOther.type() == "object"    => $first.dateOther."#text",
+                                                   $first.dateOther.type() == "string"    => $first.dateOther,
                                                    _                                      => null }
               result_map: 'root.dataasee.publicationYear = this.publicationYear | deleted()'
 
@@ -116,9 +116,74 @@ processor_resources:
               request_map: 'root = this.genre.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let prefer = this.filter(x -> x."#text".or(x.string()).lowercase() == "text").0.catch(this.0)
-                    root.resourceType = $prefer."#text" | $prefer.string()
+                    let first = this
+                    let first = this.filter(x -> x."#text".or(x.string()).lowercase() == "text").not_empty().catch($first).0
+                    root.resourceType = $first."#text" | $first.string()
               result_map: 'root.dataasee.resourceType = this.resourceType'
+
+            'version':
+              request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let first = this.0.edition
+                    root.version = $first."#text" | $first.string()
+              result_map: 'root.dataasee.version = this.version'
+
+            'language':
+              request_map: 'root = this.language.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let first = this.0.languageTerm
+                    root.language = $first."#text" | $first.string()
+              result_map: 'root.dataasee.language = this.language'
+
+            'license':
+              request_map: 'root = this.accessCondition.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let first = this.filter(x -> x.exists("-href") || x.exists("-valueURI")).not_empty().0.catch(null)
+                    root.license = $first."-href" | $first."-valueURI"
+              result_map: 'root.dataasee.license = this.license | deleted()'
+
+            # Concatenated Strings
+
+            'description':
+              request_map: 'root = this.abstract.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = "\n---\n"
+                    root.description = this.map_each(x -> x."#text" | x.string()).join($sep)
+              result_map: 'root.dataasee.description = this.description'
+
+            'rights':
+              request_map: 'root = this.accessCondition.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = "\n---\n"
+                    root.rights = this.map_each(x -> x."#text" | x.string()).join($sep)
+              result_map: 'root.dataasee.rights = this.rights'
+
+            'keywords':
+              request_map: 'root = this.subject.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = ","
+                    let keywords = this.map_each(x -> x.filter(y -> y.key.re_match("topic|geographic|temporal|genre|occupation")).values()).flatten().flatten()
+                    root.keywords = $keywords.filter(x -> !x.exists("-valueURI")).map_each(x -> x."#text" | x.string()).join($sep)
+              result_map: 'root.dataasee.keywords = this.keywords'
+
+            # Array
+
+            'creators':
+              request_map: 'root = this.name.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let creators = this.filter(x -> x.exists("displayForm") || x.exists("namePart"))
+                    root.creators = $creators.map_each(x -> { "name": x.displayForm."#text" | x.displayForm | x.namePart."#text" | x.namePart.fold("",y -> match y.value { this."-type" == "family" => this."#text" + y.tally,
+                                                                                                                                                                           this."-type" == "given"  => y.tally + ", " + this."#text",
+                                                                                                                                                                           _                        => y.tally }).catch(x.namePart.string()),
+                                                              "data": x.nameIdentifier."#text" | x.nameIdentifier | x."-valueURI" | deleted() })
+              result_map: 'root.dataasee.creators = this.creators.not_empty().catch(deleted())'
 
             'identifiers':
               request_map: 'root = this.identifier.not_null().array().not_empty().catch(deleted())'
@@ -132,124 +197,97 @@ processor_resources:
               request_map: 'root = this.titleInfo.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let subtitle = this.filter(x -> x.exists("subTitle")).map_each(x -> { "name": "subtitle",
-                                                                                          "data": x.subTitle."#text" | x.subTitle.string() })
-                    let titles = this.filter(x -> x.exists("-type")).map_each(x -> { "name": x."-type",
-                                                                                     "data": x.title."#text" | x.title.string() })
-                    root.synonyms = $titles.concat($subtitle)
-
+                    let main = this.filter(x -> !x.exists("-type") && !x.exists("-otherType")).0.catch(null)
+                    let synonyms = this.filter(x -> x != $main).map_each(x -> { "type": x."-type" | x."-otherType" | "alternative",
+                                                                                "title": if x.exists("title") { [x.title.array().0."#text" | x.title.array().0.string()] } else { [] },
+                                                                                "subtitles": if x.exists("subTitle") { [x.subTitle.array().map_each(y -> y."#text" | y.string()).join(", ")] } else { [] },
+                                                                                "partnumbers": if x.exists("partNumber") { [x.partNumber.array().map_each(y -> y."#text" | y.string()).join(", ")] } else { [] },
+                                                                                "partnames": if x.exists("partName") { [x.partName.array().map_each(y -> y."#text" | y.string()).join(", ")] } else { [] } } )
+                    root.synonyms = if $synonyms.length() > 1 { $synonyms.map_each(x -> { "name": x.type,
+                                                                                          "data": x.title.concat(x.subtitles).concat(x.partnumbers).concat(x.partnames).join(" - ") }) } else { [] }
               result_map: 'root.dataasee.synonyms = this.synonyms.not_empty().catch(deleted())'
-
-            'language':
-              request_map: 'root = this.language.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    root.language = this.0.languageTerm."#text" | this.0.languageTerm.string()
-              result_map: 'root.dataasee.language = this.language | deleted()'
 
             'subjects':
               request_map: 'root = this.subject.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
                     let subjects = this.map_each(x -> x.filter(y -> y.key.re_match("topic|geographic|temporal|genre|occupation")).values()).flatten().flatten()
-
                     root.subjects = $subjects.map_each(x -> { "name": x."#text" | x.string(),
                                                               "data": x."-valueURI" })
               result_map: 'root.dataasee.subjects = this.subjects'
-
-            'version':
-              request_map: 'root = this.originInfo.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    root.version = this.0.edition."#text" | this.0.edition.string()
-              result_map: 'root.dataasee.version = this.version | deleted()'
-
-            'license':
-              request_map: 'root = this.accessCondition.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    let links = this.filter(x -> x.exists("-href") | x.exists("-valueURI"))
-                    root.license = $links.0."-href" | $links.0."-valueURI"
-              result_map: 'root.dataasee.license = this.license'
-
-            'rights':
-              request_map: 'root = this.accessCondition.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    let rights = this.filter(x -> !x.exists("-valueURI"))
-                    root.rights = $rights.0."#text" | $rights.0.string()
-              result_map: 'root.dataasee.rights = this.rights'
-
-            'description':
-              request_map: 'root = this.abstract.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    let sep = "\n---\n"
-                    root.description = this.fold("",x -> x.tally + x.value."#text" | x.value.string() + $sep).trim_suffix($sep)
-              result_map: 'root.dataasee.description = this.description'
-
-            'message':
-              request_map: 'root = this.note.not_null().array().not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    let sep = "\n---\n"
-                    root.message = this.fold("",x -> x.tally + x.value."#text" | x.value.string() + $sep).trim_suffix($sep)
-              result_map: 'root.dataasee.message = this.message'
 
             'externalItems':
               request_map: 'root = this.relatedItem.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let identifiers = this.filter(x -> x.identifer."-type".or("").lowercase().re_match(["doi","uri"].join("|")).catch(false)).append(this.0).0
-                    root.externalItems = this.map_each(x -> { "name": x."-type",
-                                                              "data": x."#text" | x.string() }).unique(x -> x.data)
-              result_map: 'root.dataasee.externalItems = this.externalItems'
+                    let external = this.filter(x -> x.exists("location") || x.exists("-href"))
+                    root.externalItems = $external.map_each(x -> { "name": x."-type" | "related",
+                                                                   "data": x.location.array().0.url.array().0."#text" | x.location.array().0.url.array().0 | x."-href" })
+              result_map: 'root.dataasee.externalItems = this.externalItems.not_empty().catch(deleted())'
+
+            # Object
 
             'related':
               request_map: 'root = this.relatedItem.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.related = this.fold({}, x -> x.tally.merge({ match x.value."-type" { "host"         => "isPartOf",
+                    let related = this.filter(x -> x.exists("identifier") || x.exists("recordInfo") || x.exists("-href"))
+                    let related = $related.map_each(x -> { "name": x."-type",
+                                                           "data": match x { this.exists("identifier") => this.identifier.array().0,
+                                                                             this.exists("recordInfo") => this.recordInfo.recordIdentifier,
+                                                                             this.exists("-href")      => this."-href" } })
+
+                    root.related = $related.fold({},x -> x.tally.merge({ match x.value.name { "host"         => "isPartOf",
                                                                                               "preceding"    => "isNewVersionOf",
                                                                                               "original"     => "isDerivedFrom",
                                                                                               "otherVersion" => "isDerivedFrom",
                                                                                               "otherFormat"  => "commonExpression",
-                                                                                              _              => "isRelatedTo" }: x.value.recordInfo.recordIdentifier."#text" | x.value.recordInfo.recordIdentifier.string() }))
+                                                                                              _              => "isRelatedTo" }: x.value.data."#text" | x.value.data.string() }))
               result_map: 'root.dataasee.related = this.related'
 
-            'name_1':  # TODO: add title from host if only number or even null
-              request_map: 'root = if !this.dataasee.exists("name") && this.exists("part") { this } else { deleted() }'
+            # Alternates
+
+            'name_1':
+              request_map: 'root = if this.dataasee.name == null { this.part.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
               processors:
                 - mapping: |
-                    root.name = this.part.text | this.part.text."#text" | this.part.detail.title | this.part.detail.title."#text" | this.part.detail.caption | this.part.detail.caption."#text"
+                    let detail = this.0.detail.array().0
+                    root.name = $detail.title."text" | $detail.title | $detail.caption."text" | $detail.caption
               result_map: 'root.dataasee.name = this.name | deleted()'
 
+            'publicationYear_1':
+              request_map: 'root = if this.dataasee.publicationYear == null { this.part.not_null().date.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
+              processors:
+                - mapping: |
+                    let first = this.0
+                    root.publicationYear = $first."#text" | $first.string()
+              result_map: 'root.dataasee.publicationYear = this.publicationYear'
+
+            'resourceType_1':
+              request_map: 'root = if this.dataasee.resourceType == null { this.typeOfResource.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
+              processors:
+                - mapping: |
+                    let first = this.0
+                    root.resourceType = $first."#text" | $first.string()
+              result_map: 'root.dataasee.resourceType = this.resourceType | deleted()'
+
             'creators_1':
-              request_map: 'root = if !this.dataasee.exists("creators") { this.relatedItem.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
+              request_map: 'root = if this.dataasee.creators == null { this.relatedItem.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
               processors:
                 - mapping: |
                     let host = this.filter(x -> x."-type" == "host")
-
                     let otherFormat = this.filter(x -> x."-type" == "otherFormat")
-
                     let related = match { $host != []        => $host.0.name.array(),
                                           $otherFormat != [] => $otherFormat.0.name.array(),
                                           _                  => [] }.filter(x -> x.exists("displayForm") || x.exists("namePart"))
 
-                    root.creators = $related.map_each(x -> { "name": x.displayForm."#text" | x.displayForm | x.namePart."#text" | x.namePart.fold("",y -> match { this.type == "family" => y.value."#text" + y.tally,
-                                                                                                                                                                  this.type == "given"  => y.tally + ", " + y.value,
-                                                                                                                                                                  _                     => y.tally }).catch(x.namePart.string()),
-                                                             "data": x.nameIdentifier."#text" | x."-valueURI" | deleted() })
+                    root.creators = $related.map_each(x -> { "name": x.displayForm."#text" | x.displayForm | x.namePart."#text" | x.namePart.fold("",y -> match { this."-type" == "family" => y.value."#text" + y.tally,
+                                                                                                                                                                  this."-type" == "given"  => y.tally + ", " + y.value."#text",
+                                                                                                                                                                  _                        => y.tally }).catch(x.namePart.string()),
+                                                             "data": x.nameIdentifier."#text" | x.nameIdentifier | x."-valueURI" | deleted() })
               result_map: 'root.dataasee.creators = this.creators.not_empty().catch(deleted())'
 
-            'publicationYear_1':
-              request_map: 'root = if !this.dataasee.exists("publicationYear") && this.exists("part") { this } else { deleted() }'
-              processors:
-                - mapping: |
-                    let date = this.part.date."#text" | this.part.date
-
-                    root.publicationYear = if $date.type() == "string" && $date.slice(0,4).re_match("^-?[1-9]\\d{0,3}$") { $date.slice(0,4).number() } else { null }
-              result_map: 'root.dataasee.publicationYear = this.publicationYear'
+            # Additionals
 
             'identifiers_1':
               request_map: 'root = this.recordInfo.not_null().array().not_empty().catch(deleted())'
@@ -259,12 +297,31 @@ processor_resources:
                                                             "data": x.recordIdentifier."#text" | x.recordIdentifier.string() })
               result_map: 'root.dataasee.identifiers = root.dataasee.identifiers.or([]).concat(this.identifiers)'
 
-            'resourceType_1':
-              request_map: 'root = if !this.dataasee.exists("resourceType") { this.typeOfResource.not_null().array().not_empty().catch(deleted()) } else { deleted() }'
+            'subjects_1':
+              request_map: 'root = this.classification.not_null().array().not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.resourceType = this.0."#text" | this.0
-              result_map: 'root.dataasee.resourceType = this.resourceType | deleted()'
+                    root.subjects = this.filter(x -> x.exists("-valueURI")).map_each(x -> { "name": x."#text" | x.string(),
+                                                                                            "data": x."-valueURI" })
+              result_map: 'root.dataasee.subjects = root.dataasee.subjects.or([]).concat(this.subjects)'
+
+            'keywords_1':
+              request_map: 'root = this.classification.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = ","
+                    root.keywords = this.filter(x -> !x.exists("-valueURI")).map_each(x -> x."#text" | x.string()).join($sep)
+              result_map: 'root.dataasee.keywords = (root.dataasee.keywords.or("") + "," + this.keywords).trim(",")'
+
+            'description_1':
+              request_map: 'root = this.note.not_null().array().not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    let sep = "\n---\n"
+                    root.description = this.map_each(x -> x."#text" | x.string()).join($sep)
+              result_map: 'root.dataasee.description = (root.dataasee.description.or("") + "\n---\n" + this.description).trim("\n---\n")'
+
+            # Finalize
 
             'gather':
               request_map: 'root = this'

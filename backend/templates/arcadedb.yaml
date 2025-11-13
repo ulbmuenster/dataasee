@@ -53,6 +53,7 @@ mapping: |
   root.branch.request_map = this.request
 
   root.branch.processors = [{}]
+  root.branch.processors.0.label = @label + "_http"
   root.branch.processors.0.http.url = "http://" + this.host + ":" + this.port.string() + "/api/v1/" + this.endpoint + "/" + this.database
   root.branch.processors.0.http.verb = if this.endpoint.re_match("(?i)(exists)") { "GET" } else { "POST" }
   root.branch.processors.0.http.basic_auth.enabled = true
@@ -60,6 +61,6 @@ mapping: |
   root.branch.processors.0.http.basic_auth.password = file(this.password).string()
   root.branch.processors.0.http.retries = this.retries
   root.branch.processors.0.http.successful_on = if this.silent { [500] } else { [] }
-  root.branch.processors.0.http.timeout = "30s"
+  root.branch.processors.0.http.timeout = "400s"
 
   root.branch.result_map = this.response

@@ -4,9 +4,9 @@
 
   "title": "DatAasee API Endpoint Parameters", "type": "object", "properties": {
 
-    "params": { "type": "string", "title": "URI Parameter", "enum": ["api", "attributes", "metadata"] },
+    "params": { "type": "string", "title": "URI Parameter", "enum": ["api", "enums", "metadata"] },
 
     "request": { "type": "string", "title": "Request Body", "enum": ["ingest", "insert"] },
 
-    "response": { "type": "string", "title": "Response Body", "enum": ["api", "attributes", "backup", "health", "ingest", "insert", "metadata", "ready", "schema", "stats", "sources"] } }
+    "response": { "type": "string", "title": "Response Body", "enum": ["api", "enums", "backup", "health", "ingest", "insert", "metadata", "ready", "schema", "stats", "sources"] } }
 }

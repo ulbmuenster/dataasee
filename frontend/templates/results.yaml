@@ -18,20 +18,47 @@ areas:
         properties:
           content: "Results"
           level: 2
+        layout:
+          span: 6
+## Results Metadata Legend
+      - id: "results_legend"
+        type: "Alert"
+        properties:
+          message: "🟩 (green) all mandatory and optional DataCite properties valid. 🟨 (yellow) mandatory DataCite properties valid. 🟥 (red) not all mandatatory DataCite properties valid."
+          showIcon: false
+        layout:
+          span: 18
+        style:
+          text-align: "center"
 ## Results List
       - id: "results_list"
         type: "List"
         blocks:
-          - id: "results_list.$"
-            type: "Anchor"
-            layout:
-              span: 22
+          - id: "results_wrapper.$"
+            type: "Tooltip"
             properties:
-              href:
-                _state: "results_list.$.href"
-              strong: true
               title:
-                _state: "results_list.$.title"
+                _switch:
+                  branches:
+                    - if:
+                        _eq:
+                          - _string.toLowerCase:
+                              _request: "search_request.data.data.$.attributes.metadataQuality"
+                          - "ok"
+                      then: "Metadata Quality: OK"
+                    - if:
+                        _eq:
+                          - _string.toLowerCase:
+                              _request: "search_request.data.data.$.attributes.metadataQuality"
+                          - "good"
+                      then: "Metadata Quality: Good"
+                    - if:
+                        _eq:
+                          - _array.length:
+                              _request: "search_request.data.data"
+                          - 0
+                      then: ""
+                  default: "Metadata Quality: Incomplete"
             style:
               padding: "0.5%"
               background-color:
@@ -52,48 +79,45 @@ areas:
                               - "good"
                           then:
                             _global: "success"
+                        - if:
+                            _eq:
+                              - _array.length:
+                                  _request: "search_request.data.data"
+                              - 0
+                          then:
+                            _global: "special"
                       default:
                         _global: "error"
                   - "40"  # 75% Transparent
-          - id: "results_doi.$"
-            type: "Anchor"
-            layout:
-              span: 2
-            properties:
-              href:
-                _state: "results_list.$.doi"
-              strong: true
-              title: " → DOI"
-              style:
-                font-size: "large"
-                font-weight: "bold"
-              disabled:
-                _eq:
-                  - _state: "results_list.$.doi"
-                  - null
-            style:
-              padding: "0.5%"
-              background-color:
-                _string.concat:
-                  - _switch:
-                      branches:
-                        - if:
-                            _eq:
-                              - _string.toLowerCase:
-                                  _request: "search_request.data.data.$.attributes.metadataQuality"
-                              - "ok"
-                          then:
-                            _global: "warning"
-                        - if:
-                            _eq:
-                              - _string.toLowerCase:
-                                  _request: "search_request.data.data.$.attributes.metadataQuality"
-                              - "good"
-                          then:
-                            _global: "success"
-                      default:
-                        _global: "error"
-                  - "40"  # 75% Transparent
+            blocks:
+              - id: "results_list.$"
+                type: "Anchor"
+                layout:
+                  span: 22
+                properties:
+                  href:
+                    _state: "results_list.$.href"
+                  strong: true
+                  title:
+                    _state: "results_list.$.title"
+
+              - id: "results_doi.$"
+                type: "Anchor"
+                layout:
+                  span: 2
+                properties:
+                  href:
+                    _state: "results_list.$.doi"
+                  newTab: true
+                  strong: true
+                  title: " → DOI"
+                  style:
+                    font-size: "large"
+                    font-weight: "bold"
+                visible:
+                  _ne:
+                    - _state: "results_list.$.doi"
+                    - null
           - id: "results_div.$"
             type: "Divider"
 ## Results Paging  NOTE: the values are wrapped in objects because the ButtonSelector expects unique values among buttons.

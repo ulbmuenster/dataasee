@@ -2,5 +2,6 @@
   "source": "http://host.docker.internal:9876/ingest-datacite.xml",
   "method": "get",
   "format": "datacite",
-  "steward": "little"
+  "steward": "little",
+  "rights": "CC0"
 }

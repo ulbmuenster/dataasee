@@ -6,7 +6,6 @@ processor_resources:
       - cached:
           cache: 'global_cache'
           key: 'sources'
-          ttl: '1h'
           processors:
             - label: 'handler_sources__arcadedb_query'
               arcadedb:
@@ -18,17 +17,15 @@ processor_resources:
                 password: '${DB_PASS}'
                 request: |
                   root.language = "sql"
-                  root.command = """SELECT source AS name,
-                                           metadataFormat AS format,
-                                           max(createdAt.format('YYYY-MM-dd')) AS date
-                                    FROM metadata
-                                    GROUP BY name, format"""
+                  root.command = """SELECT data AS source, name AS date, $fmt[0].metadataFormat.ifnull("dataasee") AS format FROM sources
+                                    LET fmt = (SELECT metadataFormat FROM metadata WHERE source = $parent.$current.@rid LIMIT 1)"""
                 response: |
-                  root.data.type = "data"
+                  root.data.type = "support"
                   root.data.id = timestamp_unix().string()
                   root.data.attributes.sources = this.result
 
       - catch:
           - mapping: |
               meta status = "500"
-              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]
+              root.errors = [ { "title": "Server Error: Internal Server Error",
+                                "detail": "Database error." } ]

@@ -44,4 +44,5 @@ processor_resources:
           - processors:
               - mapping: |
                   meta status = "503"
-                  root.errors = [ { "title": "Server Error: Service Unavailable", "detail": "Service not ready." } ]
+                  root.errors = [ { "title": "Server Error: Service Unavailable",
+                                    "detail": "Service not ready." } ]

@@ -6,7 +6,6 @@ processor_resources:
       - cached:
           cache: 'global_cache'
           key: 'stats'
-          ttl: '1m'
           processors:
             - label: 'handler_stats__arcadedb_query'
               arcadedb:
@@ -17,85 +16,34 @@ processor_resources:
                 username: '${DB_USER}'
                 password: '${DB_PASS}'
                 request: |
-                  root.language = "sql"
-                  root.command = """SELECT $total[0].count AS total,
-                                           $resourceTypes AS resourceTypes,
-                                           $licenses AS licenses,
-                                           $languages AS languages,
-                                           $categories AS categories,
-                                           $subjects AS subjects,
-                                           $schemas AS schemas,
-                                           $views AS views,
-                                           $keywords AS keywords,
-                                           $years AS years
-                                    LET $total = (SELECT count(name) AS count
-                                                  FROM metadata),
-                                        $resourceTypes = (SELECT ifnull(resourceType.name,'Unknown') AS name,
-                                                                 count(*) AS value
-                                                          FROM metadata
-                                                          GROUP BY resourceType
-                                                          ORDER BY value DESC
-                                                          LIMIT 100),
-                                        $licenses = (SELECT ifnull(license.name,'Unknown') AS name,
-                                                            count(*) AS value
-                                                     FROM metadata
-                                                     GROUP BY license
-                                                     ORDER BY value DESC
-                                                     LIMIT 100),
-                                        $languages = (SELECT ifnull(language.name,'Unknown') AS name,
-                                                             count(*) AS value
-                                                      FROM metadata
-                                                      GROUP BY language
-                                                      ORDER BY value DESC
-                                                      LIMIT 100),
-                                        $categories = (SELECT ifnull(categories.asRID().name,'None') AS name,
-                                                              count(*) AS value
-                                                       FROM (SELECT categories
-                                                             FROM metadata
-                                                             UNWIND categories)
-                                                       GROUP BY categories
-                                                       ORDER BY value DESC
-                                                       LIMIT 100),
-                                        $subjects = (SELECT ifnull(subjects.name,'Unknown') AS name,
-                                                            count(*) AS value
-                                                     FROM (SELECT subjects
-                                                           FROM metadata
-                                                           UNWIND subjects)
-                                                     GROUP BY subjects
-                                                     ORDER BY value DESC
-                                                     LIMIT 100),
-                                        $schemas = (SELECT ifnull(metadataFormat,'None') AS name,
-                                                           count() AS value
-                                                    FROM metadata
-                                                    GROUP BY name
-                                                    ORDER BY value DESC
-                                                    LIMIT 100),
-                                        $views = (SELECT recordId AS name,
-                                                         numberViews AS value
-                                                  FROM metadata
-                                                  ORDER BY value DESC
-                                                  LIMIT 10),
-                                        $keywords = (SELECT keywords AS name,
-                                                            count(*) AS value
-                                                     FROM (SELECT keywords.toLowerCase().split(',').transform('trim') AS keywords
-                                                           FROM metadata
-                                                           WHERE keywords != ""
-                                                           UNWIND keywords)
-                                                     GROUP BY keywords
-                                                     ORDER BY value DESC
-                                                     LIMIT 10),
-                                        $years = (SELECT ifnull(publicationYear.asString(),'Unknown') AS name,
-                                                         count(*) AS value
-                                                  FROM metadata
-                                                  GROUP BY publicationYear
-                                                  ORDER BY value DESC
-                                                  LIMIT 10)"""
+                  root.language = "sqlscript"
+                  root.command = """LET $total = (SELECT count(*) AS count FROM metadata);
+                                    LET $resourceTypes = (SELECT resourceType, count(*) AS value FROM metadata GROUP BY resourceType ORDER BY value DESC LIMIT 100);
+                                    LET $licenses = (SELECT license, count(*) AS value FROM metadata GROUP BY license ORDER BY value DESC LIMIT 100);
+                                    LET $languages = (SELECT language, count(*) AS value FROM metadata GROUP BY language ORDER BY value DESC LIMIT 100);
+                                    LET $categories = (SELECT categories, count(*) AS value FROM (SELECT categories FROM metadata UNWIND categories) GROUP BY categories ORDER BY value DESC LIMIT 100);
+                                    LET $subjects = (SELECT subjects, count(*) AS value FROM (SELECT subjects FROM metadata UNWIND subjects) GROUP BY subjects.name ORDER BY value DESC LIMIT 100);
+                                    LET $schemas = (SELECT metadataFormat, count(*) AS value FROM metadata GROUP BY metadataFormat ORDER BY value DESC LIMIT 100);
+                                    LET $views = (SELECT recordId, numberViews AS value FROM metadata ORDER BY value DESC LIMIT 10);
+                                    LET $years = (SELECT publicationYear, count(*) AS value FROM metadata GROUP BY publicationYear ORDER BY value DESC LIMIT 10);
+                                    LET $keywords = (SELECT keywords, count(*) AS value FROM (SELECT keywords.toLowerCase().split(',').transform('trim') AS keywords FROM metadata WHERE keywords != "" UNWIND keywords) GROUP BY keywords ORDER BY value DESC LIMIT 10);
+                                    SELECT $total[0].count AS total,
+                                           $resourceTypes:{ifnull(resourceType.name,'Unknown') AS name,value} AS resourceTypes,
+                                           $licenses:{ifnull(license.name,'Unknown') AS name,value} AS licenses,
+                                           $languages:{ifnull(language.name,'Unknown') AS name,value} AS languages,
+                                           $categories:{ifnull(categories.asRID().name,'Unknown') AS name,value} AS categories,
+                                           $subjects:{ifnull(subjects.name,'Unknown') AS name,value} AS subjects,
+                                           $schemas:{ifnull(metadataFormat,'Unknown') AS name,value} AS schemas,
+                                           $views:{ifnull(recordId,'Unknown') AS name,value} AS views,
+                                           $keywords:{ifnull(keywords,'Unknown') AS name,value} AS keywords,
+                                           $years:{ifnull(publicationYear.asString(),'Unknown') AS name,value} AS years"""
                 response: |
-                  root.data.type = "data"
+                  root.data.type = "support"
                   root.data.id = timestamp_unix().string()
                   root.data.attributes = this.result.0
 
       - catch:
           - mapping: |
               meta status = "500"
-              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]
+              root.errors = [ { "title": "Server Error: Internal Server Error",
+                                "detail": "Database error." } ]

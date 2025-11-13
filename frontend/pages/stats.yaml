@@ -26,7 +26,7 @@ requests:
       timeout: 20000
 
 events:
-  onMount:
+  onMountAsync:
     - id: "ready_enter"
       type: "Request"
       params: "ready_request"
@@ -59,10 +59,20 @@ areas:
                   content:
                     _string.concat:
                       - "Total Metadata Records: "
-                      - _if_none:
-                          - _request: "stats_request.data.data.attributes.total"
-                          - "[ᴄᴏᴜɴᴛɪɴɢ]"
+                      - _request: "stats_request.data.data.attributes.total"
                   level: 4
+                visible:
+                  _ne:
+                    - _request: "stats_request.data.data.attributes.total"
+                    - null
+              - id: "shares_loading"
+                type: "Spinner"
+                properties:
+                  size: "large"
+                visible:
+                  _eq:
+                    - _request: "stats_request.data.data.attributes.total"
+                    - null
 ## Top-10 Title
               - id: "top10_card"
                 type: "Card"

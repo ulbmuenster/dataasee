@@ -2,5 +2,6 @@
   "source": "http://host.docker.internal:9876/ingest-mods.xml",
   "method": "get",
   "format": "mods",
-  "steward": "little"
+  "steward": "little",
+  "rights": "CC0"
 }

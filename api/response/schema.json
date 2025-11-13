@@ -3,12 +3,12 @@
   "$id": "dataasee:api?response=schema",
 
   "title": "DatAasee Schema Endpoint Response", "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
-  
+
                                                                               { "required": ["errors", "meta", "links"] } ], "properties": {
 
     "data": { "type": "object", "description": "See: https://jsonapi.org/format/#document-resource-objects", "required": ["type", "id", "attributes"], "properties": {
 
-      "type": { "type": "string", "const": "metadata" },
+      "type": { "type": "string", "const": "support" },
 
       "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
 
@@ -21,19 +21,19 @@
         "additionalProperties": { "type": "object", "required": ["label"], "properties": {
 
           "label": { "type": "string", "title": "Property Label" },
-                  
+
           "altlabel": { "type": "string", "title": "Reverse Property Label" },
-          
+
           "comment": { "type": "string", "title": "Property Description" } } } } } } },
 
     "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
 
       "items": { "type": "object", "description": "See: https://jsonapi.org/format/#error-objects", "required": ["title", "detail"], "properties": {
-    
+
         "title": { "type": "string" },
-    
+
         "detail": { "type": "string" },
-            
+
         "links": { "type": "object",
 
           "additionalProperties": { "type": "string" } } } } },

@@ -1,156 +1,284 @@
 <collection>
-	<record>
-		<leader>
-			01142cam 2200301 a 4500
-		</leader>
-		<controlfield tag="001">
-			92005291
-		</controlfield>
-		<controlfield tag="003">
-			DLC
-		</controlfield>
-		<controlfield tag="005">
-			19930521155141.9
-		</controlfield>
-		<controlfield tag="008">
-			920219s1993    caua   j      000 0 eng
-		</controlfield>
-		<datafield tag="010" ind1=" " ind2=" ">
-			<subfield code="a">
-				92005291
-			</subfield>
-		</datafield>
-		<datafield tag="020" ind1=" " ind2=" ">
-			<subfield code="a">
-				0152038655 :
-			</subfield>
-			<subfield code="c">
-				$15.95
-			</subfield>
-		</datafield>
-		<datafield tag="040" ind1=" " ind2=" ">
-			<subfield code="a">
-				DLC
-			</subfield>
-			<subfield code="c">
-				DLC
-			</subfield>
-			<subfield code="d">
-				DLC
-			</subfield>
-		</datafield>
-		<datafield tag="042" ind1=" " ind2=" ">
-			<subfield code="a">
-				lcac
-			</subfield>
-		</datafield>
-		<datafield tag="050" ind1="0" ind2="0">
-			<subfield code="a">
-				PS3537.A618
-			</subfield>
-			<subfield code="b">
-				A88 1993
-			</subfield>
-		</datafield>
-		<datafield tag="082" ind1="0" ind2="0">
-			<subfield code="a">
-				811/.52
-			</subfield>
-			<subfield code="2">
-				20
-			</subfield>
-		</datafield>
-		<datafield tag="100" ind1="1" ind2=" ">
-			<subfield code="a">
-				Sandburg, Carl,
-			</subfield>
-			<subfield code="d">
-				1878-1967.
-			</subfield>
-		</datafield>
-		<datafield tag="245" ind1="1" ind2="0">
-			<subfield code="a">
-				Arithmetic /
-			</subfield>
-			<subfield code="c">
-				Carl Sandburg ; illustrated as an anamorphic adventure by Ted Rand.
-			</subfield>
-		</datafield>
-		<datafield tag="250" ind1=" " ind2=" ">
-			<subfield code="a">
-				1st ed.
-			</subfield>
-		</datafield>
-		<datafield tag="260" ind1=" " ind2=" ">
-			<subfield code="a">
-				San Diego :
-			</subfield>
-			<subfield code="b">
-				Harcourt Brace Jovanovich,
-			</subfield>
-			<subfield code="c">
-				c1993.
-			</subfield>
-		</datafield>
-		<datafield tag="300" ind1=" " ind2=" ">
-			<subfield code="a">
-				1 v. (unpaged) :
-			</subfield>
-			<subfield code="b">
-				ill. (some col.) ;
-			</subfield>
-			<subfield code="c">
-				26 cm.
-			</subfield>
-		</datafield>
-		<datafield tag="500" ind1=" " ind2=" ">
-			<subfield code="a">
-				One Mylar sheet included in pocket.
-			</subfield>
-		</datafield>
-		<datafield tag="520" ind1=" " ind2=" ">
-			<subfield code="a">
-				A poem about numbers and their characteristics. Features anamorphic, or distorted, drawings which can be restored to normal by viewing from a particular angle or by viewing the image's reflection in the provided Mylar cone.
-			</subfield>
-		</datafield>
-		<datafield tag="650" ind1=" " ind2="0">
-			<subfield code="a">
-				Arithmetic
-			</subfield>
-			<subfield code="x">
-				Juvenile poetry.
-			</subfield>
-		</datafield>
-		<datafield tag="650" ind1=" " ind2="0">
-			<subfield code="a">
-				Children's poetry, American.
-			</subfield>
-		</datafield>
-		<datafield tag="650" ind1=" " ind2="1">
-			<subfield code="a">
-				Arithmetic
-			</subfield>
-			<subfield code="x">
-				Poetry.
-			</subfield>
-		</datafield>
-		<datafield tag="650" ind1=" " ind2="1">
-			<subfield code="a">
-				American poetry.
-			</subfield>
-		</datafield>
-		<datafield tag="650" ind1=" " ind2="1">
-			<subfield code="a">
-				Visual perception.
-			</subfield>
-		</datafield>
-		<datafield tag="700" ind1="1" ind2=" ">
-			<subfield code="a">
-				Rand, Ted,
-			</subfield>
-			<subfield code="e">
-				ill.
-			</subfield>
-		</datafield>
-	</record>
+
+  <record>
+    <controlfield tag="001">ishar1</controlfield>
+    <controlfield tag="003">recordid</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">10.5555/mobyid-1003</subfield></datafield>
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">3430921017028</subfield></datafield>
+
+    <datafield tag="041" ind1="" ind2=""><subfield code="a">en</subfield></datafield>
+
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Einsweiler, Pascal</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Pernot, Michel</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Rocques, André</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Rocques, Louis-Marie</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Charter, Jean-Christophe</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Hautecloque, Fabrice</subfield></datafield>
+
+    <datafield tag="210" ind1="0" ind2="0"><subfield code="a">Ishar 1</subfield></datafield>
+    <datafield tag="245" ind1="0" ind2="0"><subfield code="a">Ishar: Legend of the Fortress</subfield></datafield>
+    <datafield tag="246" ind1="0" ind2="0"><subfield code="a">Ishar I</subfield></datafield>
+
+    <datafield tag="250" ind1="" ind2=""><subfield code="a">DOS</subfield></datafield>
+
+    <datafield tag="260" ind1="3" ind2="">
+      <subfield code="b">Silmarils</subfield>
+      <subfield code="c">1992</subfield>
+    </datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Computer Game</subfield></datafield>
+
+    <datafield tag="506" ind1="1" ind2=""><subfield code="u">https://rightsstatements.org/vocab/InC/1.0/</subfield></datafield>
+    <datafield tag="506" ind1="1" ind2=""><subfield code="a">Cover Art: Mark Harrison</subfield></datafield>
+
+    <datafield tag="520" ind1="" ind2=""><subfield code="a">Ishar a mysterious fortress haunted by a brooding evil, spreading corruption and decay throughout the kingdom.</subfield></datafield>
+
+    <datafield tag="653" ind1="" ind2="">
+      <subfield code="a">cRPG</subfield>
+      <subfield code="a">Urshurak</subfield>
+    </datafield>
+
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">Fantasy</subfield><subfield code="0">https://www.mobygames.com/genre/fantasy/</subfield></datafield>
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">Role-Play</subfield><subfield code="0">https://www.mobygames.com/genre/role-playing-rpg/</subfield></datafield>
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">First-Person</subfield><subfield code="0">https://www.mobygames.com/genre/1st-person/</subfield></datafield>
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">Real-Time</subfield><subfield code="0">https://www.mobygames.com/genre/real-time/</subfield></datafield>
+
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://en.wikipedia.org/wiki/Ishar:_Legend_of_the_Fortress</subfield></datafield>
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://www.mobygames.com/game/1003/ishar-legend-of-the-fortress/</subfield></datafield>
+  </record>
+
+  <record>
+    <controlfield tag="001">ishar2</controlfield>
+    <controlfield tag="003">recordid</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">10.5555/mobyid-7701</subfield></datafield>
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">5025904008025</subfield></datafield>
+
+    <datafield tag="041" ind1="" ind2=""><subfield code="a">ENG</subfield></datafield>
+
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Einsweiler, Pascal</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Pernot, Michel</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Rocques, André</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Rocques, Louis-Amris</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Charter, Jean-Christophe</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Hautecloque, Fabrice</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Galand, Eric</subfield></datafield>
+    <datafield tag="700" ind1="3" ind2=""><subfield code="a">Mathiot, Stephane</subfield></datafield>
+
+    <datafield tag="210" ind1="0" ind2="0"><subfield code="a">Ishar 2</subfield></datafield>
+    <datafield tag="245" ind1="0" ind2="0"><subfield code="a">Ishar 2: Messengers of Doom</subfield></datafield>
+    <datafield tag="246" ind1="0" ind2="0"><subfield code="a">Ishar II</subfield></datafield>
+    <datafield tag="247" ind1="0" ind2="0"><subfield code="a">Ishar 2: Legions of Chaos</subfield></datafield>
+
+    <datafield tag="250" ind1="" ind2=""><subfield code="a">DOS</subfield></datafield>
+
+    <datafield tag="260" ind1="3" ind2="">
+      <subfield code="b">Silmarils</subfield>
+      <subfield code="c">1993</subfield>
+    </datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Computer Game</subfield></datafield>
+
+    <datafield tag="506" ind1="1" ind2=""><subfield code="u">https://rightsstatements.org/vocab/InC/1.0/</subfield></datafield>
+
+    <datafield tag="520" ind1="" ind2=""><subfield code="a">Following the incredible success of ISHAR, Silmarils bring you a new unmissable RPG, even closer to reality.</subfield></datafield>
+
+    <datafield tag="540" ind1="1" ind2=""><subfield code="a">Cover Art: Timo Hildebrandt</subfield></datafield>
+
+    <datafield tag="653" ind1="" ind2="">
+      <subfield code="a">cRPG</subfield>
+    </datafield>
+
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">Fantasy</subfield></datafield>
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">RPG</subfield></datafield>
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">1st-Person</subfield></datafield>
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">Realtime</subfield></datafield>
+
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">10.5555/mobyid-1003</subfield></datafield>
+
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://en.wikipedia.org/wiki/Ishar_2:_Messengers_of_Doom</subfield></datafield>
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://www.mobygames.com/game/7701/ishar-2-messengers-of-doom/</subfield></datafield>
+  </record>
+
+  <record>
+    <controlfield tag="001">ishar3</controlfield>
+    <controlfield tag="003">recordid</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="020" ind1="" ind2=""><subfield code="a">1551880059</subfield></datafield>
+
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">10.5555/mobyid-7702</subfield></datafield>
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">3430920025017</subfield></datafield>
+
+    <datafield tag="041" ind1="" ind2=""><subfield code="a">English</subfield></datafield>
+
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Pascal Einsweiler</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Michel Pernot</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Jean-François Trevien</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Guillaume Maginot</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">André Rocques</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Louis-Marie Rocques</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Jean-Christophe Charter</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Fabrice Hautecloque</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Eric Galand</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Cécile Guyard</subfield></datafield>
+
+    <datafield tag="210" ind1="0" ind2="0"><subfield code="a">Ishar 3</subfield></datafield>
+    <datafield tag="245" ind1="0" ind2="0"><subfield code="a">Ishar 3: Seven Gates of Infinity</subfield></datafield>
+    <datafield tag="246" ind1="0" ind2="0"><subfield code="a">Ishar III</subfield></datafield>
+    <datafield tag="247" ind1="0" ind2="0"><subfield code="a">Ishar 3: Alliance of Evil</subfield></datafield>
+
+    <datafield tag="250" ind1="" ind2=""><subfield code="a">DOS</subfield></datafield>
+
+    <datafield tag="260" ind1="3" ind2="">
+      <subfield code="b">Silmarils</subfield>
+      <subfield code="c">1994</subfield>
+    </datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Computer Game</subfield></datafield>
+
+    <datafield tag="540" ind1="1" ind2=""><subfield code="u">https://rightsstatements.org/vocab/InC/1.0/</subfield></datafield>
+
+    <datafield tag="520" ind1="" ind2=""><subfield code="a">The shadows of chaos once more darken the spires of the citadel, for the evil spirit of Shandar seeks reincarnation in the vast body of the lord of Sith - last and most powerful of the ancient black dragons.</subfield></datafield>
+
+    <datafield tag="653" ind1="" ind2="">
+      <subfield code="a">cRPG</subfield>
+      <subfield code="a">time-travel</subfield>
+    </datafield>
+
+    <datafield tag="655" ind1="" ind2=""><subfield code="a">Fantasy</subfield></datafield>
+    <datafield tag="655" ind1="" ind2=""><subfield code="a">Role-Play</subfield></datafield>
+    <datafield tag="655" ind1="" ind2=""><subfield code="a">First-Person</subfield></datafield>
+    <datafield tag="655" ind1="" ind2=""><subfield code="a">Real-Time</subfield></datafield>
+
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">10.5555/mobyid-7701</subfield></datafield>
+
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://en.wikipedia.org/wiki/Ishar_3:_The_Seven_Gates_of_Infinity</subfield></datafield>
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://www.mobygames.com/game/7702/ishar-3-the-seven-gates-of-infinity/</subfield></datafield>
+  </record>
+
+  <record>
+    <controlfield tag="001">ishar3e</controlfield>
+    <controlfield tag="003">recordid</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="130" ind1="0" ind2=""><subfield code="a">Ishar 3 Elite Team</subfield></datafield>
+
+    <datafield tag="260" ind1="3" ind2="">
+      <subfield code="b">Silmarils</subfield>
+      <subfield code="c">[1994]</subfield>
+    </datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Addon</subfield></datafield>
+
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">ishar3</subfield></datafield>
+
+    <datafield tag="856" ind1="4" ind2="0"><subfield code="u">http://doi.org/10.5555/elite-team.sav</subfield></datafield>
+  </record>
+
+  <record>
+    <controlfield tag="001">isharT</controlfield>
+    <controlfield tag="003">recordid</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">10.5555/mobyid-3118</subfield></datafield>
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">3430920026083</subfield></datafield>
+
+    <datafield tag="041" ind1="" ind2=""><subfield code="a">English</subfield></datafield>
+
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Pascal Einsweiler</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Michel Pernot</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Jean-François Trevien</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Guillaume Maginot</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">André Rocques</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Louis-Marie Rocques</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Jean-Christophe Charter</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Fabrice Hautecloque</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Eric Galand</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Cécile Guyard</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Christophe Fagot</subfield></datafield>
+
+    <datafield tag="245" ind1="0" ind2="0"><subfield code="a">Ishar Trilogy</subfield></datafield>
+
+    <datafield tag="250" ind1="" ind2=""><subfield code="a">DOS</subfield></datafield>
+
+    <datafield tag="260" ind1="3" ind2="">
+      <subfield code="b">Silmarils</subfield>
+      <subfield code="c">1995</subfield>
+    </datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Computer Game</subfield></datafield>
+
+    <datafield tag="506" ind1="1" ind2=""><subfield code="a">Copyright 1995 Silmarils</subfield></datafield>
+
+    <datafield tag="520" ind1="" ind2=""><subfield code="a">Enter the world of Ishar and discover 3 of the most extraordinary role play games ever made.</subfield></datafield>
+
+    <datafield tag="653" ind1="" ind2="">
+      <subfield code="a">cRPG</subfield>
+    </datafield>
+
+    <datafield tag="689" ind1="" ind2=""><subfield code="a">compilation</subfield></datafield>
+
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">10.5555/mobyid-1003</subfield></datafield>
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">10.5555/mobyid-7701</subfield></datafield>
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">10.5555/mobyid-7702</subfield></datafield>
+
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="w">https://en.wikipedia.org/wiki/Ishar</subfield></datafield>
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="w">https://www.mobygames.com/game/3118/ishar-trilogy/</subfield></datafield>
+  </record>
+
+  <record>
+    <controlfield tag="001">3430920026083</controlfield>
+    <controlfield tag="003">ean</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="024" ind1="" ind2=""><subfield code="a">3430920026083</subfield></datafield>
+
+    <datafield tag="041" ind1="" ind2=""><subfield code="a">English</subfield></datafield>
+
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Pascal Einsweiler</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Michel Pernot</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Jean-François Trevien</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Guillaume Maginot</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">André Rocques</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Louis-Marie Rocques</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Jean-Christophe Charter</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Fabrice Hautecloque</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Eric Galand</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Cécile Guyard</subfield></datafield>
+    <datafield tag="100" ind1="1" ind2=""><subfield code="a">Christophe Fagot</subfield></datafield>
+
+    <datafield tag="245" ind1="0" ind2="0"><subfield code="a">Ishar Trilogy</subfield></datafield>
+
+    <datafield tag="260" ind1="3" ind2="">
+      <subfield code="b">Silmarils</subfield>
+      <subfield code="c">1996</subfield>
+    </datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Budget</subfield></datafield>
+  </record>
+
+  <record>
+    <controlfield tag="001">ishar4</controlfield>
+    <controlfield tag="003">recordid</controlfield>
+    <controlfield tag="007">c234567890123456789012</controlfield>
+    <controlfield tag="008">1234567890123456789012345678901234ENG89</controlfield>
+
+    <datafield tag="130" ind1="0" ind2=""><subfield code="a">Ishar 4: Genesis</subfield></datafield>
+
+    <datafield tag="500" ind1="" ind2=""><subfield code="a">Unreleased</subfield></datafield>
+
+    <datafield tag="787" ind1="0" ind2="0"><subfield code="u">10.5555/mobyid-7702</subfield></datafield>
+
+    <datafield tag="856" ind1="4" ind2="2"><subfield code="u">https://en.wikipedia.org/wiki/Ishar#Ishar_4:_Ishar_Genesis</subfield></datafield>
+  </record>
 </collection>

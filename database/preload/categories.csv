@@ -1,28 +1,27 @@
-name
-Protestant Theology
-Catholic Theology
-Law
-Business and Economics
-Medicine
-Educational Science
-Social Sciences
-Psychology
-Sport and Exercise Sciences
-History
-Philosophy
-Philology
-Mathematics
-Computer Science
-Physics
-Chemistry
-Pharmacy
-Biology
-Geosciences
-Music
-Natural Sciences
-Engineering and Technology
-Medical and Health Sciences
-Agricultural Sciences
-Humanities
-Special
-Other
+name,data
+Protestant Theology,
+Catholic Theology,
+Law,
+Business and Economics,
+Medicine,
+Educational Science,
+Social Sciences,
+Psychology,
+Sport and Exercise Sciences,
+History,
+Philosophy,
+Philology,
+Mathematics,msc msc2010 msc2020
+Computer Science,acm acm1998
+Physics,
+Chemistry,
+Pharmacy,
+Biology,
+Geosciences,
+Music,ismn
+Natural Sciences,
+Engineering and Technology,
+Medical and Health Sciences,
+Agricultural Sciences,
+Humanities,
+Special,

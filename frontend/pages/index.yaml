@@ -56,11 +56,20 @@ requests:
               - null
           then:
             search:
-              _payload: "search_text"
+              _if:
+                test:
+                  _ne:
+                    - _string.trim:
+                        _payload: "search_text"
+                    - ""
+                then:
+                  _payload: "search_text"
+                else:
+                  "*"
           else: {}
 
 events:
-  onMount:
+  onMountAsync:
     - id: "ready_enter"
       type: "Request"
       params: "ready_request"
@@ -70,11 +79,11 @@ areas:
     gutter: 16
     justify: "center"
     blocks:
-## Research-Data-Lake Card
+## Main Card
       - id: "content_card"
         type: "Card"
         blocks:
-## Research Data-Lake Title
+## Metadata-Lake Title
           - id: "main_logo"
             type: "Img"
             style:
@@ -86,19 +95,21 @@ areas:
             type: "Title"
             style:
               text-align: "center"
-              margin-bottom: "5%"
             properties:
               content:
                 _global: "title"
               level: 1
+          - id: "sub_title"
+            type: "Title"
+            style:
+              text-align: "center"
+              margin-bottom: "5%"
+            properties:
+              content: "Metasearch for Metadata"
+              level: 2
 ## Full-Text-Search Textbox
           - id: "search_text"
             type: "TextInput"
-            required: true
-            validate:
-              - message: "Cannot be white-space only!"
-                pass:
-                  _regex: "[^\\s]+"
             layout:
               span: 12
               align: "middle"
@@ -137,6 +148,7 @@ areas:
                 - _ref: "templates/update.yaml"
 ## Results Card
       - _ref: "templates/results.yaml"
+
   sider:
     _ref: "templates/sider.yaml"
 

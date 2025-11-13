@@ -1,5 +1,6 @@
 {
   "method": "oai-pmh",
   "format": "datacite",
-  "steward": "http://xyz"
+  "steward": "http://xyz",
+  "rights": "CC0"
 }

@@ -1,6 +1,7 @@
 @startuml outside
 
 database src as "Source" #line.dashed;
+database bck as "Backup" #line.dashed;
 
 card dataasee [
 
@@ -17,6 +18,7 @@ card fe #line.dashed; [
 ]
 
 src <<-[dashed]- dataasee
+bck <<-[dashed]- dataasee
 dataasee -- http
 http <<-[dashed]- fe
 

@@ -17,8 +17,8 @@
   "resourceType": "Article",
 
   "identifiers": [
-    { "name": "doi", "data": "10.0000/abcdefghijklmnopqrstuvwxyz" },
-    { "name": "doi", "data": "10.0000/zyxwvutsrqponmlkjihgfedcba" }
+    { "name": "doi", "data": "doi:10.0000/abcdefghijklmnopqrstuvwxyz" },
+    { "name": "doi", "data": "doi:10.0000/zyxwvutsrqponmlkjihgfedcba" }
   ],
 
   "synonyms": [

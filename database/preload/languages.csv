@@ -1,30 +1,68 @@
 name,data
 English,en eng Englisch
 German,de deu ger Deutsch
+Afrikaans,af afr
 Arabic,ar ara Arabisch
+Armenian,hy hye arm Armenisch
+Basque,eu eus baq Baskisch
+Belarusian,be bel Belarussisch
+Bulgarian,bg bul Bulgarisch
+Caddo,cad
+Catalan,ca cat Katalanisch
 Chinese,zh chi zho Chinesisch
+Croatian,hr hrv Kroatisch
 Danish,da dan Dänisch
 Dutch,nl nld dut Niederländisch
+Estonian,et est Estnisch
+Ewe,ee ewe
+Finnish,fi fin Finnisch
 French,fr fre fra Französisch
+Frisian,fy fry Westfriesisch
+Galician,gl glg Galicisch Galegisch
+Georgian,ka kat geo Georgisch
 Greek,el ell gre Griechisch
 Hebrew,he heb Hebräisch
-Hindi,hi hin
+Hindi,hi hin Hethitisch
+Hittite,hit
+Hungarian,hu hun Ungarisch
+Icelandic,is isl ice Isländisch
+Indonesian,id ind Indonesisch
 Italian,it ita Italienisch
+Javanese,jv jav Javanisch
 Japanese,ja jpn Japanisch
+Khoisan,khi
+Korean,ko kor Koreanisch
 Latin,la lat Latein
+Latvian,lv lav Lettisch
+Lithuanian,lt lit Litauisch
+Macedonian,mk mkd mac Mazedonisch
+Malay,ms may msa Malaiisch
 Middle Dutch,dum Mittelniederländisch
+Norwegian,no nor Norwegisch
+Occitan,oc oci Okzitanisch
+Pahlavi,pal Mittelpersisch
+Persian,fa fas per Persisch
 Portuguese,pt por Portugiesisch
+Prakrit,pra
 Romanian,ro rom rum Rumänisch
 Russian,ru rus Russisch
+Sanskrit,sa san
 Serbian,sr srp scc Serbisch
-Slovenien,sl slv Slowenisch
+Slovak,sk slk slo Slowakisch
+Slovenian,sl slv Slowenisch
 Spanish,es spa Spanisch
 Swedish,sv swe Schwedisch
+Tamasheq,taq
+Thai,th tha
+Tibetan,bo bod tib Tibetisch
 Turkish,tr tur Türkisch
 Ukrainian,uk ukr Ukrainisch
+Urdu,ur urd Urdu
+Zulu,zu zul isiZulu
 Old Church Slavonic,chu cu Altkirchenslawisch
 Czech,cze ces cs Tschechisch
 Old High German,goh Althochdeutsch
+Middle High German,gmh Mittelhochdeutsch
 Ancient Greek,grc Altgriechisch
 Hungarian,hun hu Ungarisch
 Low German,nds Plattdeutsch
@@ -32,4 +70,5 @@ Old English,ang Altenglisch
 Polish,pol pl Polnisch
 Syriac,syr Syrisch
 Undetermined,und Unbekannt
+Multiple,mul
 Not Applicable,zxx

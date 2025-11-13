@@ -1,94 +1,101 @@
 # Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
 
 processor_resources:
-  - label: 's3'
-    try:
+  - label: 'method_s3'
+    processors:
       - mapping: |
-          meta bucket = metadata("ingest").source
           meta access = metadata("ingest").username
           meta secret = metadata("ingest").password
 
-      - label: 's3__get_bucket'
-        s3get:
-          url: 'bucket'
-          get: 'bucket'
-          access: 'access'
-          secret: 'secret'
+      - while:
+          at_least_once: true
+          max_loops: 0
+          check: 'metadata("continuationToken").type() != "null"'
+          processors:
+            - mapping: |
+                meta bucket = metadata("ingest").source + "?list-type=2&max-keys=100" + metadata("continuationToken").or("")
 
-      - xml:
-          operator: 'to_json'
+            - try:
+                - label: 's3__get_bucket'
+                  s3get:
+                    url: 'bucket'
+                    get: 'bucket'
+                    access: 'access'
+                    secret: 'secret'
 
-      - mapping: |
-          root = this.ListBucketResult.with("Contents").values().flatten().map_each(x -> x.Key)
+                - mapping: |
+                    meta continuationToken = if this.ListBucketResult.NextContinuationToken != null { "&continuation-token=" + this.ListBucketResult.NextContinuationToken } else { null }
+                    root = this.ListBucketResult.with("Contents").values().flatten().map_each(x -> x.Key)
 
-      - unarchive:
-          format: 'json_array'
-
-      - split:
-          size: 1
-
-      - try:
-          - mapping: |
-              meta object = metadata("ingest").source + "/" + this.string()
-
-          - label: 's3__get_object'
-            s3get:
-              url: 'object'
-              get: 'object'
-              access: 'access'
-              secret: 'secret'
-
-          # TODO: enable understanding json
-          - xml:
-              operator: 'to_json'
-
-          - mapping: |
-              root = this.values().0
-              root = root.map_each(x -> x.value.or(x).array()).explode(root.keys().0)
-
-          - while:
-              check: 'this.length() > 0'
-              processors:
-                - mapping: 'meta block = [50,this.length()].min()'
-
-                - branch:
-                    request_map: 'root = this.slice(0,metadata("block"))'
-
+                - while:
+                    check: 'this.length() > 0'
                     processors:
-                      - unarchive:
-                          format: 'json_array'
+                      - branch:
+                          request_map: 'root.object = this.0'
 
-                      - resource: 'formats'
+                          processors:
+                            - mapping: 'meta object = metadata("ingest").source + "/" + this.object.string()'
 
-                      - resource: 'normalize'
+                            - try:
+                                - label: 's3__get_object'
+                                  s3get:
+                                    url: 'object'
+                                    get: 'object'
+                                    access: 'access'
+                                    secret: 'secret'
 
-                      - resource: 'process'
+                                - xml:  # TODO conditional to allow JSON
+                                    operator: 'to_json'
 
-                      - archive:
-                          format: 'json_array'
+                                - mapping: |  # Return root elements child(ren) as array and ensure correct array element format
+                                    root = this.values().0
+                                    root = root.map_each(x -> x.value.or(x).array()).explode(root.keys().0)
 
-                      - label: 's3__arcadedb_command'
-                        arcadedb:
-                          host: '${DB_HOST}'
-                          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                          endpoint: 'command'
-                          database: '${DB_NAME}'
-                          username: '${DB_USER}'
-                          password: '${DB_PASS}'
-                          request: |
-                            root.language = "sqlscript"
-                            root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId) )
-                          response: |
-                            root = this
+                                - while:
+                                    check: 'this.length() > 0'
+                                    processors:
+                                      - mapping: 'meta block = [100, this.length()].min()'
 
-                    result_map: |
-                      root = root.slice(metadata("block"))
-                      meta count = metadata("count") + metadata("block")
+                                      - branch:
+                                          request_map: 'root = this.slice(0, metadata("block"))'
 
-                - sleep:
-                    duration: "1s"
+                                          processors:
+                                            - unarchive:
+                                                format: 'json_array'
+
+                                            - try:
+                                                - resource: 'formats'
+
+                                                - resource: 'normalize'
+
+                                                - resource: 'process'
+
+                                            - catch:
+                                                - log:
+                                                    message: |
+                                                      ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
+
+                                                - mapping: 'root = {}'
+
+                                            - archive:
+                                                format: 'json_array'
+
+                                            - resource: 'submit'
+
+                                          result_map: |
+                                            root = root.slice(metadata("block"))
+                                            meta count = metadata("count")
+                                            meta failed = metadata("failed")
+
+                          result_map: |
+                            root = root.slice(1)
+                            meta count = metadata("count")
+                            meta failed = metadata("failed")
+
+                      - sleep:
+                          duration: "1s"
 
       - mapping: |
-          root = this
+          root = {}
           meta access = deleted()
           meta secret = deleted()

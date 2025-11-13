@@ -21,8 +21,10 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     properties:
-      url: "/api?request=ingest"
+      url: "/api"
       method: "get"
+      params:
+        request: "ingest"
 
   - id: "health_request"
     type: "AxiosHttp"
@@ -46,7 +48,7 @@ requests:
     properties:
       url: "/backup"
       method: "post"
-      timeout: 10000
+      timeout: 30000
       auth:
         username:
           _payload: "username"
@@ -67,28 +69,48 @@ requests:
         password:
           _payload: "password"
       data:
-        source:
-          _payload: "ingest_source"
-        method:
-          _payload: "ingest_method"
-        format:
-          _payload: "ingest_format"
-        steward:
-          _payload: "ingest_steward"
-        username:
-          _payload: "ingest_username"
-        password:
-          _payload: "ingest_password"
+        _if:
+          test:
+            _and:
+              - _not:
+                  _payload: "ingest_source"
+              - _not:
+                  _payload: "ingest_method"
+              - _not:
+                  _payload: "ingest_format"
+              - _not:
+                  _payload: "ingest_steward"
+              - _not:
+                  _payload: "ingest_rights"
+          then: null
+          else:
+            source:
+              _payload: "ingest_source"
+            method:
+              _payload: "ingest_method"
+            format:
+              _payload: "ingest_format"
+            rights:
+              _payload: "ingest_rights"
+            steward:
+              _payload: "ingest_steward"
+            options:
+              _payload: "ingest_options"
+            username:
+              _payload: "ingest_username"
+            password:
+              _payload: "ingest_password"
 
 events:
-  onMount:
-    - id: "ready_enter"
-      type: "Request"
-      params: "ready_request"
-
+  onInit:
     - id: "ingest_enter"
       type: "Request"
       params: "ingest_schema_request"
+
+  onMountAsync:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
 
 areas:
   content:
@@ -99,8 +121,8 @@ areas:
         type: "Title"
         properties:
           content: "Admin Controls"
+          type: "danger"
           level: 1
-
 ## Admin Card
       - id: "admin_card"
         type: "Card"
@@ -155,8 +177,8 @@ areas:
                                   params:
                                     backup_timestamp:
                                       _string.concat:
-                                        - "Last Backup: "
-                                        - _date.toISOString:
+                                        - "Last Database Backup: "
+                                        - _date.toString:
                                             _date: "now"
 ## Backup Banner
                           - id: "backup_banner"
@@ -199,6 +221,29 @@ areas:
                       content:
                         gutter: 16
                         blocks:
+## Busy Button
+                          - id: "busy_button"
+                            type: "Button"
+                            layout:
+                              span: 13
+                            properties:
+                              block: true
+                              title: "Ingesting?"
+                              icon: "AiFillWarning"
+                            events:
+                              onClick:
+                                - id: "ask_credentials"
+                                  type: "CallMethod"
+                                  params:
+                                    blockId: "credentials_modal"
+                                    method: "toggleOpen"
+                                - id: "busy_click"
+                                  type: "SetState"
+                                  params:
+                                    operation: "ingest_request"
+                                - id: "busy_focus"
+                                  type: "SetFocus"
+                                  params: "username_input"
 ## Ingest Source
                           - id: "ingest_source"
                             type: "TextInput"
@@ -207,17 +252,6 @@ areas:
                               span: 12
                             properties:
                               placeholder: "Source URL"
-                              label:
-                                colon: false
-                                disabled: true
-## Ingest Steward
-                          - id: "ingest_steward"
-                            type: "TextInput"
-                            required: true
-                            layout:
-                              span: 12
-                            properties:
-                              placeholder: "Data Steward"
                               label:
                                 colon: false
                                 disabled: true
@@ -233,6 +267,17 @@ areas:
                               placeholder: "Method"
                               options:
                                 _request: "ingest_schema_request.data.properties.method.enum"
+## Ingest Rights
+                          - id: "ingest_rights"
+                            type: "TextInput"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Source Rights"
+                              label:
+                                colon: false
+                                disabled: true
 ## Ingest Format
                           - id: "ingest_format"
                             type: "Selector"
@@ -245,13 +290,35 @@ areas:
                               placeholder: "Format"
                               options:
                                 _request: "ingest_schema_request.data.properties.format.enum"
+## Ingest Steward
+                          - id: "ingest_steward"
+                            type: "TextInput"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Data Steward"
+                              label:
+                                colon: false
+                                disabled: true
+## Ingest Options
+                          - id: "ingest_options"
+                            type: "TextInput"
+                            required: true
+                            layout:
+                              span: 12
+                            properties:
+                              placeholder: "Source Options (OAI-PMH method only)"
+                              label:
+                                colon: false
+                                disabled: true
 ## Ingest Credentials
                           - id: "ingest_username"
                             type: "PasswordInput"
                             layout:
                               span: 12
                             properties:
-                              placeholder: "Username / Access Key"
+                              placeholder: "Access Key (S3 method only)"
                               label:
                                 colon: false
                                 disabled: true
@@ -260,7 +327,7 @@ areas:
                             layout:
                               span: 12
                             properties:
-                              placeholder: "Password / Secret Key"
+                              placeholder: "Secret Key (S3 method only)"
                               label:
                                 colon: false
                                 disabled: true
@@ -275,15 +342,16 @@ areas:
                               icon: "AiFillWarning"
                             events:
                               onClick:
+                                - id: "ingest_reset"
+                                  type: "ResetValidation"  # TODO this seems to have no effect
                                 - id: "ingest_validate"
                                   type: "Validate"
                                   params:
                                     - "ingest_source"
                                     - "ingest_method"
+                                    - "ingest_rights"
                                     - "ingest_format"
                                     - "ingest_steward"
-                                    - "ingest_username"
-                                    - "ingest_password"
                                 - id: "ask_credentials"
                                   type: "CallMethod"
                                   params:
@@ -302,18 +370,32 @@ areas:
                                     ingest_timestamp:
                                       _string.concat:
                                         - "Lastest Ingest: "
-                                        - _date.toISOString:
+                                        - _date.toString:
                                             _date: "now"
 ## Ingest Banner
                           - id: "ingest_banner"
                             type: "Alert"
                             properties:
-                              type: "warning"
-                              message: "Ingest Started"
+                              type:
+                                _if:
+                                  test:
+                                    _request: "ingest_request.data.data.attributes.started"
+                                  then:
+                                    "warning"
+                                  else:
+                                    "success"
+                              message:
+                                _if:
+                                  test:
+                                    _request: "ingest_request.data.data.attributes.started"
+                                  then:
+                                    "Ingest Started (for details see logs)"
+                                  else:
+                                    "No Ingest Running"
                             visible:
-                              _if_none:
-                                - _request: "ingest_request.data.data.attributes.started"
-                                - false
+                              _and:
+                                - _request: "ingest_request.data.data.attributes"
+
 ## Ingest Time-Stamp
                           - id: "ingest_timestamp"
                             type: "TextInput"
@@ -322,9 +404,9 @@ areas:
                               label:
                                 disabled: true
                             visible:
-                              _if_none:
-                                - _request: "ingest_request.data.data.attributes.started"
-                                - false
+                              _eq:
+                                - _state: "ingest_timestamp"
+                                - ""
 ## Health Card
                   - id: "health_card"
                     type: "Card"
@@ -367,19 +449,18 @@ areas:
                                     health_timestamp:
                                       _string.concat:
                                         - "Last Health Check: "
-                                        - _date.toISOString:
+                                        - _date.toString:
                                             _date: "now"
-## Processor Banner
+
+## Health Processor Banner
                           - id: "processor_banner"
                             type: "Alert"
                             properties:
                               _if:
                                 test:
-                                  _and:
-                                    - _ne:
-                                        - _request: "health_request.data.data.attributes.processor.version"
-                                        - null
+                                  _if_none:
                                     - _request: "health_request.data.data.attributes.processor.healthy"
+                                    - false
                                 then:
                                   type: "success"
                                   message:
@@ -391,24 +472,22 @@ areas:
                                       - ")"
                                 else:
                                   type: "error"
-                                  message: "No Response"
+                                  message: "Processor (No Response)"
                             visible:
                               _not:
                                 _type:
                                   type: "null"
                                   on:
                                     _request: "health_request.data"
-## Database Banner
+## Health Database Banner
                           - id: "database_banner"
                             type: "Alert"
                             properties:
                               _if:
                                 test:
-                                  _and:
-                                    - _ne:
-                                        - _request: "health_request.data.data.attributes.database.version"
-                                        - null
+                                  _if_none:
                                     - _request: "health_request.data.data.attributes.database.healthy"
+                                    - false
                                 then:
                                   type: "success"
                                   message:
@@ -420,14 +499,14 @@ areas:
                                       - ")"
                                 else:
                                   type: "error"
-                                  message: "No Response"
+                                  message: "Database (No Response)"
                             visible:
                               _not:
                                 _type:
                                   type: "null"
                                   on:
                                     _request: "health_request.data"
-## Database Report
+## Health Database Report
                           - id: "database_report"
                             type: "Descriptions"
                             properties:
@@ -495,14 +574,17 @@ areas:
                               content: |
                                 The admin panel enables triggering maintenance tasks, each requiring authorization via a modal input box, such as:
 
-                                * **Backup**; returns successfully if backup was completed.
-                                * **Ingest**; returns succesfully if ingest was started, using:
+                                * **Backup**; returns successfully if a database backup was completed.
+                                * **Ingesting?**; returns whether or not an ingest is ongoing (concurrent ingests are not possible!).
+                                * **Ingest**; returns succesfully if an ingest from the specified metadata source was started, using:
                                     - **Source URL** is a URL of maximal 4095 characters (required).
-                                    - **Data Steward** is of maximal 4095 characters (required).
                                     - **Method** is protocol to be used for ingestion (required).
+                                    - **Source Rights** is an identifier of the source metadata rights as a whole of maximal 4095 characters (required).
                                     - **Format** is the file format of the ingested metadata (required).
-                                    - **Username** (or access key) for the source (if needed).
-                                    - **Password** (or secret key) for the source (if needed).
+                                    - **Data Steward** is of maximal 4095 characters (required).
+                                    - **Source Options** can be used to pass date or set constraints for selective harvesting (_only for OAI-PMH_).
+                                    - **Access Key** (or username) for the source (_only for S3_).
+                                    - **Secret Key** (or password) for the source (_only for S3_).
                                 * **Health**; returns processor and database liveness, as well as database health stats.
 
                       - id: "admin_detail"
@@ -530,7 +612,7 @@ areas:
                                       ```
                                       /api/v1/ingest
                                       ```
-                                      With the `source`, `steward`, `method`, `format`, `username`, `password` arguments in the (JSON) body.
+                                      With the `source`, `steward`, `rights`, `method`, `format`, `options`, `username`, `password` arguments in the (JSON) body.
 
                                     * A health check is triggered by a POST request to:
 
@@ -602,6 +684,8 @@ areas:
                 events:
                   onClick:
                     try:
+                      - id: "modal_reset"
+                        type: "ResetValidation"  # TODO this seems to have no effect
                       - id: "modal_validate"
                         type: "Validate"
                         params:
@@ -616,6 +700,12 @@ areas:
                         params:
                           username: ""
                           password: ""
+                          ingest_source: ""
+                          ingest_steward: ""
+                          ingest_rights: ""
+                          ingest_method: ""
+                          ingest_format: ""
+                          ingest_options: ""
                           ingest_username: ""
                           ingest_password: ""
                       - id: "ask_credentials"

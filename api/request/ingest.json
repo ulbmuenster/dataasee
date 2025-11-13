@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "dataasee:api?request=ingest",
 
-  "title": "DatAasee Ingest Endpoint Request", "type": "object", "oneOf":[{ "maxProperties": 0 }, { "required": ["source", "method", "format", "steward"] }], "properties": {
+  "title": "DatAasee Ingest Endpoint Request", "type": "object", "oneOf":[{ "maxProperties": 0 }, { "required": ["source", "method", "format", "rights", "steward"] }], "properties": {
 
     "source": { "type": "string", "title": "Source URL", "maxLength": 4095, "format": "uri" },
 
@@ -10,9 +10,13 @@
 
     "format": { "type": "string", "title": "Metadata Format", "enum": ["datacite","oai_datacite","dc","oai_dc","lido","marc21","marcxml","mods","rawmods","dataasee"] },
 
+    "rights": { "type": "string", "title": "Source Rights", "maxLength": 4095 },
+
     "steward": { "type": "string", "title": "Data Steward URL or Email", "maxLength": 4095 },
 
-    "username": { "type": ["null","string"], "title": "Username or Access Key", "maxLength": 255 },
+    "options": { "type": ["null","string"], "title": "Harvest Options (OAI-PMH)", "maxLength": 255 },
 
-    "password": { "type": ["null","string"], "title": "Password or Secret Key", "maxLength": 255 } }
+    "username": { "type": ["null","string"], "title": "Access key for the source (S3)", "maxLength": 255 },
+
+    "password": { "type": ["null","string"], "title": "Secret key for the source (S3)", "maxLength": 255 } }
 }

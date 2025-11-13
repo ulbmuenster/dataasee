@@ -3,14 +3,14 @@
   "$id": "dataasee:api?response=metadata",
 
   "title": "DatAasee Metadata Endpoint Response", "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
-  
+
                                                                                { "required": ["errors", "meta", "links"] } ], "properties": {
 
     "data": { "oneOf": [
 
       { "type": "array", "title": "Search Result", "maxItems": 20,
 
-          "items":  { "type": "object", "properties": {
+          "items":  { "type": "object", "required": ["type", "id", "attributes"], "properties": {
 
             "type": { "type": "string", "const": "data" },
 
@@ -36,13 +36,131 @@
 
           "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
 
-          "attributes": {
-          
-            "type": "object", "title": "Payload", "required": ["result"], "properties": {
+          "attributes": { "type": "object", "title": "Payload", "required": ["result"], "properties": {
 
-              "result": { "type": "array", "maxItems": 100,
+            "result": { "type": "array", "maxItems": 100,
 
-                "items": { "type": "object", "title": "Query Result" } } } } } },
+              "items": { "type": "object", "title": "Query Result" } } } } } },
+
+      { "type": "object", "title": "Fetch Result (DataCite)", "required": ["type", "id", "attributes"], "properties": {
+
+          "type": { "type": "string", "const": "data" },
+
+          "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
+
+          "attributes": { "type": "object", "title": "Payload", "required": ["doi", "titles", "creators", "publisher", "publicationYear", "types"], "properties": {
+
+            "doi": { "type": "string", "title": "DOI" },
+
+            "creators": { "type": "array", "title": "Creators",
+
+              "items": { "type": "object", "properties": {
+
+                "name": { "type": "string" } } } },
+
+            "titles": { "type": "array", "title": "Titles",
+
+              "items": { "type": "object", "properties": {
+
+                "title": { "type": "string", "title": "Title" },
+
+                "titleType": { "type": "string", "title": "Title Type" } } } },
+
+            "publisher": { "type": "object", "properties": {
+
+              "name": { "type": "string", "title": "Publisher Name" } } },
+
+            "publicationYear": { "type": "string", "title": "Publication Year" },
+
+            "subjects": { "type": "array", "title": "Subjects",
+
+              "items": { "type": "object", "proeprties": {
+
+                "subject": { "type": "string", "title": "Subject" } } } },
+
+            "language": { "type": "string", "title": "Language" },
+
+            "types": { "type": "object", "properties": {
+
+              "resourceType": { "type": "string", "title": "Resource Type" } } },
+
+            "alternateIdentifiers": { "type": "array", "title": "Alternate Identifiers",
+
+            "items": { "type": "object", "properties": {
+
+              "alternateIdentifier": { "type": "string", "title": "Alternatie Identifer" },
+
+              "alternateIdentifierType": { "type": "string", "title": "Alternate Identifier Type" } } } },
+
+            "sizes": { "type": "array", "title": "Sizes",
+
+              "items": { "type": "string", "title": "Size" } },
+
+            "formats": { "type": "array", "title": "Formats",
+
+              "items": { "type": "string", "title": "Format" } },
+
+            "version": { "type": "string", "title": "Version" },
+
+            "rightsList": { "type": "array", "title": "Rights List",
+
+              "items": { "type": "object", "properties": {
+
+                "rights": { "type": "string", "title": "Rights" },
+
+                "rightsUri": { "type": "string", "title": "Rights URI" } } } },
+
+            "descriptions": { "type": "array", "title": "Descriptions",
+
+              "items": { "type": "object", "properties": {
+
+                "rights": { "type": "string", "title": "Description" } } } },
+
+            "fundingReferences": { "type": "array", "title": "Funding References",
+
+              "items": { "type": "object", "properties": {
+
+                "awardNumber": { "type": "string", "title": "Award Number" },
+
+                "funderName": { "type": "string", "title": "Funder Name" } } } } } } } },
+
+      { "type": "object", "title": "Fetch Result (BibJSON)", "required": ["type", "id", "attributes"], "properties": {
+
+          "type": { "type": "string", "const": "data" },
+
+          "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
+
+          "attributes": { "type": "object", "title": "Payload", "required": ["cid", "author", "title", "year"], "properties": {
+
+              "cid": { "type": "string", "title": "Collection Identifier" },
+
+              "author": { "type": "array", "title": "Authors",
+
+                "items": { "type": "object", "required": ["name"], "properties": {
+
+                  "name": { "type": "string", "title": "Author Name" } } } },
+
+              "title": { "type": "string", "title": "Title" },
+
+              "year": { "type": ["string", "null"], "title": "Published" },
+
+              "identifier": { "type": "array", "title": "Identifiers",
+
+                "items": { "type": "object", "properties": {
+
+                  "type": { "type": "string", "title": "Identifier Type" },
+
+                  "id": { "type": "string", "title": "Identifier" } } } },
+
+              "link": { "type": "array", "title": "Links",
+
+                "items": { "type": "object", "properties": {
+
+                  "url": { "type": "string", "title": "Link" } } } },
+
+              "entrytype": { "type": "string", "title": "Type" },
+
+              "publisher": { "type": "string", "title": "Publisher" } } } } },
 
       { "type": "object", "title": "Fetch Result", "required": ["type", "id", "attributes"], "properties": {
 
@@ -52,13 +170,11 @@
 
           "attributes": {
 
-            "type": "object", "title": "Payload", "required": ["schemaVersion", "recordId", "metadataQuality", "source", "createdAt", "numberViews", "keywords", "categories"], "properties": {
+            "type": "object", "title": "Payload", "required": ["schemaVersion", "recordId", "relations"], "properties": {
 
               "schemaVersion": { "type": "integer", "title": "Schema Version" },
 
               "recordId": { "type": "string", "title": "Record Identifier" },
-
-              "metadataChecksum": { "type": ["string","null"], "title": "Metadata Checksum (MD5)" },
 
               "metadataQuality": { "type": "string", "title": "Metadata Quality" },
 
@@ -146,8 +262,6 @@
 
               "description": { "type": "string", "title": "Description" },
 
-              "message": { "type": ["string","null"], "title": "Note" },
-
               "externalItems": { "type": ["array","null"],
 
                 "items": { "type": "object", "properties": {
@@ -157,6 +271,8 @@
                   "data": { "type": "string", "format": "uri", "title": "Item Identifier" } } } },
 
               "rawMetadata": { "type": "string", "title": "Raw Metadata" },
+
+              "rawChecksum": { "type": ["string","null"], "title": "Metadata Checksum (MD5)" },
 
               "relations": { "type": "array", "title": "Relations",
 
@@ -179,11 +295,11 @@
     "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
 
       "items": { "type": "object", "description": "See: https://jsonapi.org/format/#error-objects", "required": ["title", "detail"], "properties": {
-    
+
         "title": { "type": "string" },
-    
+
         "detail": { "type": "string" },
-            
+
         "links": { "type": "object",
 
           "additionalProperties": { "type": "string" } } } } },
@@ -201,8 +317,8 @@
       "describedby": { "type": "string" },
 
       "first": { "type": "string" },
-    
+
       "prev": { "type": "string" },
-    
+
       "next": { "type": "string" } } } }
 }

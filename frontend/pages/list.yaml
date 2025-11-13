@@ -71,20 +71,14 @@ requests:
           else: {}
 
 events:
-  onInit:
-    - id: "sources_enter"
-      type: "Request"
-      params: "sources_request"
-
-  onMount:
+  onMountAsync:
     - id: "ready_enter"
       type: "Request"
       params: "ready_request"
 
-    - id: "set_sort"
-      type: "SetState"
-      params:
-        sort: true
+    - id: "sources_enter"
+      type: "Request"
+      params: "sources_request"
 
 areas:
   content:
@@ -136,11 +130,9 @@ areas:
                                       label: "•"
                                       value:
                                         __string.concat:
-                                          - __args: "0.name"
+                                          - __args: "0.source"
                                           - " ("
-                                          - __if_none:
-                                              - __args: "0.format"
-                                              - "native"
+                                          - __args: "0.format"
                                           - ") @ "
                                           - __args: "0.date"
 ## Source Filter:
@@ -158,12 +150,11 @@ areas:
                                     _function:
                                       label:
                                         __string.concat:
-                                          - __args: "0.name"
+                                          - __args: "0.source"
                                           - " ("
-                                          - __if_none:
-                                              - __args: "0.format"
-                                              - "native"
-                                          - ")"
+                                          - __args: "0.format"
+                                          - ") @ "
+                                          - __args: "0.date"
                                       value:
                                         name:
                                           __args: "0.name"
@@ -216,6 +207,7 @@ areas:
                           content: |
                             The filter search returns a subset of metadata records determined by enumerated or numeric record properties.
                             The background color of the result items indicate comprehensive (green), sufficient (yellow) or incomplete (red) metadata.
+                            Note that DOIs are not prepared in these results.
 
                             * **Sources**: Filter by ingested source identifier.
 
@@ -241,14 +233,14 @@ areas:
                                     2. Clicking "Search" sends the GET request:
 
                                         ```
-                                        /api/v1/metadata?source=x
+                                        /api/v1/metadata?source=x&format=y
                                         ```
-                                       An empty `source` parameter means "all sources".
+                                       An empty `source` parameter (`x` = `""`) means "all sources".
 
                                     3. Paging forward or backwards in the results resends the GET request with an additional `page` parameter:
 
                                         ```
-                                        /api/v1/metadata?source=x&page=y
+                                        /api/v1/metadata?source=x&format=y&page=z
                                         ```
 ## Results Card
       - _ref: "templates/results.yaml"

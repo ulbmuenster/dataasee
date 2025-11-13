@@ -21,24 +21,19 @@ VOLUME /backup
 
 ARG VERSION
 
-# Only for testing an development snapshot:
-#ARG TEST=25.4.1
-#RUN wget -q -O arcadedb-$TEST.tar.gz https://s01.oss.sonatype.org/content/repositories/snapshots/com/arcadedb/arcadedb-package/$TEST-SNAPSHOT/arcadedb-package-$TEST-20250411.093019-45.tar.gz \
-# && tar -xf arcadedb-$TEST.tar.gz \
-# && mv arcadedb-*/* .
-
-RUN wget -q https://github.com/ArcadeData/arcadedb/releases/download/$VERSION/arcadedb-$VERSION.tar.gz \
- && tar -xf arcadedb-$VERSION.tar.gz \
- && rm arcadedb-$VERSION.tar.gz \
- && mv arcadedb-$VERSION/* . \
- && rm -Rf arcadedb-$VERSION \
- && rm lib/js-language-*.jar \
- && rm bin/*.bat
+# RUN --mount=type=bind,source=arcadedb-25.10.1-SNAPSHOT.tar.gz,target=arcadedb.tar.gz : "Activate this line for testing." \
+RUN wget -q https://github.com/ArcadeData/arcadedb/releases/download/$VERSION/arcadedb-$VERSION.tar.gz -O arcadedb.tar.gz \
+  && tar -xf arcadedb.tar.gz && mv arcadedb-*/* . \
+  && rm -Rf arcadedb-*/* \
+  && rm lib/js-language-*.jar \
+  && rm lib/prometheus-metrics-*.jar \
+  && rm lib/arcadedb-grpcw-*.jar \
+  && rm bin/*.bat
 
 ARG DB_NAME
 ENV DB_NAME=$DB_NAME
 
-COPY --chown=arcadedb database/init.sh ./
+COPY --chown=arcadedb database/init.sh database/restore.sh database/backup.sh ./
 
 RUN --mount=type=bind,source=database/schema.sql,target=schema.sql \
     --mount=type=bind,source=database/preload.sql,target=preload.sql \
@@ -47,9 +42,9 @@ RUN --mount=type=bind,source=database/schema.sql,target=schema.sql \
 
 ENV ARCADEDB_PID="/tmp/arcadedb.pid"
 
-ENV ARCADEDB_OPTS_MEMORY="-XX:InitialRAMPercentage=50.0 -XX:MaxRAMPercentage=75.0"
+ENV ARCADEDB_OPTS_MEMORY="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0"
 
-ENV JAVA_OPTS="$JAVA_OPTS -Darcadedb.server.backupDirectory=/backup -Darcadedb.command.warningsEvery=10000"
+ENV JAVA_OPTS="$JAVA_OPTS -Darcadedb.server.backupDirectory=/backup -Darcadedb.command.warningsEvery=10000 -Darcadedb.bucketDefaultPageSize=524288"
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 http://localhost:2480/api/v1/ready || exit 1
 
@@ -59,6 +54,8 @@ CMD ["./init.sh"]
 ## Release Target:
 
 FROM develop AS release
+
+RUN rm lib/arcadedb-studio-*.jar
 
 ARG DL_VERSION
 

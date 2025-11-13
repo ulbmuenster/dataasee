@@ -5,16 +5,16 @@ processor_resources:
     switch:
       - check: 'metadata("ingest").method == "oai-pmh"'
         processors:
-          - resource: 'oai_pmh'
+          - resource: 'method_oai_pmh'
 
       - check: 'metadata("ingest").method == "s3"'
         processors:
-          - resource: 's3'
+          - resource: 'method_s3'
 
       - check: 'metadata("ingest").method == "get"'
         processors:
-          - resource: 'get'
+          - resource: 'method_get'
 
       - check: 'metadata("ingest").method == "dataasee"'
         processors:
-          - resource: 'self'
+          - resource: 'method_self'

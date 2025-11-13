@@ -1,11 +1,12 @@
-# DatAasee 0.3
+# DatAasee 0.5
 # ============
 #
 # Infos: https://github.com/ulbmuenster/dataasee
 #
 # Setup:
-#   $ mkdir -p backup
-#   $  DB_PASS=password1 DL_PASS=password2 docker compose up -d
+#  0. Move this compose file to a dedicated directory
+#  1. Make (or mount) a directory named "backup" with write permissions for root
+#  2. Run: $  DL_PASS=password1 DB_PASS=password2 docker compose up -d
 
 name: "dataasee"
 
@@ -42,11 +43,11 @@ services:
           cpus: "2.0"
           memory: "2G"
     environment:
-      TZ: "CET"
+      TZ: "${TZ-CET}"
       DB_PASS: "/db/secret"
     expose:
       - "2480"
-    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.3}"
+    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.5}"
     init: true
     networks:
       - "persistence"
@@ -74,14 +75,14 @@ services:
           cpus: "1.0"
           memory: "1G"
     environment:
-      TZ: "CET"
+      TZ: "${TZ-CET}"
       DL_BASE: "${DL_BASE-}"
       DL_USER: "${DL_USER-admin}"
       DL_PASS: "/dl/secret"
       DB_PASS: "/db/secret"
     expose:
       - "4195"
-    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.3}"
+    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.5}"
     init: true
     networks:
       - "persistence"
@@ -109,10 +110,12 @@ services:
         reservations:
           cpus: "1.0"
           memory: "1G"
-    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.3}"
+    environment:
+      TZ: "${TZ-CET}"
+    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.5}"
     init: true
     networks:
       - "application"
     ports:
-      - "${FE_PORT-80}:3000"
+      - "${FE_PORT-8000}:8000"
     restart: "unless-stopped"

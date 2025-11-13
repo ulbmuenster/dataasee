@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dataasee:api?params=enums",
+
+  "title": "DatAasee Enums Endpoint Parameters", "type": "object", "properties": {
+
+    "type": { "type": "string", "title": "Enumeration type", "enum": ["resourcetypes","languages","licenses","synonyms","externalitems","categories","schemas","relations"] } }
+}

@@ -1,0 +1,38 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'submit'
+    processors:
+      - try:
+          - mapping: |
+              root = this.filter(x -> x != {})
+              meta incount = this.length()
+              meta failed = metadata("failed") + this.filter(x -> x == {}).length()
+
+          - label: 'submit__arcadedb_command'
+            arcadedb:
+              host: '${DB_HOST}'
+              port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+              endpoint: 'command'
+              database: '${DB_NAME}'
+              username: '${DB_USER}'
+              password: '${DB_PASS}'
+              request: |
+                root.language = "sqlscript"
+                root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId))
+              response: |
+                root = {}
+
+          - mapping: |
+              meta count = metadata("count") + metadata("incount")
+
+          - switch:
+              - check: '(metadata("count") / 10000).floor() > ((metadata("count") - metadata("incount")) / 10000).floor()'
+                processors:
+                  - label: 'ingest_progress'
+                    log:
+                      message: '${! (10000 * (metadata("count") / 10000).floor()).string() + " Done!" }'
+
+      - catch:
+          - mapping: |
+              meta failed = metadata("failed") + metadata("incount")

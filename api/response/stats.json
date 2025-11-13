@@ -3,12 +3,12 @@
   "$id": "dataasee:api?response=stats",
 
   "title": "DatAasee Statistics Endpoint Response", "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
-  
+
                                                                                  { "required": ["errors", "meta", "links"] } ], "properties": {
 
     "data": { "type": "object", "description": "See: https://jsonapi.org/format/#document-resource-objects", "required": ["type", "id", "attributes"], "properties": {
 
-      "type": { "type": "string", "const": "data" },
+      "type": { "type": "string", "const": "support" },
 
       "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
 
@@ -27,11 +27,11 @@
     "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
 
       "items": { "type": "object", "description": "See: https://jsonapi.org/format/#error-objects", "required": ["title", "detail"], "properties": {
-    
+
         "title": { "type": "string" },
-    
+
         "detail": { "type": "string" },
-            
+
         "links": { "type": "object",
 
           "additionalProperties": { "type": "string" } } } } },

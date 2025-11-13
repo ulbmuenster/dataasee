@@ -1,16 +1,20 @@
 # Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
 
+### Main server pipepline declaration
+
 ## Logger Format
 
 logger:
   static_fields:
     '@service': '${DL_NAME} ${DL_VERSION}'
 
-## Metrics Setup
+## Global Cache
 
-metrics:
-  prometheus: {}
-  mapping: ""
+cache_resources:
+  - label: 'global_cache'
+    memory:
+      default_ttl: '1h'
+      compaction_interval: '1h'
 
 ## API Server
 
@@ -18,7 +22,7 @@ input:
   label: 'api_server'
   http_server:
     address: '0.0.0.0:${DL_PORT}'
-    path: '/${DL_PATH}/{endpoint}'
+    path: '/'
     allowed_verbs:
       - 'GET'
       - 'POST'
@@ -26,34 +30,40 @@ input:
       enabled: true
       allowed_origins:
         - '*'
-    timeout: '10s'
+    timeout: '1m'
     sync_response:
       status: '${! metadata("status").or("200") }'
       headers:
         Server: '${DL_NAME}'
         Content-Type: 'application/json'
-        WWW-Authenticate: '${! metadata("method").or("") }'
+      metadata_headers:
+        include_patterns:
+          - "WWW-Authenticate"
 
 ## API Router
 
   processors:
+    - mapping: 'meta endpoint = metadata("http_server_request_path").trim_prefix("${DL_PATH}/")'
+
     - switch:
 
 ## Ensure Payload is not exhaustive
-        - check: 'this.or("").bytes().length() > 8192 || content().bytes().length() > 8192'
+        - check: 'this.or("").bytes().length() > 262144 || content().bytes().length() > 262144'
           processors:
             - label: 'request__too_large'
               mapping: |
                 meta status = "413"
-                root.errors =  [ { "title": "Request Error: Payload Too Large", "detail": "The request body exceeds 8KiB." } ]
+                root.errors =  [ { "title": "Request Error: Payload Too Large",
+                                   "detail": "The request exceeds 256KiB." } ]
 
 ## Ensure Request is not exhaustive TODO: split into header and body once Benthos has spearate metadata objects
-        - check: 'metadata().bytes().length() > 8192'
+        - check: 'metadata().bytes().length() > 8196'
           processors:
             - label: 'request__too_long'
               mapping: |
                 meta status = "414"
-                root.errors =  [ { "title": "Request Error: Request-URI Too Long", "detail": "The combined size of request header and request URI exceeds 8KiB." } ]
+                root.errors =  [ { "title": "Request Error: Request-URI Too Long",
+                                   "detail": "The combined size of request header and request URI exceeds 8KiB." } ]
 
 ## Basic Authentication Challenge (All POST requests need authentication!)
         - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization") == null'
@@ -61,7 +71,7 @@ input:
             - label: 'post_request__no_authorization'
               mapping: |
                 meta status = "401"
-                meta method = "Basic"
+                meta "WWW-Authenticate" = "Basic realm=\"DatAasee Admin\""
 
 ## Basic Authentication for POST Requests
         - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization").string().trim_prefix("Basic ").decode("base64").catch("") != env("DL_USER").string() + ":" + file(env("DL_PASS")).string()'
@@ -69,7 +79,8 @@ input:
             - label: 'post_request__invalid_authentication'
               mapping: |
                 meta status = "403"
-                root.errors =  [ { "title": "Request Error: Invalid Credentials", "detail": "The user name or password do match." } ]
+                root.errors =  [ { "title": "Request Error: Invalid Credentials",
+                                   "detail": "The user name or password do not match." } ]
 
 ## Ensure JSON is accepted
         - check: 'metadata("Accept") != null && !metadata("Accept").re_match(".*((application\\/json)|(application\\/vnd.api\\+json)|(\\*\\/\\*)).*")'
@@ -77,70 +88,18 @@ input:
             - label: 'any_request__non_json_content_type'
               mapping: |
                 meta status = "406"
-                root.errors = [ { "title": "Request Error: Not Acceptable", "detail": "Requested response content-type has to be \"application/json\"." } ]
+                root.errors = [ { "title": "Request Error: Not Acceptable",
+                                  "detail": "Requested response content-type has to be \"application/json\"." } ]
 
-## API Endpoint
-        - check: 'metadata("endpoint") == "api" && metadata("http_server_verb") == "GET"'
+## GET Endpoint Handlers
+        - check: 'metadata("http_server_verb") == "GET"'
           processors:
-            - resource: 'handler_api'
+            - resource: 'handlers_get'
 
-## Attributes Endpoint
-        - check: 'metadata("endpoint") == "attributes" && metadata("http_server_verb") == "GET"'
+## POST Endpoint Handlers
+        - check: 'metadata("http_server_verb") == "POST"'
           processors:
-            - resource: 'handler_attributes'
-
-## Backup Endpoint
-        - check: 'metadata("endpoint") == "backup" && metadata("http_server_verb") == "POST"'
-          processors:
-            - resource: 'handler_backup'
-
-## Health Endpoint
-        - check: 'metadata("endpoint") == "health" && metadata("http_server_verb") == "POST"'
-          processors:
-            - resource: 'handler_health'
-
-## Ingest Endpoint
-        - check: 'metadata("endpoint") == "ingest" && metadata("http_server_verb") == "POST"'
-          processors:
-            - resource: 'handler_ingest'
-
-## Insert Endpoint
-        - check: 'metadata("endpoint") == "insert" && metadata("http_server_verb") == "POST"'
-          processors:
-            - resource: 'handler_insert'
-
-## Metadata Endpoint
-        - check: 'metadata("endpoint") == "metadata" && metadata("http_server_verb") == "GET"'
-          processors:
-            - resource: 'handler_metadata'
-
-## Ready Endpoint
-        - check: 'metadata("endpoint") == "ready" && metadata("http_server_verb") == "GET"'
-          processors:
-            - resource: 'handler_ready'
-
-## Schema Endpoint
-        - check: 'metadata("endpoint") == "schema" && metadata("http_server_verb") == "GET"'
-          processors:
-            - resource: 'handler_schema'
-
-## Sources Endpoint
-        - check: 'metadata("endpoint") == "sources" && metadata("http_server_verb") == "GET"'
-          processors:
-            - resource: 'handler_sources'
-
-## Stats Endpoint
-        - check: 'metadata("endpoint") == "stats" && metadata("http_server_verb") == "GET"'
-          processors:
-            - resource: 'handler_stats'
-
-## Unknown Endpoint
-        - processors:
-            - label: 'unknown_endpoint__request_error'
-              mapping: |
-                meta endpoint = "error"
-                meta status = "404"
-                root.errors = [ { "title": "Request Error: Not Found", "detail": "Unknown endpoint." } ]
+            - resource: 'handlers_post'
 
 ## Response Modeling
     - switch:
@@ -164,10 +123,10 @@ input:
             - label: 'any_request__json_api_wrapper'
               mapping: |
                 root = if this.exists("errors") { this.with("errors") } else { this.with("data") }
-                root.meta.name = "${DL_NAME}"
-                root.meta.version = "${DL_VERSION}"
-                root.links.self = "${DL_BASE}/${DL_PATH}/" + metadata("endpoint")
-                root.links.describedby = "${DL_BASE}/${DL_PATH}/api?response=" + metadata("endpoint")
+                root.meta.name = env("DL_NAME")
+                root.meta.version = env("DL_VERSION")
+                root.links.self = "${DL_BASE}${DL_PATH}/" + metadata("endpoint")
+                root.links.describedby = "${DL_BASE}${DL_PATH}/" + "api?response=" + metadata("endpoint")
                 root.links = root.links.merge(metadata("links").or({}))
 
     - sync_response: {}
@@ -187,11 +146,3 @@ output:
             - resource: 'handler_ingest_async'
 
   drop: {}
-
-## Global Cache
-
-cache_resources:
-  - label: 'global_cache'
-    memory:
-      default_ttl: '12h'
-      compaction_interval: '1h'

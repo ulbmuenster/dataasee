@@ -1,5 +1,48 @@
 # Changelog
 
+## Version 0.5 (2025-11-13)
+
+Advanced development release
+
+* **UPDATED** ArcadeDB to 25.10.1
+* **UPDATED** Benthos to 4.60.0
+* **UPDATED** Lowdefy to 4.5.2
+* **ADDED** `doi` filter to `metadata` endpoint
+* **ADDED** export-`format` option to `metadata` endpoint
+* **ADDED** `datacite` export format
+* **ADDED** `bibjson` export format
+* **ADDED** `GraphQL` query example
+* **ADDED** DOI search to frontend
+* **ADDED** edge (relation) type `isDescribedBy`
+* **ADDED** test data to `metadata` endpoint (`id=dataasee`)
+* **ADDED** frontend busy check
+* **ADDED** selective harvesting option for OAI-PMH
+* **ADDED** source rights field for ingest
+* **CHANGED** rename `attributes` endpoint to `enums`
+* **CHANGED** `ingest` endpoint behavior for empty bodies
+* **CHANGED** `ingest` endpoint required fields
+* **CHANGED** endpoint types
+* **CHANGED** `metadata` result order to no sorting by default
+* **CHANGED** `source` property to link
+* **CHANGED** default ports
+* **IMPROVED** API routing
+* **IMPROVED** normalizer script
+* **IMPROVED** interconnect script and its performance
+* **IMPROVED** enumerations in schema
+* **IMPROVED** `health` endpoint
+* **IMPROVED** progress logging
+* **IMPROVED** format parsers
+* **IMPROVED** API developer experience
+* **IMPROVED** frontend user experience
+* **IMPROVED** deployment documentation
+* **IMPROVED** sources endpoint
+* **REMOVED** Prometheus endpoints (Docker logs suffice)
+* **REMOVED** `message` property from schema (included into `description`)
+* **FIXED** ingest via S3
+* **FIXED** authentication challenge (found via wget2)
+* **FIXED** duplicate index entries and index compaction
+* **FIXED** many bugs and security concerns
+
 ## Version 0.3 (2025-05-06)
 
 Enhanced development release

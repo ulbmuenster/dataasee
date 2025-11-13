@@ -1,4 +1,4 @@
-@startuml attributes-endpoint
+@startuml enums-endpoint
 
 interface endpoint [
 Endpoint
@@ -16,7 +16,7 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>/api/v1/attributes</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/api/v1/enums</b>)"
 backend -->> database : " HTTP Client (<b>/query</b>)"
 backend -->> backend : " Cache Query"
 

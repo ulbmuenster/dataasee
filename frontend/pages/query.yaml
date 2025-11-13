@@ -35,22 +35,50 @@ requests:
       url: "/metadata"
       method: "get"
       params:
-        language:
-          _if_none:
-            - _payload: "language"
-            - "sql"
-        query:
-          _payload: "query_text"
+        _if:
+          test:
+            _ne:
+              - _if_none:
+                  - _string.trim:
+                      _payload: "query_text"
+                  - ""
+              - ""
+          then:
+            language:
+              _payload: "language"
+            query:
+              _payload: "query_text"
+          else:
+            language: "sql"
+            query: "SELECT * FROM metadata"
 
 events:
-  onMount:
-    - id: "ready_enter"
-      type: "Request"
-      params: "ready_request"
 
+  onInit:
     - id: "schema_enter"
       type: "Request"
       params: "schema_request"
+
+    - id: "set_props"
+      type: "SetState"
+      params:
+        prop_list:
+          _array.filter:
+            on:
+              _object.keys:
+                _request: "schema_request.data.data.attributes"
+            callback:
+              _function:
+                __not:
+                  __string.startsWith:
+                    on:
+                      __args: 0
+                    searchString: "@"
+
+  onMountAsync:
+    - id: "ready_enter"
+      type: "Request"
+      params: "ready_request"
 
 areas:
   content:
@@ -95,17 +123,17 @@ areas:
                               label:
                                 disabled: true
                               options:
-                                - label: "ArcadeDB SQL - Structured Query Language (<a href='https://docs.arcadedb.com/#SQL'>Help</a>)"
+                                - label: "ArcadeDB SQL - Structured Query Language (<a target='_blank' href='https://docs.arcadedb.com/#sql'>Help</a>)"
                                   value: "sql"
-                                - label: "Cypher Query Language (<a href='https://neo4j.com/docs/cypher-manual/current/'>Help</a>)"
+                                - label: "Cypher Query Language (<a target='_blank' href='https://neo4j.com/docs/cypher-manual/current/'>Help</a>)"
                                   value: "cypher"
-                                - label: "Gremlin Query Language (<a href='https://kelvinlawrence.net/book/PracticalGremlin.html'>Help</a>)"
+                                - label: "Gremlin Query Language (<a target='_blank' href='https://kelvinlawrence.net/book/PracticalGremlin.html'>Help</a>)"
                                   value: "gremlin"
-                                - label: "GraphQL - Graph Query Language (<a href='https://graphql.org/learn/'>Help</a>)"
+                                - label: "GraphQL - Graph Query Language (<a target='_blank' href='https://graphql.org/learn/'>Help</a>)"
                                   value: "graphql"
-                                - label: "MQL - MongoDB Query Language (<a href='https://www.mongodb.com/docs/manual/tutorial/query-documents/'>Help</a>)"
+                                - label: "MQL - MongoDB Query Language (<a target='_blank' href='https://www.mongodb.com/docs/manual/tutorial/query-documents/'>Help</a>)"
                                   value: "mongo"
-                                # - label: "SPARQL - SPARQL Protocol and RDF Query Language (<a href='https://www.w3.org/TR/sparql11-query/'>Help</a>)"
+                                # - label: "SPARQL - SPARQL Protocol and RDF Query Language (<a target='_blank' href='https://www.w3.org/TR/sparql11-query/'>Help</a>)"
                                 #   value: sparql
 ## Schema Info
                           - id: "schema_info"
@@ -121,13 +149,29 @@ areas:
                             properties:
                               label:
                                 disabled: true
-                                extra: "A custom query is limited to 100 results per query!"
+                                extra: "Custom query (limited to 100 results!)"
                                 extraStyle:
                                   text-align: "right"
-                              placeholder: "-- here goes the query"
+                              placeholder: "SELECT * FROM metadata; -- Use Shift+Enter for new-lines"
                               autoSize: true
                               maxLength: 4096
                               rows: 7
+## Properties
+                          - id: "props"
+                            type: "Label"
+                            properties:
+                              title: "Properties (Columns)"
+                            blocks:
+                              - id: "prop_list"
+                                type: "List"
+                                properties:
+                                  direction: "row"
+                                blocks:
+                                  - id: "prop_name.$"
+                                    type: "Tag"
+                                    properties:
+                                      title:
+                                        _state: "prop_list.$"
 ## Submit Button
                           - id: "enter_button"  # Do not change! This name is needed to trigger by pressing "Enter"
                             type: "Button"
@@ -198,10 +242,12 @@ areas:
                           content: |
                             The custom query allows to submit a read-only query in a selected query language to the backend database.
 
-                            * **Language**: One of: SQL, Cypher, Gremlin, GraphQL, or MQL.
+                            * **Language**: One of: SQL, Cypher, Gremlin, GraphQL, or MQL (query language help links in selector).
                             * **Comment**: The self-description of the database schema.
                             * **Query**: A query with maximum length 4096 characters.
+                            * **Properties**: An overview list of properties in the `metadata` type.
 
+                            In case of an empty query text, the SQL query: `SELECT * FROM metadata` is send, no matter the language.
                       - id: "query_detail"
                         type: "Collapse"
                         properties:
@@ -216,7 +262,7 @@ areas:
                                 type: "Markdown"
                                 properties:
                                   content: |
-                                    1. The database comment is retrieved by a GET request to:
+                                    1. The database comment and properties are retrieved by a GET request to:
 
                                         ```
                                         /api/v1/schema
@@ -226,7 +272,7 @@ areas:
                                         ```
                                         /api/v1/metadata?language=x&query=y
                                         ```
-                                       The server filters null or empty filters.
+                                       The server filters null or empty fields.
 ## Results
       - id: "results_wrapper"
         type: "Card"

@@ -1,0 +1,10 @@
+---
+---
+
+// This stylesheet is used with Github pages to adjust the content width.
+
+@import "{{ site.theme }}";
+
+.inner {
+  max-width: 55%;
+}

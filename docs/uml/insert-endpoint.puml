@@ -17,7 +17,7 @@ Database
 ]
 
 endpoint <<-->> backend : " HTTP Server (<b>/api/v1/insert</b>)"
-backend -->> backend : " JSON Schema (<b>validate</b>)"
-backend -->> database : " HTTP Client (<b>/query</b>)\n HTTP Client (<b>/command</b>)"
+backend -->> backend : " JSON Schema"
+backend -->> database : " HTTP Client (<b>/command</b>)"
 
 @enduml

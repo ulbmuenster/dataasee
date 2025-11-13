@@ -24,7 +24,7 @@ requests:
       url: "/api"
       method: "get"
 
-  - id: "schema_request"
+  - id: "api_schema_request"
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
@@ -32,11 +32,18 @@ requests:
         _global: "schema"
     properties:
       url:
-        _payload: "schema"
+        _string.slice:
+          on:
+            _payload: "schema"
+          start:
+            _string.lastIndexOf:
+              on:
+                _payload: "schema"
+              searchValue: "/"
       method: "get"
 
 events:
-  onMount:
+  onMountAsync:
     - id: "ready_enter"
       type: "Request"
       params: "ready_request"
@@ -120,6 +127,34 @@ areas:
           content:
             gutter: 16
             blocks:
+## API Address
+              - id: "apipath_card"
+                type: "Card"
+                properties:
+                  bordered: false
+                  size: "small"
+                  title: "API Address"
+                  headerStyle:
+                    font-size: "large"
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "openapi_link"
+                        type: "Anchor"
+                        properties:
+                          newTab: true
+                          url:
+                            _string.concat:
+                              - _location: "protocol"
+                              - "//"
+                              - _location: "hostname"
+                              - ":"
+                              - "8343"  # TODO use dynamic value
+                              - "/api/v1"
+                        style:
+                          font-weight: "bold"
+## API Endpoints
               - id: "endpoints_card"
                 type: "Card"
                 properties:
@@ -149,13 +184,13 @@ areas:
                                     - if:
                                         _eq:
                                           - _state: "endpoints.$.method"
-                                          - "GET"
-                                      then: "#85c1e9"
+                                          - "POST"
+                                      then: "#82e0aa"
                                     - if:
                                         _eq:
                                           - _state: "endpoints.$.method"
-                                          - "POST"
-                                      then: "#82e0aa"
+                                          - "GET"
+                                      then: "#85c1e9"
                                   default: "#C0C0C0"
                             blocks:
                               - id: "method.$"
@@ -172,7 +207,7 @@ areas:
                               - id: "path.$"
                                 type: "Title"
                                 layout:
-                                  span: 5
+                                  span: 4
                                 style:
                                   padding-left: "2em"
                                   font-family: "monospace"
@@ -183,7 +218,7 @@ areas:
                               - id: "summary.$"
                                 type: "Span"
                                 layout:
-                                  span: 7
+                                  span: 8
                                 properties:
                                   style:
                                     font-size: "large"
@@ -213,7 +248,7 @@ areas:
                                           _state: "endpoints.$.parameters"
                                     - id: "get_parameter_schema"
                                       type: "Request"
-                                      params: "schema_request"
+                                      params: "api_schema_request"
                                     - id: "refer_parameter_schema"
                                       type: "Link"
                                       params:
@@ -224,7 +259,7 @@ areas:
                                             - _uri.encode:
                                                 _json.stringify:
                                                   on:
-                                                    _request: "schema_request.data"
+                                                    _request: "api_schema_request.data"
                               - id: "request.$"
                                 type: "Anchor"
                                 layout:
@@ -249,7 +284,7 @@ areas:
                                           _state: "endpoints.$.request"
                                     - id: "get_request_schema"
                                       type: "Request"
-                                      params: "schema_request"
+                                      params: "api_schema_request"
                                     - id: "refer_request_schema"
                                       type: "Link"
                                       params:
@@ -260,7 +295,7 @@ areas:
                                             - _uri.encode:
                                                 _json.stringify:
                                                   on:
-                                                    _request: "schema_request.data"
+                                                    _request: "api_schema_request.data"
                               - id: "response.$"
                                 type: "Anchor"
                                 layout:
@@ -285,7 +320,7 @@ areas:
                                           _state: "endpoints.$.response"
                                     - id: "get_response_schema"
                                       type: "Request"
-                                      params: "schema_request"
+                                      params: "api_schema_request"
                                     - id: "refer_response_schema"
                                       type: "Link"
                                       params:
@@ -296,7 +331,7 @@ areas:
                                             - _uri.encode:
                                                 _json.stringify:
                                                   on:
-                                                    _request: "schema_request.data"
+                                                    _request: "api_schema_request.data"
                               - id: "secure.$"
                                 type: "Icon"
                                 style:
@@ -311,7 +346,7 @@ areas:
                                         _state: "endpoints.$.secured"
                                       then: "AiFillLock"
                                       else: "AiFillUnlock"
-
+## OpenAPI Link
               - id: "openapi_card"
                 type: "Card"
                 properties:
@@ -336,6 +371,8 @@ areas:
                                   _json.stringify:
                                     on:
                                       _request: "endpoints_request.data"
+                          style:
+                            font-weight: "bold"
 
   sider:
     _ref: "templates/sider.yaml"

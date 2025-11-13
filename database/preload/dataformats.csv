@@ -1,2 +1,19 @@
 name, data
+application/gzip, gz
+application/msword, doc
 application/pdf, pdf
+application/rtf, rtf
+application/vnd.ms-excel, xls
+application/vnd.oasis.opendocument.spreadsheet, ods
+application/vnd.oasis.opendocument.text, odt
+application/vnd.rar, rar
+application/x-tar, tar
+application/zip, zip
+audio/mpeg, mp3
+image/jpeg, jpeg jpg
+image/svg+xml, svg
+text/csv, csv
+text/html, html htm
+text/markdown, md
+text/plain, txt
+video/x-msvideo, avi

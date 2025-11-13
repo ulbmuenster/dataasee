@@ -1,16 +1,16 @@
 # Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
 
 processor_resources:
-  - label: 'handler_attributes'
+  - label: 'handler_enums'
     processors:
       - switch:
           - check: 'metadata("type") == null'
             processors:
               - cached:
                   cache: 'global_cache'
-                  key: 'attributes'
+                  key: 'enums'
                   processors:
-                    - label: 'handler_attributes__arcadedb_query_all'
+                    - label: 'handler_enums__arcadedb_query_all'
                       arcadedb:
                         host: '${DB_HOST}'
                         port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
@@ -54,59 +54,69 @@ processor_resources:
                                                               WHERE type = 'edge'
                                                               ORDER BY name)"""
                         response: |
-                          root.data.type = "metadata"
+                          root.data.type = "support"
                           root.data.id = timestamp_unix().string()
                           root.data.attributes = this.result.0
 
           - check: 'metadata("type").or("").lowercase().re_match("resourcetypes|languages|licenses|synonyms|externalitems|categories|schemas")'
             processors:
-              - label: 'handler_attributes__arcadedb_query_single'
-                arcadedb:
-                  host: '${DB_HOST}'
-                  port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                  endpoint: 'query'
-                  database: '${DB_NAME}'
-                  username: '${DB_USER}'
-                  password: '${DB_PASS}'
-                  request: |
-                    root.language = "sql"
-                    root.command = """SELECT unionall(name) AS %s
-                                      FROM (SELECT name
-                                            FROM %s
-                                            ORDER BY name)""".format(metadata("type").lowercase(),metadata("type").lowercase())
-                  response: |
-                    root.data.type = "metadata"
-                    root.data.id = timestamp_unix().string()
-                    root.data.attributes = this.result.0
+              - cached:
+                  cache: 'global_cache'
+                  key: '${! metadata("type").lowercase() }'
+                  processors:
+                    - label: 'handler_enums__arcadedb_query_single'
+                      arcadedb:
+                        host: '${DB_HOST}'
+                        port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                        endpoint: 'query'
+                        database: '${DB_NAME}'
+                        username: '${DB_USER}'
+                        password: '${DB_PASS}'
+                        request: |
+                          root.language = "sql"
+                          root.command = """SELECT unionall(name) AS %s
+                                            FROM (SELECT name
+                                                  FROM %s
+                                                  ORDER BY name)""".format(metadata("type").lowercase(),metadata("type").lowercase())
+                        response: |
+                          root.data.type = "support"
+                          root.data.id = timestamp_unix().string()
+                          root.data.attributes = this.result.0
 
           - check: 'metadata("type").or("").lowercase() == "relations"'
             processors:
-              - label: 'handler_attributes__arcadedb_query_relations'
-                arcadedb:
-                  host: '${DB_HOST}'
-                  port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                  endpoint: 'query'
-                  database: '${DB_NAME}'
-                  username: '${DB_USER}'
-                  password: '${DB_PASS}'
-                  request: |
-                    root.language = "sql"
-                    root.command = """SELECT unionall(name) AS relations
-                                      FROM (SELECT name
-                                            FROM schema:types
-                                            WHERE type = 'edge'
-                                            ORDER BY name)"""
-                  response: |
-                    root.data.type = "metadata"
-                    root.data.id = timestamp_unix().string()
-                    root.data.attributes = this.result.0
+              - cached:
+                  cache: 'global_cache'
+                  key: 'relations'
+                  processors:
+                    - label: 'handler_enums__arcadedb_query_relations'
+                      arcadedb:
+                        host: '${DB_HOST}'
+                        port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                        endpoint: 'query'
+                        database: '${DB_NAME}'
+                        username: '${DB_USER}'
+                        password: '${DB_PASS}'
+                        request: |
+                          root.language = "sql"
+                          root.command = """SELECT unionall(name) AS relations
+                                            FROM (SELECT name
+                                                  FROM schema:types
+                                                  WHERE type = 'edge'
+                                                  ORDER BY name)"""
+                        response: |
+                          root.data.type = "support"
+                          root.data.id = timestamp_unix().string()
+                          root.data.attributes = this.result.0
 
           - processors:
               - mapping: |
                   meta status = "404"
-                  root.errors = [ { "title": "Request Error: Not Found", "detail": "Requested attribute type not found." } ]
+                  root.errors = [ { "title": "Request Error: Not Found",
+                                    "detail": "Requested enumeration type not found." } ]
 
       - catch:
           - mapping: |
               meta status = "500"
-              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]
+              root.errors = [ { "title": "Server Error: Internal Server Error",
+                                "detail": "Database error." } ]

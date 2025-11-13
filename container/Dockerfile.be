@@ -11,11 +11,11 @@ RUN wget -q https://github.com/redpanda-data/benthos/archive/refs/tags/v${VERSIO
 
 WORKDIR /go/benthos-${VERSION}
 
-RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"\n\t_ \"github.com/redpanda-data/connect/v4/public/components/prometheus\"";next}1' cmd/benthos/main.go > cmd/benthos/temp.go && mv cmd/benthos/temp.go cmd/benthos/main.go
+# TODO: test if `go get -u` works again
+RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"";next}1' cmd/benthos/main.go > cmd/benthos/temp.go && mv cmd/benthos/temp.go cmd/benthos/main.go
 RUN go mod tidy \
- && go get -u ./... \
+ && go get ./... \
  && go build -ldflags "-w -s -X github.com/redpanda-data/benthos/v4/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/benthos
-
 
 ## Development Target
 

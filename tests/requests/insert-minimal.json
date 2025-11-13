@@ -12,6 +12,6 @@
   "resourceType": "Article",
 
   "identifiers": [
-    { "name": "doi", "data": "10.0000/abcdef" }
+    { "name": "doi", "data": "doi:10.0000/abcdef" }
   ]
 }

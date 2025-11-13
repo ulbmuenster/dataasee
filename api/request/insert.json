@@ -4,7 +4,7 @@
 
   "title": "DatAasee Insert Endpoint Request", "type": "object", "required": ["name", "creators", "publisher", "publicationYear", "resourceType", "identifiers"], "properties": {
 
-    "categories": { "type": "array", "title": "Controlled keywords classifying this record.", "maxItems": 4, "uniqueItems": true,
+    "categories": { "type": "array", "title": "Controlled keywords classifying this record (enumerated).", "maxItems": 4, "uniqueItems": true,
 
       "items": { "type": "string", "title": "Category", "maxLength": 255 } },
 
@@ -24,7 +24,7 @@
 
     "publicationYear": { "type": ["integer","null"], "title": "First year of publication denoted by up to four digits.", "minimum": -9999, "maximum": 9999 },
 
-    "resourceType": { "type": ["string","null"], "title": "Primary type of resource.", "minLength": 1, "maxLength": 255 },
+    "resourceType": { "type": ["string","null"], "title": "Primary type of resource (enumerated).", "minLength": 1, "maxLength": 255 },
 
     "identifiers": { "type": ["array","null"], "title": "Type and URI of identifiers.", "minItems": 0, "maxItems": 255, "uniqueItems": true,
 
@@ -42,7 +42,7 @@
 
         "data": { "type": "string",  "title":"Synonym", "maxLength": 4095 } } } },
 
-    "language": { "type": "string", "title": "Primary content language.", "maxLength": 255 },
+    "language": { "type": "string", "title": "Primary content language (enumerated).", "maxLength": 255 },
 
     "subjects": { "type": "array", "title": "Classifier and URI identifier of subjects.", "maxItems": 15, "uniqueItems": true,
 
@@ -54,7 +54,7 @@
 
     "version": { "type": "string",  "title": "Short identifier fixing the state.", "maxLength": 255 },
 
-    "license": { "type": "string", "title": "SPDX short name of license.", "maxLength": 255 },
+    "license": { "type": "string", "title": "SPDX short name of license (enumerated).", "maxLength": 255 },
 
     "rights": { "type": "string", "title": "Additional rights agreements.", "maxLength": 65535 },
 
@@ -67,8 +67,6 @@
         "data": { "type": ["string","null"], "title": "Funder", "maxLength": 4095 } } } },
 
     "description": { "type": "string", "title": "Summary of contents and purpose.", "maxLength": 65535 },
-
-    "message": { "type": "string", "title": "Note about this record.", "maxLength": 65535 },
 
     "externalItems": { "type": "array", "title": "Type and URI identifier of external related links", "maxItems": 255, "uniqueItems": true,
 

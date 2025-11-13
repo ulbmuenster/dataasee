@@ -13,27 +13,32 @@ processor_resources:
           result_map: 'meta ingesting = this'
 
       - switch:
-          - check: 'metadata("ingesting")'
-            processors:
-              - mapping: |
-                  meta status = "503"
-                  root.errors = [ { "title": "Server error: Service Unavailable", "detail": "Already ingesting." } ]
-
           - check: 'content().string().trim() == "" || this.catch(null) == {}'
             processors:
               - mapping: |
                   meta status = "200"
                   root.data.type = "system"
                   root.data.id = timestamp_unix().string()
-                  root.data.attributes.started = false
+                  root.data.attributes.started = metadata("ingesting").bool()
+
+          - check: 'metadata("ingesting")'
+            processors:
+              - mapping: |
+                  meta status = "503"
+                  root.errors = [ { "title": "Server error: Service Unavailable",
+                                    "detail": "Already ingesting." } ]
 
           - processors:
               - try:
                   - label: 'handler_ingest__filter_body'
                     mapping: |
-                      root = this.catch({}).with("source","steward","username","password")
-                      root.method = this.method.or("").lowercase()
-                      root.format = this.format.or("").lowercase()
+                      root = this.catch({}).with("username","password")
+                      root.source = this.source.or("").trim()
+                      root.steward = this.steward.or("").trim()
+                      root.method = this.method.or("").trim().lowercase()
+                      root.format = this.format.or("").trim().lowercase()
+                      root.rights = this.rights.or("").trim()
+                      root.options = this.options.or("").trim().trim("&")
 
                   - label: 'handler_ingest__validate_body'
                     json_schema:
@@ -58,7 +63,8 @@ processor_resources:
               - catch:
                   - mapping: |
                       meta status = "400"
-                      root.errors = [ { "title": "Request Error: Bad Request", "detail": "Request failed to pass schema validation.", "links": { "about": "${DL_BASE}/${DL_PATH}/api?request=ingest" } } ]
+                      root.errors = [ { "title": "Request Error: Bad Request",
+                                        "detail": "Request failed to pass schema validation.", "links": { "about": "${DL_BASE}${DL_PATH}/api?request=ingest" } } ]
 
 
   - label: 'handler_ingest_async'
@@ -67,15 +73,15 @@ processor_resources:
           - check: 'metadata("ingest") != null'
             processors:
               - log:
-                  message: 'Starting ingest from ${! metadata("ingest").source } via ${! metadata("ingest").method } as ${! metadata("ingest").format }.'
+                  message: 'Ingest started from ${! metadata("ingest").source } via ${! metadata("ingest").method } as ${! metadata("ingest").format }.'
 
               - mapping: |
                   meta timer_start = timestamp_unix()
                   meta count = 0
+                  meta failed = 0
 
-              - resource: 'methods'
-
-              - arcadedb:
+              - label: 'handler_ingest_async__arcadedb_insert_source'
+                arcadedb:
                   host: '${DB_HOST}'
                   port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
                   endpoint: 'command'
@@ -84,14 +90,21 @@ processor_resources:
                   password: '${DB_PASS}'
                   request: |
                     root.language = "sql"
-                    root.command = "REBUILD INDEX *;"
+                    root.params.name = metadata("timer_start").ts_format("2006-01-02 15:04:05", "UTC")
+                    root.params.data = metadata("ingest").source
+                    root.command = "INSERT INTO sources SET name = :name, data = :data"
                   response: |
-                    root = {}
+                    meta source_rid = this.result.0."@rid"
+
+              - resource: 'methods'
+
+              - log:
+                  message: 'Ingest completed from ${! metadata("ingest").source } of ${! metadata("count").string() } records (of which ${! metadata("failed").string() } failed) after ${! "%.1f".format((timestamp_unix() - metadata("timer_start")) / 3600.0) }h.'
 
               - resource: 'interconnect'
 
               - log:
-                  message: 'Finished ingest of ${! metadata("count").string() } records from ${! metadata("ingest").source } after ${! "%.1f".format((timestamp_unix() - metadata("timer_start")) / 3600.0) }h.'
+                  message: 'Interconnect started asynchronously in database. See database log for details.'
 
               - mapping: |
                   meta ingest = deleted()

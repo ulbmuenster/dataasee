@@ -24,8 +24,9 @@ processor_resources:
                                                               FROM schema:types
                                                               WHERE name = 'metadata')
                                                         WHERE name <> 'related' AND
-                                                              name <> 'visited'),
-                                              $edges = (SELECT map(name, custom) AS edges
+                                                              name <> 'visited' AND
+                                                              name <> 'selfies'),
+                                              $edges = (SELECT map("@" + name, custom) AS edges
                                                         FROM schema:types
                                                         WHERE type = 'edge'),
                                               $infos = (SELECT map("@comment",custom.comment,"@version",custom.version) AS infos
@@ -33,11 +34,12 @@ processor_resources:
                                                         WHERE name = 'metadata')
                                     UNWIND schemas)"""
                 response: |
-                  root.data.type = "metadata"
+                  root.data.type = "support"
                   root.data.id = timestamp_unix().string()
                   root.data.attributes = this.result.0.schema
 
       - catch:
           - mapping: |
               meta status = "500"
-              root.errors = [ { "title": "Server Error: Internal Server Error", "detail": "Database error." } ]
+              root.errors = [ { "title": "Server Error: Internal Server Error",
+                                "detail": "Database error." } ]

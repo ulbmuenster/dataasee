@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# About: Prints JSON responses from GET requests to localhost endpoints
+# Usage: ./get "endpoint?param=value&arg=val"
+
+PORT="${PORT:-8343}"
+
+echo "\n http://localhost:$PORT/api/v1/$1 responds:\n"
+
+echo "GET /api/v1/$1 HTTP/1.1\r\nHost: localhost\r\n\r\n" |
+timeout 1 nc localhost $PORT |
+sed 's/:{/:{\n /g; s/:\[/:\[\n /g; s/,/,\n /g; s/\],/\],\n/g; s/},/},\n/g'
+echo
+echo

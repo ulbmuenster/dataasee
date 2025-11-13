@@ -55,6 +55,8 @@ services:
         BUILDKIT_INLINE_CACHE: 1
         IMGREPO: "${ORIGIN:-}"
         VERSION: "$FE_VERSION"
+        DL_HOST: "backend"
+        DL_PORT: "8343"
         DL_PATH: "$DL_PATH"
         DL_VERSION: "$DL_VERSION"
       context: "."

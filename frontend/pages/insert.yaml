@@ -30,7 +30,7 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     properties:
-      url: "/attributes"
+      url: "/enums"
       method: "get"
 
   - id: "submit_request"
@@ -232,7 +232,7 @@ events:
       type: "Request"
       params: "attributes_request"
 
-  onMount:
+  onMountAsync:
     - id: "ready_enter"
       type: "Request"
       params: "ready_request"
@@ -246,6 +246,7 @@ areas:
         type: "Title"
         properties:
           content: "Insert Record"
+          type: "danger"
           level: 1
 ## Metadata Card
       - id: "metadata"
@@ -636,20 +637,6 @@ areas:
                               _request: "schema_request.data.data.attributes.description.comment"
                             extraStyle:
                               text-align: "right"
-## Message Textbox
-                      - id: "message"
-                        type: "TextArea"
-                        required: false
-                        properties:
-                          label:
-                            span: 4
-                            align: "right"
-                            title:
-                              _request: "schema_request.data.data.attributes.message.label"
-                            extra:
-                              _request: "schema_request.data.data.attributes.message.comment"
-                            extraStyle:
-                              text-align: "right"
 ## External Links
                       - id: "links_wrapper"
                         type: "Label"
@@ -769,7 +756,7 @@ areas:
                                 colon: false
                                 disabled: true
 ## Submit Button
-                          - id: "submit_button"
+                          - id: "enter_button"
                             type: "Button"
                             properties:
                               block: true
@@ -791,8 +778,6 @@ areas:
                                     params:
                                       username: ""
                                       password: ""
-                                  - id: "submit_reset_e"
-                                    type: "Reset"
 ## Feedback Banner
                           - id: "feedback_banner"
                             type: "Alert"
@@ -827,12 +812,14 @@ areas:
                         properties:
                           content: |
                             The insert record form allows adding a metadata record to the metadata-lake.
+                            An insert is meant for single records that cannot be ingested.
+                            Enumerated entries (resource type, language, license, categories) have to selected from a specified set, obtainable via the `enums` endpoint.
 
                             * **Mandatory Metadata** is the minimally required set of properties which needs to be provided.
                               - **Title** (required).
                               - **Creator(s)**, a list of pairs of the full display name and an optional identifier URL (required).
                               - **Publisher** (required).
-                              - **Published** (required).
+                              - **Published (Year)** (required).
                               - **Resource Type**, a selection of the types from [DataCite](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/resourceTypeGeneral/) (required).
                               - **Identifiers**, a list of pairs of identifier types and identifiers (required).
                             * **Optional Metadata** is a set of additional set of properties which can be provided.
@@ -844,11 +831,12 @@ areas:
                               - **Rights**
                               - **Funding(s)**, a list of pairs of award identifier and funder name.
                               - **Description**
-                              - **Message**
                               - **Link(s)**, a list of pairs of label and associated URL.
                             * **Social Metadata** is a set of properties which can beprovided to improve classification or findability.
                               - **Category(s)**, a selection of categories from a controlled vocabulary.
                               - **Keyword(s)**, a comma-separated list of uncontrolled keywords.
+
+                            **Creator identifier URL, Subject identifier URL, and Link URL must be valid [URIs](https://en.wikipedia.org/wiki/Uniform_Resource_Identifier#Syntax)!**
 
                       - id: "insert_detail"
                         type: "Collapse"
@@ -872,7 +860,7 @@ areas:
                                     2. The property enumerations are retrieved by a GET request to:
 
                                         ```
-                                        /api/v1/attributes
+                                        /api/v1/enums
                                         ```
                                     3. Clicking "Submit" sends a POST request to:
 
