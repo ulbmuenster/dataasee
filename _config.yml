@@ -10,6 +10,8 @@ include:
   - docs/arc42.md
   - docs/deps.md
   - docs/schema.md
+exclude:
+  - index.html
 theme: jekyll-theme-slate
 plugins:
   - jekyll-relative-links
