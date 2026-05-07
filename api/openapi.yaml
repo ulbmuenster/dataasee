@@ -4,8 +4,8 @@ openapi: "3.0.3"
 
 info:
   title: "DatAasee API"
-  description: "Public and protected API of the DatAasee metadata lake."
-  termsOfService: "http://dataasee.uni-muenster.de"
+  description: "The DatAasee API is a JSON/REST API of the DatAasee metadata-lake to search, filter, query centralized metadata from distributed sources."
+  termsOfService: "https://dataasee.uni-muenster.de"
   contact:
     name: "DatAasee Support"
     url: "https://ulbmuenster.github.io/dataasee"
@@ -15,7 +15,7 @@ info:
   version: "v1"
 
 servers:
-  - url: "http://dataasee.uni-muenster.de:8343/api/v1"
+  - url: "https://dataasee.uni-muenster.de:8343/api/v1"
     description: "DatAasee API Server"
 
 components:
@@ -23,11 +23,15 @@ components:
     basicAuth:
       type: "http"
       scheme: "basic"
+      description: "Basic authentication for POST endpoints."
 
 tags:
   - name: "data"
+    description: "The \"data\" endpoints return payload data."
   - name: "support"
+    description: "The \"support\" endpoints return descriptions about the data."
   - name: "system"
+    description: "The \"system\" endpoints return API information and trigger actions."
 
 paths:
 
@@ -64,7 +68,7 @@ paths:
               url: "/api?params=api"
       responses:
         default:
-          description: "All Responses"
+          description: "All \"api\" Responses"
           content:
             "application/json":
               schema:
@@ -80,7 +84,7 @@ paths:
       summary: "Returns service readiness."
       responses:
         default:
-          description: "All Responses"
+          description: "All \"ready\" Responses"
           content:
             "application/json":
               schema:
@@ -88,40 +92,24 @@ paths:
                 externalDocs:
                   url: "/api?response=ready"
 
-  "/enums":
-    get:
-      operationId: "dataasee-enums"
-      tags:
-        - "support"
-      summary: "Returns enumerated attributes."
-      parameters:
-        - name: "type"
-          in: "query"
-          description: "Optional; if provided only selected enumerated type is returned."
-          required: false
-          schema:
-            type: "string"
-            externalDocs:
-              url: "/api?params=enums"
-      responses:
-        default:
-          description: "All Responses"
-          content:
-            "application/json":
-              schema:
-                type: "object"
-                externalDocs:
-                  url: "/api?response=enums"
-
   "/schema":
     get:
       operationId: "dataasee-schema"
       tags:
         - "support"
       summary: "Returns database schema."
+      parameters:
+        - name: "prop"
+          in: "query"
+          description: "Optional; if provided only selected property is returned."
+          required: false
+          schema:
+            type: "string"
+            externalDocs:
+              url: "/api?params=schema"
       responses:
         default:
-          description: "All Responses"
+          description: "All \"schema\" Responses"
           content:
             "application/json":
               schema:
@@ -129,44 +117,12 @@ paths:
                 externalDocs:
                   url: "/api?response=schema"
 
-  "/sources":
-    get:
-      operationId: "dataasee-sources"
-      tags:
-        - "support"
-      summary: "Returns ingested metadata sources."
-      responses:
-        default:
-          description: "All Responses"
-          content:
-            "application/json":
-              schema:
-                type: "object"
-                externalDocs:
-                  url: "/api?response=sources"
-
-  "/stats":
-    get:
-      operationId: "dataasee-stats"
-      tags:
-        - "support"
-      summary: "Returns metadata record statistics."
-      responses:
-        default:
-          description: "All Responses"
-          content:
-            "application/json":
-              schema:
-                type: "object"
-                externalDocs:
-                  url: "/api?response=stats"
-
   "/metadata":
     get:
       operationId: "dataasee-metadata"
       tags:
         - "data"
-      summary: "Returns queried metadata records."
+      summary: "Returns metadata records."
       parameters:
         - name: "id"
           in: "query"
@@ -192,17 +148,9 @@ paths:
             type: "string"
             externalDocs:
               url: "/api?params=metadata"
-        - name: "query"
-          in: "query"
-          description: "Optional; if provided, query results using this value are returned, the query language is set by `language`."
-          required: false
-          schema:
-            type: "string"
-            externalDocs:
-              url: "/api?params=metadata"
         - name: "language"
           in: "query"
-          description: "Optional; if provided, filter results by `language` are returned, also used to set `query` language."
+          description: "Optional; if provided, filter results by `language` are returned."
           required: false
           schema:
             type: "string"
@@ -234,7 +182,7 @@ paths:
               url: "/api?params=metadata"
         - name: "format"
           in: "query"
-          description: "Optional; if provided, filter results by `metadataFormat` are returned, also used to set format of single record"
+          description: "Optional; if provided, filter results by `rawFormat` are returned, also used to set format of single record"
           required: false
           schema:
             type: "string"
@@ -253,7 +201,7 @@ paths:
           description: "Optional; if provided, filter results greater or equal `publicationYear` are returned."
           required: false
           schema:
-            type: "string"
+            type: "integer"
             externalDocs:
               url: "/api?params=metadata"
         - name: "till"
@@ -261,7 +209,7 @@ paths:
           description: "Optional; if provided, filter results lesser or equal `publicationYear` are returned."
           required: false
           schema:
-            type: "string"
+            type: "integer"
             externalDocs:
               url: "/api?params=metadata"
         - name: "page"
@@ -269,7 +217,7 @@ paths:
           description: "Optional; if provided, the n-th page of results is returned."
           required: false
           schema:
-            type: "number"
+            type: "integer"
             externalDocs:
               url: "/api?params=metadata"
         - name: "newest"
@@ -282,7 +230,7 @@ paths:
               url: "/api?params=metadata"
       responses:
         default:
-          description: "All Responses"
+          description: "All \"metadata\" Responses"
           content:
             "application/json":
               schema:
@@ -290,35 +238,50 @@ paths:
                 externalDocs:
                   url: "/api?response=metadata"
 
-  "/backup":
-    post:
-      operationId: "dataasee-backup"
+  "/database":
+    get:
+      operationId: "dataasee-database"
       tags:
-        - "system"
-      summary: "Triggers database backup."
-      security:
-        - basicAuth: []
+        - "data"
+      summary: "Returns metadata queries."
+      parameters:
+        - name: "language"
+          in: "query"
+          description: "Optional; if provided, sets `query` language, by default SQL is assumed."
+          required: false
+          schema:
+            type: "string"
+            externalDocs:
+              url: "/api?params=database"
+        - name: "query"
+          in: "query"
+          description: "Required; the query."
+          required: true
+          schema:
+            type: "string"
+            externalDocs:
+              url: "/api?params=database"
       responses:
         default:
-          description: "All Responses"
+          description: "All \"database\" Responses"
           content:
             "application/json":
               schema:
                 type: "object"
                 externalDocs:
-                  url: "/api?response=backup"
+                  url: "/api?response=database"
 
   "/health":
     post:
       operationId: "dataasee-health"
       tags:
         - "system"
-      summary: "Probes and returns service liveness."
+      summary: "Returns service liveness."
       security:
         - basicAuth: []
       responses:
         default:
-          description: "All Responses"
+          description: "All \"health\" Responses"
           content:
             "application/json":
               schema:
@@ -342,40 +305,18 @@ paths:
               type: "object"
               externalDocs:
                 url: "/api?request=ingest"
+          "application/x-www-form-urlencoded":
+            schema:
+              type: "object"
+              externalDocs:
+                url: "/api?request=ingest"
         required: true
       responses:
         default:
-          description: "All Responses"
+          description: "All \"ingest\" Responses"
           content:
             "application/json":
               schema:
                 type: "object"
                 externalDocs:
                   url: "/api?response=ingest"
-
-  "/insert":
-    post:
-      operationId: "dataasee-insert"
-      tags:
-        - "system"
-      summary: "Inserts single metadata record (discouraged)."
-      security:
-        - basicAuth: []
-      requestBody:
-        description: "All Requests"
-        content:
-          "application/json":
-            schema:
-              type: "object"
-              externalDocs:
-                url: "/api?request=insert"
-        required: true
-      responses:
-        default:
-          description: "All Responses"
-          content:
-            "application/json":
-              schema:
-                type: "object"
-                externalDocs:
-                  url: "/api?response=insert"

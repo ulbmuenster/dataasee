@@ -2,68 +2,62 @@
 
 processor_resources:
   - label: 'method_oai_pmh'
-    while:
-      at_least_once: true
-      max_loops: 0
-      check: 'metadata("resumptionToken").type() != "null"'
-      processors:
-        - http:
-            url: '${! metadata("ingest").source + "?verb=ListRecords&" + metadata("resumptionToken").or("metadataPrefix=" + metadata("ingest").format + "&" + metadata("ingest").options).trim_suffix("&") }'
-            verb: 'GET'
-            timeout: '20s'
-            retries: 10
-            retry_period: '30s'
-            rate_limit: 'rl__oai_pmh'
+    processors:
+      - label: 'oai_pmh_loop'
+        while:
+          at_least_once: true
+          max_loops: 0
+          check: 'metadata("resumptionToken").type() != "null" && !errored()'
+          processors:
+            - http:
+                url: '${! metadata("ingest").source + "?verb=ListRecords&" + metadata("resumptionToken").or("metadataPrefix=" + metadata("ingest").format + "&" + metadata("ingest").options).trim_suffix("&") }'
+                verb: 'GET'
+                timeout: '20s'
+                retries: 10
+                retry_period: '30s'
+                rate_limit: 'rl__oai_pmh'
 
-        - switch:
-            - check: '!errored()'
-              processors:
-                - xml:
-                    operator: 'to_json'
+            - switch:
+                - check: '!errored()'  # for HTTP error
+                  processors:
+                    - xml:
+                        operator: 'to_json'
 
-                - mapping: |
-                    meta resumptionToken = match this."OAI-PMH".ListRecords.resumptionToken."#text" {
-                                              this.type() == "null" => null,
-                                                                  _ => "resumptionToken=" + this }
-                    root = this."OAI-PMH".ListRecords.record.array().filter(x -> x.exists("metadata"))
+                    - mapping: |
+                        root = if this."OAI-PMH".error == null { this."OAI-PMH".ListRecords.record.array().filter(x -> x.exists("metadata")) } else { throw(this."OAI-PMH".error."-code") }
 
-                - unarchive:
-                    format: 'json_array'
+                        meta resumptionToken = match this."OAI-PMH".ListRecords.resumptionToken."#text" {
+                                                  this.type() == "null" => null,
+                                                                      _ => "resumptionToken=" + this }
 
-                - mapping: 'meta sourceid = this.header.identifier'
+                    - switch:
+                        - check: '!errored()'  # for OAI-PMH error
+                          processors:
+                            - unarchive:
+                                format: 'json_array'
 
-                - mapping: 'root = this.metadata'
+                            - mapping: 'meta sourceid = this.header.identifier'
 
-                - try:
-                    - resource: 'formats'
+                            - mapping: 'root = this.metadata'
 
-                    - resource: 'normalize'
+                            - try:
+                                - resource: 'formats'
 
-                    - resource: 'process'
+                                - resource: 'normalize'
 
-                - catch:
-                    - log:
-                        message: |
-                          ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
+                                - resource: 'process'
 
-                    - mapping: 'root = {}'
+                            - catch:
+                                - log:
+                                    message: |
+                                      ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
 
-                - archive:
-                    format: 'json_array'
+                                - mapping: 'root = {}'
 
-                - resource: 'submit'
+                            - resource: 'submit'
 
-                - sleep:
-                    duration: "0.1s"
-
-            - processors:
-                - log:
-                    message: '${! "Ingest incomplete: " + metadata("ingest").source + " failed to complete listing records." }'
-
-                - mapping: |
-                    meta resumptionToken = null
-
-        - catch: []
+                            - sleep:
+                                duration: "0.1s"
 
 rate_limit_resources:
   - label: 'rl__oai_pmh'

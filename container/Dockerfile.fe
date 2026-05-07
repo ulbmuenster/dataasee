@@ -2,7 +2,7 @@ ARG IMGREPO
 
 ## Base Target
 
-FROM ${IMGREPO}node:22-alpine AS base
+FROM ${IMGREPO}node:24-alpine AS base
 
 RUN apk --no-cache add tzdata
 
@@ -13,7 +13,7 @@ ARG DL_PORT
 ARG DL_PATH
 ENV LOWDEFY_SECRET_DL_API=http://$DL_HOST:$DL_PORT$DL_PATH
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 --spider http://frontend:8000 || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 --spider http://localhost:8000 || exit 1
 
 ## Development Target:
 
@@ -21,19 +21,21 @@ FROM base AS develop
 
 ARG VERSION
 
-RUN npm install -g --ignore-scripts npm@latest corepack@latest && corepack enable
+RUN corepack enable
 
 WORKDIR /lowdefy
 
-RUN chown node /lowdefy
+RUN chown node:node /lowdefy
 
 USER node
 
-RUN pnpm install lowdefy@${VERSION} @lowdefy/server-dev@${VERSION}
+RUN pnpm install lowdefy@${VERSION} @lowdefy/server-dev@${VERSION} \
+ && cd node_modules/@lowdefy/server-dev \
+ && pnpm install
 
-RUN cd node_modules/@lowdefy/server-dev && pnpm install
-
-RUN mkdir -p .lowdefy/dev && cp -R node_modules/@lowdefy/server-dev/* .lowdefy/dev
+RUN mkdir -p .lowdefy/dev \
+ && cp -R node_modules/@lowdefy/server-dev/* .lowdefy/dev \
+ && rm .lowdefy/dev/pnpm-lock.yaml
 
 COPY assets/dataasee.svg         public/icon.svg
 COPY assets/dataasee-32x32.png   public/icon-32.png
@@ -44,11 +46,13 @@ COPY assets/dataasee-125x125.png public/logo-square-light-theme.png
 
 COPY assets/colors.less public/styles.less
 
+COPY frontend/sitemap.xml public/sitemap.xml
+
 RUN ln -s /yaml/lowdefy.yaml lowdefy.yaml \
  && ln -s /yaml/templates templates \
  && ln -s /yaml/pages pages
 
-CMD pnpm exec lowdefy dev --watch /yaml
+CMD ["pnpm", "exec", "lowdefy", "dev", "--watch", "/yaml"]
 
 ## Build Target:
 
@@ -57,7 +61,6 @@ FROM develop AS build
 ENV LOWDEFY_BUILD_OUTPUT_STANDALONE=1
 
 RUN --mount=type=bind,source=./frontend,target=/yaml pnpm exec lowdefy build
-
 
 ## Release Target:
 
@@ -79,8 +82,8 @@ LABEL org.opencontainers.image.ref.name="dataasee"
 
 USER root
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 lowdefy
+RUN addgroup --system --gid 1001 nodejs \
+ && adduser --system --uid 1001 lowdefy
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -93,4 +96,6 @@ COPY --from=build --chown=lowdefy:nodejs /lowdefy/.lowdefy/server/.next/static .
 
 USER lowdefy
 
-CMD node server.js
+ENV HOSTNAME=0::
+
+CMD ["node","server.js"]

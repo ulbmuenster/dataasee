@@ -13,8 +13,8 @@ logger:
 cache_resources:
   - label: 'global_cache'
     memory:
-      default_ttl: '1h'
-      compaction_interval: '1h'
+      default_ttl: '5m'
+      compaction_interval: '5m'
 
 ## API Server
 
@@ -30,12 +30,13 @@ input:
       enabled: true
       allowed_origins:
         - '*'
-    timeout: '1m'
+    timeout: '400s'
     sync_response:
       status: '${! metadata("status").or("200") }'
       headers:
         Server: '${DL_NAME}'
         Content-Type: 'application/json'
+        Access-Control-Allow-Origin: '*'
       metadata_headers:
         include_patterns:
           - "WWW-Authenticate"
@@ -48,22 +49,22 @@ input:
     - switch:
 
 ## Ensure Payload is not exhaustive
-        - check: 'this.or("").bytes().length() > 262144 || content().bytes().length() > 262144'
+        - check: 'this.or("").bytes().length() > 12288 || content().bytes().length() > 12288'
           processors:
             - label: 'request__too_large'
               mapping: |
                 meta status = "413"
-                root.errors =  [ { "title": "Request Error: Payload Too Large",
-                                   "detail": "The request exceeds 256KiB." } ]
+                root.errors = [{"title": "Request Error: Payload Too Large",
+                                "detail": "The request exceeds 12KiB."}]
 
 ## Ensure Request is not exhaustive TODO: split into header and body once Benthos has spearate metadata objects
-        - check: 'metadata().bytes().length() > 8196'
+        - check: 'metadata().bytes().length() > 8192'
           processors:
             - label: 'request__too_long'
               mapping: |
                 meta status = "414"
-                root.errors =  [ { "title": "Request Error: Request-URI Too Long",
-                                   "detail": "The combined size of request header and request URI exceeds 8KiB." } ]
+                root.errors = [{"title": "Request Error: Request-URI Too Long",
+                                "detail": "The combined size of request header and request URI exceeds 8KiB."}]
 
 ## Basic Authentication Challenge (All POST requests need authentication!)
         - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization") == null'
@@ -72,24 +73,27 @@ input:
               mapping: |
                 meta status = "401"
                 meta "WWW-Authenticate" = "Basic realm=\"DatAasee Admin\""
+                root.errors = [{"title": "Request Error: Unauthorized",
+                                "detail": "Authentication required."}]
 
 ## Basic Authentication for POST Requests
-        - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization").string().trim_prefix("Basic ").decode("base64").catch("") != env("DL_USER").string() + ":" + file(env("DL_PASS")).string()'
+        - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization").string().trim_prefix("Basic ").decode("base64").catch("").hash("sha256").encode("hex") != (env("DL_USER") + ":" + file(env("DL_PASS"))).hash("sha256").encode("hex")'
           processors:
             - label: 'post_request__invalid_authentication'
               mapping: |
                 meta status = "403"
-                root.errors =  [ { "title": "Request Error: Invalid Credentials",
-                                   "detail": "The user name or password do not match." } ]
+                meta "WWW-Authenticate" = "Basic realm=\"DatAasee Admin\""
+                root.errors = [{"title": "Request Error: Unauthorized",
+                                "detail": "Invalid or missing credentials."}]
 
 ## Ensure JSON is accepted
-        - check: 'metadata("Accept") != null && !metadata("Accept").re_match(".*((application\\/json)|(application\\/vnd.api\\+json)|(\\*\\/\\*)).*")'
+        - check: 'metadata("Accept") != null && !metadata("Accept").re_match(".*((application\\/x-www-form-urlencoded)|(application\\/json)|(application\\/vnd.api\\+json)|(\\*\\/\\*)).*")'
           processors:
             - label: 'any_request__non_json_content_type'
               mapping: |
                 meta status = "406"
-                root.errors = [ { "title": "Request Error: Not Acceptable",
-                                  "detail": "Requested response content-type has to be \"application/json\"." } ]
+                root.errors = [{"title": "Request Error: Not Acceptable",
+                                "detail": "Requested response content-type has to be \"application/json\" or \"application/x-www-form-urlencoded\"."}]
 
 ## GET Endpoint Handlers
         - check: 'metadata("http_server_verb") == "GET"'
@@ -105,7 +109,7 @@ input:
     - switch:
 
 ## Authentication Challenge
-        - check: '(metadata("Authorization") == null && metadata("status") == "401")'
+        - check: 'metadata("http_server_verb") == "POST" && metadata("Authorization") == null'
           processors:
             - label: 'post_request__authentication_challenge'
               mapping: |
@@ -125,7 +129,7 @@ input:
                 root = if this.exists("errors") { this.with("errors") } else { this.with("data") }
                 root.meta.name = env("DL_NAME")
                 root.meta.version = env("DL_VERSION")
-                root.links.self = "${DL_BASE}${DL_PATH}/" + metadata("endpoint")
+                root.links.self = "${DL_BASE}${DL_PATH}/" + metadata("endpoint") + metadata("params").or("")
                 root.links.describedby = "${DL_BASE}${DL_PATH}/" + "api?response=" + metadata("endpoint")
                 root.links = root.links.merge(metadata("links").or({}))
 

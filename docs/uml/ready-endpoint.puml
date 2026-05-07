@@ -16,7 +16,7 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>api/v1/ready</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/ready</b>)"
 backend -->> backend : " HTTP Client (<b>/ready</b>)"
 backend -->> database : " HTTP Client (<b>/ready</b>)"
 

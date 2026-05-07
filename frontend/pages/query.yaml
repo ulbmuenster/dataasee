@@ -30,18 +30,21 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _state: true
+      query_text:
+        _state: "query_text"
+      language:
+        _state: "language"
     properties:
-      url: "/metadata"
+      url: "/database"
       method: "get"
       params:
         _if:
           test:
             _ne:
-              - _if_none:
-                  - _string.trim:
-                      _payload: "query_text"
-                  - ""
+              - _string.trim:
+                  _if_none:
+                    - _payload: "query_text"
+                    - ""
               - ""
           then:
             language:
@@ -50,7 +53,7 @@ requests:
               _payload: "query_text"
           else:
             language: "sql"
-            query: "SELECT * FROM metadata"
+            query: "SELECT * FROM Metadata"
 
 events:
 
@@ -125,16 +128,14 @@ areas:
                               options:
                                 - label: "ArcadeDB SQL - Structured Query Language (<a target='_blank' href='https://docs.arcadedb.com/#sql'>Help</a>)"
                                   value: "sql"
-                                - label: "Cypher Query Language (<a target='_blank' href='https://neo4j.com/docs/cypher-manual/current/'>Help</a>)"
-                                  value: "cypher"
-                                - label: "Gremlin Query Language (<a target='_blank' href='https://kelvinlawrence.net/book/PracticalGremlin.html'>Help</a>)"
-                                  value: "gremlin"
-                                - label: "GraphQL - Graph Query Language (<a target='_blank' href='https://graphql.org/learn/'>Help</a>)"
-                                  value: "graphql"
+                                - label: "OpenCypher Query Language (<a target='_blank' href='https://s3.amazonaws.com/artifacts.opencypher.org/openCypher9.pdf'>Help</a>)"
+                                  value: "opencypher"
                                 - label: "MQL - MongoDB Query Language (<a target='_blank' href='https://www.mongodb.com/docs/manual/tutorial/query-documents/'>Help</a>)"
                                   value: "mongo"
-                                # - label: "SPARQL - SPARQL Protocol and RDF Query Language (<a target='_blank' href='https://www.w3.org/TR/sparql11-query/'>Help</a>)"
-                                #   value: sparql
+                                - label: "GraphQL - Graph Query Language (<a target='_blank' href='https://graphql.org/learn/'>Help</a>)"
+                                  value: "graphql"
+                                - label: "Redis - Redis Commands (<a target='_blank' href='https://docs.arcadedb.com/#redis-query-language'>Help</a>)"
+                                  value: "redis"
 ## Schema Info
                           - id: "schema_info"
                             type: "Markdown"
@@ -152,9 +153,9 @@ areas:
                                 extra: "Custom query (limited to 100 results!)"
                                 extraStyle:
                                   text-align: "right"
-                              placeholder: "SELECT * FROM metadata; -- Use Shift+Enter for new-lines"
+                              placeholder: "SELECT * FROM Metadata; -- Use Shift+Enter for new-lines"
                               autoSize: true
-                              maxLength: 4096
+                              maxLength: 8191
                               rows: 7
 ## Properties
                           - id: "props"
@@ -208,7 +209,7 @@ areas:
                                         - - _array.reduce:
                                               on:
                                                 _object.keys:
-                                                  _request: "query_request.data.data.attributes.result"
+                                                  _request: "query_request.data.data.attributes.result.0"
                                               callback:
                                                 _function:
                                                   __object.defineProperty:
@@ -242,12 +243,12 @@ areas:
                           content: |
                             The custom query allows to submit a read-only query in a selected query language to the backend database.
 
-                            * **Language**: One of: SQL, Cypher, Gremlin, GraphQL, or MQL (query language help links in selector).
+                            * **Language**: One of: SQL, OpenCypher, GraphQL, MQL, Redis (query language help links in selector).
                             * **Comment**: The self-description of the database schema.
-                            * **Query**: A query with maximum length 4096 characters.
+                            * **Query**: A query with maximum length 8191 characters.
                             * **Properties**: An overview list of properties in the `metadata` type.
 
-                            In case of an empty query text, the SQL query: `SELECT * FROM metadata` is send, no matter the language.
+                            In case of an empty query text, the SQL query: `SELECT * FROM Metadata` is send from this frontend, no matter the language.
                       - id: "query_detail"
                         type: "Collapse"
                         properties:
@@ -270,7 +271,7 @@ areas:
                                     2. Clicking "Submit" sends a GET request to:
 
                                         ```
-                                        /api/v1/metadata?language=x&query=y
+                                        /api/v1/database?language=x&query=y
                                         ```
                                        The server filters null or empty fields.
 ## Results
@@ -295,6 +296,8 @@ areas:
                   rowNumbers: true  # TODO: not available yet: https://www.ag-grid.com/angular-data-grid/row-numbers/
                   rowData:
                     _request: "query_request.data.data.attributes.result"
+                  defaultColDef:
+                    resizable: true
                   columnDefs:
                     _array.map:
                       on:

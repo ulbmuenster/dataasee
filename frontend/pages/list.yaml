@@ -19,41 +19,26 @@ layout:
 requests:
   - _ref: "templates/ready.yaml"
 
-  - id: "sources_request"
+  - id: "schema_request"
     type: "AxiosHttp"
     connectionId: "datalake_api"
     properties:
-      url: "/sources"
+      url: "/schema"
       method: "get"
+      params:
+        prop: "source"
 
   - id: "search_request"
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _state: true
+      results_paging:
+        _state: "results_paging"
+      source_name:
+        _state: "source.name"
     properties:
       url:
-        _if:
-          test:
-            _eq:
-              - _payload: "results_paging"
-              - null
-          then: "metadata"
-          else:
-            _string.substring:
-              on:
-                _get:
-                  from:
-                    _payload: "results_paging"
-                  key: "url"
-              start:
-                _string.indexOf:
-                  on:
-                    _get:
-                      from:
-                        _payload: "results_paging"
-                      key: "url"
-                  searchValue: "metadata?"
+        _ref: "templates/url.yaml"
       method: "get"
       params:
         _if:
@@ -64,10 +49,8 @@ requests:
           then:
             source:
               _if_none:
-                - _payload: "source.name"
+                - _payload: "source_name"
                 - ""
-            format:
-              _payload: "source.format"
           else: {}
 
 events:
@@ -76,9 +59,9 @@ events:
       type: "Request"
       params: "ready_request"
 
-    - id: "sources_enter"
+    - id: "schema_enter"
       type: "Request"
-      params: "sources_request"
+      params: "schema_request"
 
 areas:
   content:
@@ -123,18 +106,13 @@ areas:
                               items:
                                 _array.map:
                                   on:
-                                    _request: "sources_request.data.data.attributes.sources"
+                                    _request: "schema_request.data.data.attributes.source.enum"
                                   callback:
                                     _function:
                                       span: 24
                                       label: "•"
                                       value:
-                                        __string.concat:
-                                          - __args: "0.source"
-                                          - " ("
-                                          - __args: "0.format"
-                                          - ") @ "
-                                          - __args: "0.date"
+                                        __args: "0"
 ## Source Filter:
                           - id: "source"
                             type: "Selector"
@@ -145,21 +123,14 @@ areas:
                               options:
                                 _array.map:
                                   on:
-                                    _request: "sources_request.data.data.attributes.sources"
+                                    _request: "schema_request.data.data.attributes.source.enum"
                                   callback:
                                     _function:
                                       label:
-                                        __string.concat:
-                                          - __args: "0.source"
-                                          - " ("
-                                          - __args: "0.format"
-                                          - ") @ "
-                                          - __args: "0.date"
+                                        __args: "0"
                                       value:
                                         name:
-                                          __args: "0.name"
-                                        format:
-                                          __args: "0.format"
+                                          __args: "0"
 
                             events:
                               _ref: "templates/clear.yaml"
@@ -225,22 +196,22 @@ areas:
                                 type: "Markdown"
                                 properties:
                                   content: |
-                                    1. The filter "Sources" is filled by the GET request:
+                                    1. The filter "Source" is filled by the GET request:
 
                                         ```
-                                        /api/v1/sources
+                                        /api/v1/schema?prop=source
                                         ```
                                     2. Clicking "Search" sends the GET request:
 
                                         ```
-                                        /api/v1/metadata?source=x&format=y
+                                        /api/v1/metadata?source=x
                                         ```
                                        An empty `source` parameter (`x` = `""`) means "all sources".
 
                                     3. Paging forward or backwards in the results resends the GET request with an additional `page` parameter:
 
                                         ```
-                                        /api/v1/metadata?source=x&format=y&page=z
+                                        /api/v1/metadata?source=x&page=z
                                         ```
 ## Results Card
       - _ref: "templates/results.yaml"

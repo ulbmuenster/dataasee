@@ -16,7 +16,7 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>/api/v1/metadata</b>)"
-backend -->> database : " HTTP Client (<b>/query</b>) \n HTTP Client (<b>/command</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/metadata</b>)"
+backend -->> database : " HTTP Client (<b>/query</b>)"
 
 @enduml

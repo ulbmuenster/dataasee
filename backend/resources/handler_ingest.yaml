@@ -25,20 +25,21 @@ processor_resources:
             processors:
               - mapping: |
                   meta status = "503"
-                  root.errors = [ { "title": "Server error: Service Unavailable",
-                                    "detail": "Already ingesting." } ]
+                  root.errors = [{"title": "Server error: Service Unavailable",
+                                  "detail": "Already ingesting."}]
 
           - processors:
               - try:
                   - label: 'handler_ingest__filter_body'
                     mapping: |
-                      root = this.catch({}).with("username","password")
-                      root.source = this.source.or("").trim()
-                      root.steward = this.steward.or("").trim()
-                      root.method = this.method.or("").trim().lowercase()
-                      root.format = this.format.or("").trim().lowercase()
-                      root.rights = this.rights.or("").trim()
-                      root.options = this.options.or("").trim().trim("&")
+                      let body = this.catch(content().parse_form_url_encoded())
+                      root = $body.with("username","password")
+                      root.source = $body.source.or("").trim()
+                      root.options = $body.options.or("").trim().trim("&")
+                      root.method = $body.method.or("").trim().lowercase()
+                      root.format = $body.format.or("").trim().lowercase()
+                      root.steward = $body.steward.or("").trim()
+                      root.rights = $body.rights.or("").trim()
 
                   - label: 'handler_ingest__validate_body'
                     json_schema:
@@ -63,8 +64,9 @@ processor_resources:
               - catch:
                   - mapping: |
                       meta status = "400"
-                      root.errors = [ { "title": "Request Error: Bad Request",
-                                        "detail": "Request failed to pass schema validation.", "links": { "about": "${DL_BASE}${DL_PATH}/api?request=ingest" } } ]
+                      root.errors = [{"title": "Request Error: Bad Request",
+                                      "detail": "Request failed to pass schema validation.",
+                                      "links": {"about": "${DL_BASE}${DL_PATH}/api?request=ingest"}}]
 
 
   - label: 'handler_ingest_async'
@@ -89,22 +91,58 @@ processor_resources:
                   username: '${DB_USER}'
                   password: '${DB_PASS}'
                   request: |
-                    root.language = "sql"
-                    root.params.name = metadata("timer_start").ts_format("2006-01-02 15:04:05", "UTC")
+                    root.language = "sqlscript"
+                    root.params.core = metadata("ingest").source + " " + metadata("ingest").method + " " + metadata("ingest").format + "%"
+                    root.params.name = metadata("ingest").source + " " + metadata("ingest").method + " " + metadata("ingest").format + " (" + metadata("timer_start").ts_format("2006-01-02 15:04:05") + ")"
                     root.params.data = metadata("ingest").source
-                    root.command = "INSERT INTO sources SET name = :name, data = :data"
+                    root.command = """DELETE FROM Sources WHERE name ILIKE :core;
+                                      INSERT INTO Sources SET name = :name, data = :data;"""
                   response: |
                     meta source_rid = this.result.0."@rid"
 
               - resource: 'methods'
 
-              - log:
-                  message: 'Ingest completed from ${! metadata("ingest").source } of ${! metadata("count").string() } records (of which ${! metadata("failed").string() } failed) after ${! "%.1f".format((timestamp_unix() - metadata("timer_start")) / 3600.0) }h.'
+              - try:
+                  - log:
+                      message: 'Ingest completed from ${! metadata("ingest").source } of ${! metadata("count").string() } records (of which ${! metadata("failed").string() } failed) after ${! "%.1f".format((timestamp_unix() - metadata("timer_start")) / 3600.0) }h.'
 
-              - resource: 'interconnect'
+                  - label: 'handler_ingest__arcadedb_refresh_facets'
+                    arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'command'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      retries: 0
+                      request: |
+                        root.language = "sql"
+                        root.awaitResponse = false
+                        root.command = "REFRESH MATERIALIZED VIEW Facets;"
 
-              - log:
-                  message: 'Interconnect started asynchronously in database. See database log for details.'
+                  - log:
+                      message: 'Facet refresh started.'
+
+                  - resource: 'interconnect'
+
+                  - log:
+                      message: 'Interconnect started asynchronously in database. See database log for details.'
+
+              - catch:
+                  - log:
+                      message: 'Ingest incomplete: ${! metadata("ingest").source } failed due to: ${! error() }'
+
+                  - label: 'handler_ingest_async__arcadedb_cleanup'
+                    arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'command'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      request: |
+                        root.language = "sql"
+                        root.command = "SET GLOBAL $interlock = null;"
 
               - mapping: |
                   meta ingest = deleted()

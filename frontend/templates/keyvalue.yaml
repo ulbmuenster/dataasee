@@ -1,0 +1,29 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# key-value pair
+id:
+  _var: "id_key"
+type: "Label"
+properties:
+  span: 5
+  align: "right"
+  title:
+    _var: "key"
+  style:
+    font-weight: "bold"
+blocks:
+  - id:
+      _var: "id_value"
+    type: "Anchor"
+    style:
+      font-size: "large"
+      margin-top:
+        _global: "offset_medium"
+    properties:
+      title:
+        _if_none:
+          - _var: "value"
+          - _global: "unknown"
+      href:
+        _var: "link"
+      newTab: true

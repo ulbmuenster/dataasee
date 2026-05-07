@@ -10,33 +10,34 @@ processor_resources:
       - while:
           at_least_once: true
           max_loops: 0
-          check: 'metadata("continuationToken").type() != "null"'
+          check: 'metadata("continuationToken").type() != "null" && !errored()'
           processors:
             - mapping: |
                 meta bucket = metadata("ingest").source + "?list-type=2&max-keys=100" + metadata("continuationToken").or("")
 
-            - try:
-                - label: 's3__get_bucket'
-                  s3get:
-                    url: 'bucket'
-                    get: 'bucket'
-                    access: 'access'
-                    secret: 'secret'
+            - label: 's3__get_bucket'
+              s3get:
+                url: 'bucket'
+                get: 'bucket'
+                access: 'access'
+                secret: 'secret'
 
-                - mapping: |
-                    meta continuationToken = if this.ListBucketResult.NextContinuationToken != null { "&continuation-token=" + this.ListBucketResult.NextContinuationToken } else { null }
-                    root = this.ListBucketResult.with("Contents").values().flatten().map_each(x -> x.Key)
+            - switch:
+                - check: '!errored()'  # for getBucket Error
+                  processors:
+                    - mapping: |
+                        meta continuationToken = if this.ListBucketResult.NextContinuationToken != null { "&continuation-token=" + this.ListBucketResult.NextContinuationToken } else { null }
+                        root = this.ListBucketResult.with("Contents").values().flatten().map_each(x -> x.Key)
 
-                - while:
-                    check: 'this.length() > 0'
-                    processors:
-                      - branch:
-                          request_map: 'root.object = this.0'
+                    - while:
+                        check: 'this.length() > 0'
+                        processors:
+                          - branch:
+                              request_map: 'root.object = this.0'
 
-                          processors:
-                            - mapping: 'meta object = metadata("ingest").source + "/" + this.object.string()'
+                              processors:
+                                - mapping: 'meta object = metadata("ingest").source + "/" + this.object.string()'
 
-                            - try:
                                 - label: 's3__get_object'
                                   s3get:
                                     url: 'object'
@@ -44,56 +45,56 @@ processor_resources:
                                     access: 'access'
                                     secret: 'secret'
 
-                                - xml:  # TODO conditional to allow JSON
-                                    operator: 'to_json'
+                                - switch:
+                                    - check: '!errored()'  # for getObject Error
+                                      processors:
+                                        - xml:
+                                            operator: 'to_json'
 
-                                - mapping: |  # Return root elements child(ren) as array and ensure correct array element format
-                                    root = this.values().0
-                                    root = root.map_each(x -> x.value.or(x).array()).explode(root.keys().0)
+                                        - mapping: |  # Return root elements child(ren) as array and ensure correct array element format
+                                            root = this.values().0
+                                            root = root.map_each(x -> x.value.or(x).array()).explode(root.keys().0)
 
-                                - while:
-                                    check: 'this.length() > 0'
-                                    processors:
-                                      - mapping: 'meta block = [100, this.length()].min()'
+                                        - while:
+                                            check: 'this.length() > 0'
+                                            processors:
+                                              - mapping: 'meta block = [100, this.length()].min()'
 
-                                      - branch:
-                                          request_map: 'root = this.slice(0, metadata("block"))'
+                                              - branch:
+                                                  request_map: 'root = this.slice(0, metadata("block"))'
 
-                                          processors:
-                                            - unarchive:
-                                                format: 'json_array'
+                                                  processors:
+                                                    - unarchive:
+                                                        format: 'json_array'
 
-                                            - try:
-                                                - resource: 'formats'
+                                                    - try:
+                                                        - resource: 'formats'
 
-                                                - resource: 'normalize'
+                                                        - resource: 'normalize'
 
-                                                - resource: 'process'
+                                                        - resource: 'process'
 
-                                            - catch:
-                                                - log:
-                                                    message: |
-                                                      ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
+                                                    - catch:
+                                                        - log:
+                                                            message: |
+                                                              ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
 
-                                                - mapping: 'root = {}'
+                                                        - mapping: 'root = {}'
 
-                                            - archive:
-                                                format: 'json_array'
+                                                    - resource: 'submit'
 
-                                            - resource: 'submit'
+                                                  result_map: |
+                                                    root = root.slice(metadata("block"))
+                                                    meta count = metadata("count")
+                                                    meta failed = metadata("failed")
 
-                                          result_map: |
-                                            root = root.slice(metadata("block"))
-                                            meta count = metadata("count")
-                                            meta failed = metadata("failed")
+                              result_map: |
+                                root = root.slice(1)
+                                meta count = metadata("count")
+                                meta failed = metadata("failed")
 
-                          result_map: |
-                            root = root.slice(1)
-                            meta count = metadata("count")
-                            meta failed = metadata("failed")
-
-                      - sleep:
-                          duration: "1s"
+                          - sleep:
+                              duration: "1s"
 
       - mapping: |
           root = {}

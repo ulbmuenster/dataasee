@@ -1,12 +1,13 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dataasee:api?params=api",
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?params=api",
 
-  "title": "DatAasee API Endpoint Parameters", "type": "object", "properties": {
+  "title": "DatAasee API Endpoint Parameters", "description": "The api endpoint returns the DatAasee OpenAPI specification for no parameter, or the respective parameter, request body and response schemas given the endpoint as parameter value.",
 
-    "params": { "type": "string", "title": "URI Parameter", "enum": ["api", "enums", "metadata"] },
+  "type": "object", "properties": {
 
-    "request": { "type": "string", "title": "Request Body", "enum": ["ingest", "insert"] },
+    "params": { "type": "string", "title": "URI Parameter", "enum": ["api", "database", "schema", "metadata"] },
 
-    "response": { "type": "string", "title": "Response Body", "enum": ["api", "enums", "backup", "health", "ingest", "insert", "metadata", "ready", "schema", "stats", "sources"] } }
+    "request": { "type": "string", "title": "Request Body", "enum": ["ingest"] },
+
+    "response": { "type": "string", "title": "Response Body", "enum": ["api", "database", "health", "ingest", "metadata", "ready", "schema"] } }
 }

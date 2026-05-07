@@ -1,32 +1,23 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dataasee:api?params=metadata",
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?params=metadata",
 
-  "title": "DatAasee Metadata Endpoint Parameters", "type": "object", "oneOf": [
+  "title": "DatAasee Metadata Endpoint Parameters", "description": "The metadata endpoint returns either a single metadata record by id, a list of full records by source, or a list of abbreviated records by filters.",
 
-    { "properties": {
+  "type": "object", "oneOf": [
+
+    { "required": ["id"], "unevaluatedProperties": false, "properties": {
 
         "id": { "type": "string", "title": "Record identifier", "maxLength": 255 },
 
         "format": { "type": "string", "title": "Export in format", "enum": ["datacite", "bibjson"] } } },
 
-    { "properties": {
+    { "required": ["source"], "unevaluatedProperties": false, "properties": {
 
-        "query": { "type": "string", "title": "Custom query", "maxLength": 4095 },
+        "source": { "type": "string", "title": "Source list", "maxLength": 4095 } } },
 
-        "language": { "type": "string", "title": "Query language", "enum": ["sql", "gremlin", "cypher", "mongo", "graphql"] } } },
-
-    { "properties": {
-
-        "source": { "type": "string", "title": "Source list", "maxLength": 4095 },
-
-        "format": { "type": "string", "title": "Filter by metadata format", "maxLength": 255 } } },
-
-    { "properties": {
+    { "unevaluatedProperties": false, "properties": {
 
         "search": { "type": "string", "title": "Full-text search", "maxLength": 255 },
-
-        "query": { "type": "string", "title": "Custom query", "maxLength": 4095 },
 
         "language": { "type": "string", "title": "Filter by language", "maxLength": 255 },
 
@@ -40,11 +31,11 @@
 
         "doi": { "type": "string", "title": "Filter by DOI", "maxLength": 255 },
 
-        "from": { "type": "number", "title": "Filter by publication date (after)", "minimum": -9999, "maximum": 9999 },
+        "from": { "type": "integer", "title": "Filter by publication year (after)", "minimum": -9999, "maximum": 9999 },
 
-        "till": { "type": "number", "title": "Filter by publication date (before)", "minimum": -9999, "maximum": 9999 },
+        "till": { "type": "integer", "title": "Filter by publication year (before)", "minimum": -9999, "maximum": 9999 },
 
-        "page": { "type": "number", "title": "Return N-th page of results", "minimum": 0 },
+        "page": { "type": ["integer", "string"], "title": "Return N-th page of results", "minimum": 0, "maximum": 50 },
 
         "newest": { "type": "boolean", "title": "Sort by newest first if true, or oldest first if false" } } } ]
 }

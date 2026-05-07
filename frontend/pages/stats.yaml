@@ -21,9 +21,32 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     properties:
-      url: "/stats"
+      url: "/database"
       method: "get"
-      timeout: 20000
+      timeout: 400000
+      params:
+        language: "sql"
+        query: |
+          SELECT $total[0].count AS total,
+                 $resourceTypes:{ifnull(resourceType.name,'Unknown') AS name, data} AS resourceTypes,
+                 $licenses:{ifnull(license.name,'Unknown') AS name, data} AS licenses,
+                 $languages:{ifnull(language.name,'Unknown') AS name, data} AS languages,
+                 $categories:{ifnull(categories.asRID().name,'Unknown') AS name, data} AS categories,
+                 $subjects:{ifnull(subjects,'Unknown') AS name, data} AS subjects,
+                 $schemas:{ifnull(rawFormat.name,'Unknown') AS name, data} AS schemas,
+                 $sources:{ifnull(source.data,'Unknown') AS name, data} AS sources,
+                 $keywords:{ifnull(keywords,'Unknown') AS name, data} AS keywords,
+                 $years:{ifnull(publicationYear.asString(),'Unknown') AS name, data} AS years
+          LET $total = (SELECT count(*) AS count FROM Metadata),
+              $resourceTypes = (SELECT resourceType, count(*) AS data FROM Metadata GROUP BY resourceType ORDER BY data DESC LIMIT 100),
+              $licenses = (SELECT license, count(*) AS data FROM Metadata GROUP BY license ORDER BY data DESC LIMIT 100),
+              $languages = (SELECT language, count(*) AS data FROM Metadata GROUP BY language ORDER BY data DESC LIMIT 100),
+              $categories = (SELECT categories, count(*) AS data FROM (SELECT categories FROM Metadata WHERE categories <> [] UNWIND categories) GROUP BY categories ORDER BY data DESC LIMIT 100),
+              $subjects = (SELECT subjects, count(*) AS data FROM (SELECT subjects.name AS subjects FROM Metadata UNWIND subjects) GROUP BY subjects ORDER BY data DESC LIMIT 100),
+              $schemas = (SELECT rawFormat, count(*) AS data FROM Metadata GROUP BY rawFormat ORDER BY data DESC LIMIT 100),
+              $sources = (SELECT source, count(*) AS data FROM Metadata GROUP BY source ORDER BY data DESC LIMIT 10),
+              $years = (SELECT publicationYear, count(*) AS data FROM Metadata GROUP BY publicationYear ORDER BY data DESC LIMIT 10),
+              $keywords = (SELECT keywords, count(*) AS data FROM (SELECT keywords FROM Metadata WHERE keywords IS NOT NULL UNWIND keywords) GROUP BY keywords ORDER BY data DESC LIMIT 10);
 
 events:
   onMountAsync:
@@ -34,6 +57,15 @@ events:
     - id: "stats_enter"
       type: "Request"
       params: "stats_request"
+
+    - id: "stats_throw"
+      type: "Throw"
+      params:
+        throw:
+          _eq:
+            - _request: "stats_request.status"
+            - 404
+        message: "Statistics not available"
 
 areas:
   content:
@@ -59,11 +91,11 @@ areas:
                   content:
                     _string.concat:
                       - "Total Metadata Records: "
-                      - _request: "stats_request.data.data.attributes.total"
+                      - _request: "stats_request.data.data.attributes.result.0.total"
                   level: 4
                 visible:
                   _ne:
-                    - _request: "stats_request.data.data.attributes.total"
+                    - _request: "stats_request.data.data.attributes.result.0.total"
                     - null
               - id: "shares_loading"
                 type: "Spinner"
@@ -71,7 +103,7 @@ areas:
                   size: "large"
                 visible:
                   _eq:
-                    - _request: "stats_request.data.data.attributes.total"
+                    - _request: "stats_request.data.data.attributes.result.0.total"
                     - null
 ## Top-10 Title
               - id: "top10_card"
@@ -86,8 +118,8 @@ areas:
                   content:
                     gutter: 16
                     blocks:
-## Top Views (Bar)
-                      - id: "bar_views"
+## Top Sources (Bar)
+                      - id: "bar_sources"
                         type: "EChart"
                         layout:
                           span: 8
@@ -96,7 +128,7 @@ areas:
                             renderer: "svg"
                           option:
                             title:
-                              text: "Number of Views"
+                              text: "Source Size"
                               left: "center"
                             xAxis:
                               type: "category"
@@ -105,7 +137,7 @@ areas:
                               data:
                                 _array.map:
                                   on:
-                                    _request: "stats_request.data.data.attributes.views"
+                                    _request: "stats_request.data.data.attributes.result.0.sources"
                                   callback:
                                     _function:
                                       __args: "0.name"
@@ -116,10 +148,10 @@ areas:
                                 data:
                                   _array.map:
                                     on:
-                                      _request: "stats_request.data.data.attributes.views"
+                                      _request: "stats_request.data.data.attributes.result.0.sources"
                                     callback:
                                       _function:
-                                        __args: "0.value"
+                                        __args: "0.data"
 ## Top Year (Bar)
                       - id: "bar_years"
                         type: "EChart"
@@ -139,7 +171,7 @@ areas:
                               data:
                                 _array.map:
                                   on:
-                                    _request: "stats_request.data.data.attributes.years"
+                                    _request: "stats_request.data.data.attributes.result.0.years"
                                   callback:
                                     _function:
                                       __args: "0.name"
@@ -150,11 +182,10 @@ areas:
                                 data:
                                   _array.map:
                                     on:
-                                      _request: "stats_request.data.data.attributes.years"
+                                      _request: "stats_request.data.data.attributes.result.0.years"
                                     callback:
                                       _function:
-                                        __args: "0.value"
-
+                                        __args: "0.data"
 ## Top Keywords (Bar)
                       - id: "bar_keywords"
                         type: "EChart"
@@ -174,7 +205,7 @@ areas:
                               data:
                                 _array.map:
                                   on:
-                                    _request: "stats_request.data.data.attributes.keywords"
+                                    _request: "stats_request.data.data.attributes.result.0.keywords"
                                   callback:
                                     _function:
                                       __args: "0.name"
@@ -185,10 +216,10 @@ areas:
                                 data:
                                   _array.map:
                                     on:
-                                      _request: "stats_request.data.data.attributes.keywords"
+                                      _request: "stats_request.data.data.attributes.result.0.keywords"
                                     callback:
                                       _function:
-                                        __args: "0.value"
+                                        __args: "0.data"
 ## Shares Title
               - id: "shares_card"
                 type: "Card"
@@ -221,8 +252,15 @@ areas:
                                 emphasis:
                                   scale: false
                                 data:
-                                  _request: "stats_request.data.data.attributes.resourceTypes"
-
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.result.0.resourceTypes"
+                                    callback:
+                                      _function:
+                                        name:
+                                          __args: "0.name"
+                                        value:
+                                          __args: "0.data"
 ## By Categories (Pie)
                       - id: "pie_categories"
                         type: "EChart"
@@ -242,8 +280,15 @@ areas:
                                 emphasis:
                                   scale: false
                                 data:
-                                  _request: "stats_request.data.data.attributes.categories"
-
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.result.0.categories"
+                                    callback:
+                                      _function:
+                                        name:
+                                          __args: "0.name"
+                                        value:
+                                          __args: "0.data"
 ## By License (Pie)
                       - id: "pie_licenses"
                         type: "EChart"
@@ -263,8 +308,15 @@ areas:
                                 emphasis:
                                   scale: false
                                 data:
-                                  _request: "stats_request.data.data.attributes.licenses"
-
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.result.0.licenses"
+                                    callback:
+                                      _function:
+                                        name:
+                                          __args: "0.name"
+                                        value:
+                                          __args: "0.data"
 ## By Subject (Pie)
                       - id: "pie_subjects"
                         type: "EChart"
@@ -284,8 +336,15 @@ areas:
                                 emphasis:
                                   scale: false
                                 data:
-                                  _request: "stats_request.data.data.attributes.subjects"
-
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.result.0.subjects"
+                                    callback:
+                                      _function:
+                                        name:
+                                          __args: "0.name"
+                                        value:
+                                          __args: "0.data"
 ## By Language (Pie)
                       - id: "pie_languages"
                         type: "EChart"
@@ -305,8 +364,15 @@ areas:
                                 emphasis:
                                   scale: false
                                 data:
-                                  _request: "stats_request.data.data.attributes.languages"
-
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.result.0.languages"
+                                    callback:
+                                      _function:
+                                        name:
+                                          __args: "0.name"
+                                        value:
+                                          __args: "0.data"
 ## By Schemas (Pie)
                       - id: "pie_schemas"
                         type: "EChart"
@@ -326,7 +392,15 @@ areas:
                                 emphasis:
                                   scale: false
                                 data:
-                                  _request: "stats_request.data.data.attributes.schemas"
+                                  _array.map:
+                                    on:
+                                      _request: "stats_request.data.data.attributes.result.0.schemas"
+                                    callback:
+                                      _function:
+                                        name:
+                                          __args: "0.name"
+                                        value:
+                                          __args: "0.data"
 
   sider:
     _ref: "templates/sider.yaml"

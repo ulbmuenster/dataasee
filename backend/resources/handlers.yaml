@@ -9,10 +9,10 @@ processor_resources:
         processors:
           - resource: 'handler_api'
 
-## Attributes Endpoint
-      - check: 'metadata("endpoint") == "enums"'
+## Database Endpoint
+      - check: 'metadata("endpoint") == "database" && !env("DL_SAFE").bool(false)'
         processors:
-          - resource: 'handler_enums'
+          - resource: 'handler_database'
 
 ## Metadata Endpoint
       - check: 'metadata("endpoint") == "metadata"'
@@ -29,27 +29,12 @@ processor_resources:
         processors:
           - resource: 'handler_schema'
 
-## Sources Endpoint
-      - check: 'metadata("endpoint") == "sources"'
-        processors:
-          - resource: 'handler_sources'
-
-## Stats Endpoint
-      - check: 'metadata("endpoint") == "stats"'
-        processors:
-          - resource: 'handler_stats'
-
 ## Unknown Endpoint
       - processors:
           - resource: 'unknown_endpoint'
 
   - label: 'handlers_post'
     switch:
-
-## Backup Endpoint
-      - check: 'metadata("endpoint") == "backup"'
-        processors:
-          - resource: 'handler_backup'
 
 ## Health Endpoint
       - check: 'metadata("endpoint") == "health"'
@@ -60,11 +45,6 @@ processor_resources:
       - check: 'metadata("endpoint") == "ingest"'
         processors:
           - resource: 'handler_ingest'
-
-## Insert Endpoint
-      - check: 'metadata("endpoint") == "insert"'
-        processors:
-          - resource: 'handler_insert'
 
 ## Unknown Endpoint
       - processors:

@@ -1,30 +1,41 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dataasee:api?response=schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?response=schema",
 
-  "title": "DatAasee Schema Endpoint Response", "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
+  "title": "DatAasee Schema Endpoint Response", "description": "The schema endpoint returns the DatAasee semantic layer schema.",
 
-                                                                              { "required": ["errors", "meta", "links"] } ], "properties": {
+  "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
+
+                               { "required": ["errors", "meta", "links"] } ], "properties": {
 
     "data": { "type": "object", "description": "See: https://jsonapi.org/format/#document-resource-objects", "required": ["type", "id", "attributes"], "properties": {
 
       "type": { "type": "string", "const": "support" },
 
-      "id": { "type": "string", "pattern": "^[1-2][0-9]{9}$" },
+      "id": { "type": "string", "description": "Unix timestamp", "pattern": "^[1-2][0-9]{9}$" },
 
       "attributes": { "type": "object", "title": "Payload", "properties": {
 
         "@comment": { "type": "string", "title": "Database Description" },
 
-        "@version": { "type": "number", "title": "Schema Version" },
+        "@version": { "type": "integer", "title": "Schema Version" } },
+
+        "patternProperties": {
+
+          "@(?!comment|version).*": { "type": "object", "required": ["label_out", "label_in"], "properties": {
+
+                                        "label_out": { "type": "string", "title": "Outgoing Edge Label" },
+
+                                        "label_in": { "type": "string", "title": "Incoming Edge Label" } } } },
 
         "additionalProperties": { "type": "object", "required": ["label"], "properties": {
 
+          "enum": { "type": "array", "title": "Admissible Values for Property" },
+
+          "facets": { "type": "array", "title": "Occuring Admissible Values for Property" },
+
           "label": { "type": "string", "title": "Property Label" },
 
-          "altlabel": { "type": "string", "title": "Reverse Property Label" },
-
-          "comment": { "type": "string", "title": "Property Description" } } } } } } },
+          "comment": { "type": "string", "title": "Property Description" } } } } } },
 
     "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
 
@@ -36,17 +47,17 @@
 
         "links": { "type": "object",
 
-          "additionalProperties": { "type": "string" } } } } },
+          "additionalProperties": { "type": "string", "format": "uri" } } } } },
 
     "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
 
       "name": { "type": "string", "const": "DatAasee" },
 
-      "version": { "type": "string", "pattern": "^[1-9]*0?\\.[0-9]+" } } },
+      "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" } } },
 
     "links": { "type": "object", "description": "See: https://jsonapi.org/format/#document-links", "required": ["self", "describedby"], "properties": {
 
-      "self": { "type": "string" },
+      "self": { "type": "string", "format": "uri" },
 
-      "describedby": { "type": "string" } } } }
+      "describedby": { "type": "string", "format": "uri" } } } }
 }

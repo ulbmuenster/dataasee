@@ -2,51 +2,50 @@
 
 processor_resources:
   - label: 'method_get'
-    try:
+    processors:
       - http:
           url: '${! metadata("ingest").source }'
           verb: 'GET'
 
-      - xml:
-          operator: 'to_json'
+      - switch:
+          - check: '!errored()'  # for HTTP error
+            processors:
+              - xml:
+                  operator: 'to_json'
 
-      - mapping: |  # Translate root children to array of objects with same top key
-          root = this.values().0.filter(x -> !x.key.has_prefix("-")).map_each(x -> x.value.array())
-          root = root.explode(root.keys().0)
+              - mapping: |  # Translate root children to array of objects with same top key
+                  root = this.values().0.filter(x -> !x.key.has_prefix("-")).map_each(x -> x.value.array())
+                  root = root.explode(root.keys().0)
 
-      - try:
-          - while:
-              check: 'this.length() > 0'
-              processors:
-                - mapping: 'meta block = [100,this.length()].min()'
+              - while:
+                  check: 'this.length() > 0'
+                  processors:
+                    - mapping: 'meta block = [100,this.length()].min()'
 
-                - branch:
-                    request_map: 'root = this.slice(0,metadata("block"))'
+                    - branch:
+                        request_map: 'root = this.slice(0,metadata("block"))'
 
-                    processors:
-                      - unarchive:
-                          format: 'json_array'
+                        processors:
+                          - unarchive:
+                              format: 'json_array'
 
-                      - try:
-                          - resource: 'formats'
+                          - try:
+                              - resource: 'formats'
 
-                          - resource: 'normalize'
+                              - resource: 'normalize'
 
-                          - resource: 'process'
+                              - resource: 'process'
 
-                      - catch:
-                          - log:
-                              message: |
-                                ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
+                          - catch:
+                              - log:
+                                  message: |
+                                    ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
 
-                          - mapping: 'root = {}'
+                              - mapping: 'root = {}'
 
-                      - archive:
-                          format: 'json_array'
+                          - resource: 'submit'
 
-                      - resource: 'submit'
-
-                    result_map: |
-                      root = root.slice(metadata("block"))
-                      meta count = metadata("count")
-                      meta failed = metadata("failed")
+                        result_map: |
+                          root = root.slice(metadata("block"))
+                          meta count = metadata("count")
+                          meta failed = metadata("failed")

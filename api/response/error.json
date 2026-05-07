@@ -1,8 +1,9 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dataasee:api?response=error",
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?response=error",
 
-  "title": "DatAasee Error Response", "type": "object", "required": ["errors", "meta", "links"], "properties": {
+  "title": "DatAasee Error Response", "description": "The DatAasee error response.",
+
+  "type": "object", "required": ["errors", "meta", "links"], "properties": {
 
     "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
 
@@ -11,20 +12,20 @@
         "title": { "type": "string" },
 
         "detail": { "type": "string" },
-        
+
         "links": { "type": "object",
 
-          "additionalProperties": { "type": "string" } } } } },
+          "additionalProperties": { "type": "string", "format": "uri" } } } } },
 
     "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
 
       "name": { "type": "string", "const": "DatAasee" },
 
-      "version": { "type": "string", "pattern": "^[1-9]*0?\\.[0-9]+" } } },
+      "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" } } },
 
     "links": { "type": "object", "description": "See: https://jsonapi.org/format/#document-links", "required": ["describedby"], "properties": {
 
-      "self": { "type": "string" },
+      "self": { "type": "string", "format": "uri" },
 
-      "describedby": { "type": "string" } } } }
+      "describedby": { "type": "string", "format": "uri" } } } }
 }

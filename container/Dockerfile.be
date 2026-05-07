@@ -6,37 +6,52 @@ FROM ${IMGREPO}golang:latest AS builder
 
 ARG VERSION
 
+## Activate to test bento
+# RUN wget -q https://github.com/warpstreamlabs/bento/archive/refs/tags/v1.13.0.tar.gz \
+#  && tar -xf v1.13.0.tar.gz
+
+# WORKDIR bento-1.13.0
+
+# RUN go mod tidy
+# RUN go build -ldflags "-w -s -X github.com/warpstreamlabs/bento/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/bento
+##
+
 RUN wget -q https://github.com/redpanda-data/benthos/archive/refs/tags/v${VERSION}.tar.gz \
  && tar -xf v${VERSION}.tar.gz
 
 WORKDIR /go/benthos-${VERSION}
 
-# TODO: test if `go get -u` works again
-RUN awk '/Import/{print;print "\t_ \"github.com/redpanda-data/connect/v4/public/components/pure/extended\"";next}1' cmd/benthos/main.go > cmd/benthos/temp.go && mv cmd/benthos/temp.go cmd/benthos/main.go
-RUN go mod tidy \
- && go get ./... \
+RUN mkdir -p internal/impl/xml && cd internal/impl/xml \
+ && wget -q https://raw.githubusercontent.com/redpanda-data/connect/refs/heads/main/internal/impl/xml/bloblang.go \
+ && wget -q https://raw.githubusercontent.com/redpanda-data/connect/refs/heads/main/internal/impl/xml/package.go \
+ && wget -q https://raw.githubusercontent.com/redpanda-data/connect/refs/heads/main/internal/impl/xml/processor.go
+
+RUN sed -i '/^import (/a\    _ "github.com/redpanda-data/benthos/v4/internal/impl/xml"' cmd/benthos/main.go \
+ && go mod tidy \
  && go build -ldflags "-w -s -X github.com/redpanda-data/benthos/v4/internal/cli.Version=${VERSION}" -o ../benthos ./cmd/benthos
 
 ## Development Target
 
-FROM ${IMGREPO}ubuntu:24.04 AS develop
+FROM ${IMGREPO}ubuntu:26.04 AS develop
 
-RUN apt-get update \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
  && apt-get -y --no-install-recommends install tzdata wget ca-certificates \
  && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* \
+ && rm -f /etc/localtime /etc/timezone
 
-RUN useradd -m benthos
+RUN useradd -m -U benthos
 
-RUN mkdir /yaml; chown benthos:benthos /yaml
-
-RUN mkdir /schemas; chown benthos:benthos /schemas
+RUN mkdir /yaml \
+ && chown benthos:benthos /yaml \
+ && mkdir /schemas \
+ && chown benthos:benthos /schemas
 
 WORKDIR /home/benthos
 
 USER benthos
 
-COPY --from=builder /go/benthos ./
+COPY --from=builder --chown=benthos:benthos /go/benthos ./
 
 ARG DL_NAME
 ENV DL_NAME=$DL_NAME
@@ -65,7 +80,7 @@ ENV DB_USER=root
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 --spider http://localhost:4195/ready || exit 1
 
-ENTRYPOINT ./benthos -w -c "/yaml/dataasee.yaml" -t "/yaml/templates/*.yaml" -r "/yaml/resources/*.yaml"
+ENTRYPOINT ["./benthos", "-w", "-c", "/yaml/dataasee.yaml", "-t", "/yaml/templates/*.yaml", "-r", "/yaml/resources/*.yaml"]
 
 
 ## Release Target:
@@ -86,12 +101,8 @@ LABEL org.opencontainers.image.authors="Christian Himpe (University of Münster)
 
 LABEL org.opencontainers.image.ref.name="dataasee"
 
-USER root
-
 COPY --chown=benthos backend/ /yaml
 
 COPY --chown=benthos api/ /schemas
 
-USER benthos
-
-ENTRYPOINT ./benthos -c "/yaml/dataasee.yaml" -t "/yaml/templates/*.yaml" -r "/yaml/resources/*.yaml"
+ENTRYPOINT ["./benthos", "-c", "/yaml/dataasee.yaml", "-t", "/yaml/templates/*.yaml", "-r", "/yaml/resources/*.yaml"]

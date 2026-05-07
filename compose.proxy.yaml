@@ -1,0 +1,55 @@
+# Language: Compose YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+# To run with proxy use: $  DL_PASS=password1 DB_PASS=password2 docker compose -f compose.yaml -f compose.proxy.yaml up -d
+
+name: "dataasee"
+
+networks:
+  application:
+
+configs:
+  caddyfile:
+    content: |
+      ${DL_BASE-localhost}:${DL_PORT-8343} {
+        bind 0.0.0.0
+        tls internal
+        reverse_proxy backend:8343
+      }
+
+      ${DL_BASE-localhost}:${FE_PORT-8000} {
+        bind 0.0.0.0
+        tls internal
+        reverse_proxy frontend:8000
+      }
+
+services:
+
+## Backend #####################################################################
+
+  backend:
+    environment:
+      DL_BASE: "https://${DL_BASE-localhost}:${DL_PORT-8343}"
+    ports: !reset []
+
+## Frontend ####################################################################
+
+  frontend:
+    ports: !reset []
+
+## Proxy #######################################################################
+
+  proxy:
+    configs:
+      - source: "caddyfile"
+        target: "/etc/caddy/Caddyfile"
+    depends_on:
+      - "backend"
+      - "frontend"
+    image: "caddy:2"
+    networks:
+      - "application"
+    ports:
+      # Proxy listens on the exact same ports the applications originally used
+      - "0.0.0.0:${DL_PORT-8343}:${DL_PORT-8343}"
+      - "0.0.0.0:${FE_PORT-8000}:${FE_PORT-8000}"
+    restart: "unless-stopped"

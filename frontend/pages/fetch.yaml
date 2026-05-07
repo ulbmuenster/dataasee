@@ -28,19 +28,23 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _url_query: true
+      id:
+        _url_query: "id"
     properties:
       url: "/metadata"
       method: "get"
       params:
         id:
-          _payload: "id"
+          _if_none:
+            - _payload: "id"
+            - "dataasee"
 
   - id: "export_bibjson_request"
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _url_query: true
+      id:
+        _url_query: "id"
     properties:
       url: "/metadata"
       method: "get"
@@ -53,7 +57,8 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _url_query: true
+      id:
+        _url_query: "id"
     properties:
       url: "/metadata"
       method: "get"
@@ -122,7 +127,7 @@ events:
       params:
         links_list:
           _if_none:
-            - _request: "record_request.data.data.attributes.externalItems"
+            - _request: "record_request.data.data.attributes.relatedItems"
             - - null
 
     - id: "update_synonyms"
@@ -138,8 +143,45 @@ events:
       params:
         relations_list:
           _if_none:
-            - _request: "record_request.data.data.attributes.relations"
+            - _array.map:
+                on:
+                  _array.filter:
+                    on:
+                      _object.entries:
+                        _request: "record_request.data.data.attributes"
+                    callback:
+                      _function:
+                        __string.startsWith:
+                          on:
+                            __args: "0.0"
+                          searchString: "@"
+                callback:
+                  _function:
+                    __args: 0.0
             - - null
+
+    - id: "update_relations_values"
+      type: "SetState"
+      params:
+        _object.fromEntries:
+          _array.map:
+            on:
+              _array.filter:
+                on:
+                  _object.entries:
+                    _request: "record_request.data.data.attributes"
+                callback:
+                  _function:
+                    __string.startsWith:
+                      on:
+                        __args: "0.0"
+                      searchString: "@"
+            callback:
+              _function:
+                - __string.concat:
+                    - "relations_values."
+                    - __args: 1
+                - __args: "0.1"
 
 areas:
   content:
@@ -182,7 +224,9 @@ areas:
                           span: 5
                           align: "right"
                           title:
-                            _request: "schema_request.data.data.attributes.name.label"
+                            _request: "schema_request.data.data.attributes.title.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "title_text"
                             type: "Paragraph"
@@ -193,7 +237,7 @@ areas:
                             properties:
                               content:
                                 _if_none:
-                                  - _request: "record_request.data.data.attributes.name"
+                                  - _request: "record_request.data.data.attributes.title"
                                   - _global: "unknown"
                               strong: true
 ## Creators
@@ -204,6 +248,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.creators.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "creators_list"
                             type: "List"
@@ -223,65 +269,35 @@ areas:
                                     _state: "creators_list.$.data"
                                   newTab: true
 ## Publisher
-                      - id: "publisher_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.publisher.label"
-                        blocks:
-                          - id: "publisher_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.publisher"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "publisher_label"
+                            id_value: "publisher_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.publisher.label"
+                            value:
+                              _request: "record_request.data.data.attributes.publisher"
 ## Publication Year
-                      - id: "published_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.publicationYear.label"
-                        blocks:
-                          - id: "published_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.publicationYear"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "published_label"
+                            id_value: "published_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.publicationYear.label"
+                            value:
+                              _request: "record_request.data.data.attributes.publicationYear"
 ## Resource Type
-                      - id: "resourcetype_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.resourceType.label"
-                        blocks:
-                          - id: "resourcetype_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.resourceType"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "resourcetype_label"
+                            id_value: "resourcetype_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.resourceType.label"
+                            value:
+                              _request: "record_request.data.data.attributes.resourceType"
 ## Identifiers
                       - id: "identifiers_label"
                         type: "Label"
@@ -290,6 +306,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.identifiers.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "identifiers_list"
                             type: "List"
@@ -305,12 +323,10 @@ areas:
                                     _if:
                                       test:
                                         _eq:
-                                          - _state: "identifiers_list.$.name"
+                                          - _state: "identifiers_list.$.data"
                                           - "doi"
                                       then:
-                                        _string.concat:
-                                          - "https://doi.org/"
-                                          - _state: "identifiers_list.$.data"
+                                        _state: "identifiers_list.$.name"
                                       else: null
                                   title:
                                     _if:
@@ -325,16 +341,17 @@ areas:
                                           test:
                                             _eq:
                                               - _if_none:
-                                                  - _state: "identifiers_list.$.name"
+                                                  - _state: "identifiers_list.$.data"
                                                   - ""
                                               - ""
                                           then:
-                                            _state: "identifiers_list.$.data"
+                                            _state: "identifiers_list.$.name"
                                           else:
                                             _string.concat:
                                               - _state: "identifiers_list.$.name"
-                                              - ": "
+                                              - " ("
                                               - _state: "identifiers_list.$.data"
+                                              - ")"
 ## Optional
                   - id: "optional"
                     type: "Card"
@@ -353,6 +370,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.synonyms.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "synonyms_list"
                             type: "List"
@@ -374,30 +393,20 @@ areas:
                                         _global: "unknown"
                                       else:
                                         _string.concat:
-                                          - _state: "synonyms_list.$.data"
-                                          - " ("
                                           - _state: "synonyms_list.$.name"
+                                          - " ("
+                                          - _state: "synonyms_list.$.data"
                                           - ")"
 ## Language
-                      - id: "language_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.language.label"
-                        blocks:
-                          - id: "language_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.language"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "language_label"
+                            id_value: "language_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.language.label"
+                            value:
+                              _request: "record_request.data.data.attributes.language"
 ## Subjects
                       - id: "subjects_label"
                         type: "Label"
@@ -406,6 +415,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.subjects.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "subjects_list"
                             type: "List"
@@ -425,48 +436,27 @@ areas:
                                     _state: "subjects_list.$.data"
                                   newTab: true
 ## Version
-                      - id: "version_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.version.label"
-                        blocks:
-                          - id: "version_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.version"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "version_label"
+                            id_value: "version_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.version.label"
+                            value:
+                              _request: "record_request.data.data.attributes.version"
 ## License
-                      - id: "license_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.license.label"
-                        blocks:
-                          - id: "license_text"
-                            type: "Anchor"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_large"
-                            properties:
-                              title:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.license.name"
-                                  - _global: "unknown"
-                              href:
-                                _request: "record_request.data.data.attributes.license.data"
-                              newTab: true
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "license_label"
+                            id_value: "license_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.license.label"
+                            value:
+                              _request: "record_request.data.data.attributes.license.name"
+                            link:
+                              _request: "record_request.data.data.attributes.license.data"
 ## Rights
                       - id: "rights_label"
                         type: "Label"
@@ -475,6 +465,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.rights.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "rights_text"
                             type: "Paragraph"
@@ -495,6 +487,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.fundings.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "fundings_list"
                             type: "List"
@@ -536,6 +530,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.description.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "description_text"
                             type: "Paragraph"
@@ -555,7 +551,9 @@ areas:
                           span: 5
                           align: "right"
                           title:
-                            _request: "schema_request.data.data.attributes.externalItems.label"
+                            _request: "schema_request.data.data.attributes.relatedItems.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "links_list"
                             type: "List"
@@ -595,7 +593,10 @@ areas:
                               title:
                                 _if:
                                   test:
-                                    _state: "relations_list.$.isOut"
+                                    _string.endsWith:
+                                      on:
+                                        _state: "relations_list.$.0"
+                                      searchString: "_i"
                                   then:
                                     _get:
                                       from:
@@ -603,58 +604,38 @@ areas:
                                           from:
                                             _request: "schema_request.data.data.attributes"
                                           key:
-                                            _string.concat:
-                                              - "@"
-                                              - _state: "relations_list.$.type"
-                                      key: "label"
+                                            _state: "relations_list.$.0"
+                                      key: "label_in"
                                   else:
-                                    _if_none:
-                                      - _get:
+                                    _get:
+                                      from:
+                                        _get:
                                           from:
-                                            _get:
-                                              from:
-                                                _request: "schema_request.data.data.attributes"
-                                              key:
-                                                _string.concat:
-                                                  - "@"
-                                                  - _state: "relations_list.$.type"
-                                          key: "label"
-                                      - _get:
-                                          from:
-                                            _get:
-                                              from:
-                                                _request: "schema_request.data.data.attributes"
-                                              key:
-                                                _string.concat:
-                                                  - "@"
-                                                  - _state: "relations_list.$.type"
-                                          key: "label"
+                                            _request: "schema_request.data.data.attributes"
+                                          key:
+                                            _state: "relations_list.$.0"
+                                      key: "label_out"
+                              style:
+                                font-weight: "bold"
                             blocks:
-                              - id: "relations_link.$"
-                                type: "Anchor"
-                                style:
-                                  font-size: "large"
-                                  margin-top:
-                                    _global: "offset_medium"
-                                properties:
-                                  href:
-                                    _string.concat:
-                                      - "fetch?id="
-                                      - _state: "relations_list.$.recordId"
-                                  title:
-                                    _string.concat:
-                                      - _if_none:
-                                          - _state: "relations_list.$.name"
+                              - id: "relations_values.$"
+                                type: "List"
+                                blocks:
+                                  - id: "relations_value.$.$"
+                                    type: "Anchor"
+                                    style:
+                                      font-size: "large"
+                                      margin-top:
+                                        _global: "offset_medium"
+                                    properties:
+                                      title:
+                                        _if_none:
+                                          - _state: "relations_values.$.$.name"
                                           - _global: "unknown"
-                                      - " ("
-                                      - _if_none:
-                                          - _state: "relations_list.$.publicationYear"
-                                          - _global: "unknown"
-                                      - ") "
-                                      - _if_none:
-                                          - _state: "relations_list.$.resourceType"
-                                          - _global: "unknown"
-
+                                      href:
+                                        _string.concat:
+                                          - "fetch?id="
+                                          - _state: "relations_values.$.$.data"
 ## Social
                   - id: "social"
                     type: "Card"
@@ -673,6 +654,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.categories.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "categories_list"
                             type: "List"
@@ -696,6 +679,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.keywords.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "keywords_text"
                             type: "Paragraph"
@@ -713,24 +698,6 @@ areas:
                                     _global: "unknown"
                                   else:
                                     _request: "record_request.data.data.attributes.keywords"
-## Views
-                      - id: "views_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.numberViews.label"
-                        blocks:
-                          - id: "views_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _request: "record_request.data.data.attributes.numberViews"
 ## Process
                   - id: "process"
                     type: "Card"
@@ -742,150 +709,79 @@ areas:
                         font-size: "large"
                     blocks:
 ## Schema Version
-                      - id: "schema_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.schemaVersion.label"
-                        blocks:
-                          - id: "schema_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.schemaVersion"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "schema_label"
+                            id_value: "schema_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.schemaVersion.label"
+                            value:
+                              _request: "record_request.data.data.attributes.schemaVersion"
 ## Record Id
-                      - id: "recordid_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.recordId.label"
-                        blocks:
-                          - id: "recordid_text"
-                            type: "Anchor"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_large"
-                            properties:
-                              href:
-                                _string.concat:
-                                  - "fetch?id="
-                                  - _request: "record_request.data.data.attributes.recordId"
-                              title:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.recordId"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "schema_label"
+                            id_value: "schema_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.recordId.label"
+                            value:
+                              _request: "record_request.data.data.attributes.recordId"
+                            link:
+                              _string.concat:
+                                - "fetch?id="
+                                - _request: "record_request.data.data.attributes.recordId"
 ## Metadata Quality
-                      - id: "quality_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.metadataQuality.label"
-                        blocks:
-                          - id: "quality_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.metadataQuality"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "quality_label"
+                            id_value: "quality_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.metadataQuality.label"
+                            value:
+                              _request: "record_request.data.data.attributes.metadataQuality"
 ## Data Steward
-                      - id: "datasteward_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.dataSteward.label"
-                        blocks:
-                          - id: "datasteward_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              font-type: "monospace"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.dataSteward"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "datasteward_label"
+                            id_value: "datasteward_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.dataSteward.label"
+                            value:
+                              _request: "record_request.data.data.attributes.dataSteward"
 ## Source
-                      - id: "source_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.source.label"
-                        blocks:
-                          - id: "source_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.source"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "source_label"
+                            id_value: "source_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.source.label"
+                            value:
+                              _request: "record_request.data.data.attributes.source"
 ## Source Rights
-                      - id: "sourcerights_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.sourceRights.label"
-                        blocks:
-                          - id: "source_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.sourceRights"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "sourcerights_label"
+                            id_value: "sourcerights_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.sourceRights.label"
+                            value:
+                              _request: "record_request.data.data.attributes.sourceRights"
 ## Created
-                      - id: "created_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.createdAt.label"
-                        blocks:
-                          - id: "created_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.createdAt"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "created_label"
+                            id_value: "created_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.createdAt.label"
+                            value:
+                              _request: "record_request.data.data.attributes.createdAt"
 ## Technical
                   - id: "technical"
                     type: "Card"
@@ -899,85 +795,45 @@ areas:
                           _global: "offset_medium"
                     blocks:
 ## Metadata Format
-                      - id: "metadataformat_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.metadataFormat.label"
-                        blocks:
-                          - id: "rawtype_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.metadataFormat"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "metadataformat_label"
+                            id_value: "metadataformat_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.rawFormat.label"
+                            value:
+                              _request: "record_request.data.data.attributes.rawFormat"
 ## Data Size
-                      - id: "size_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.sizeBytes.label"
-                        blocks:
-                          - id: "size_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.sizeBytes"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "size_label"
+                            id_value: "size_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.sizeBytes.label"
+                            value:
+                              _request: "record_request.data.data.attributes.sizeBytes"
 ## Data Format
-                      - id: "format_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.dataFormat.label"
-                        blocks:
-                          - id: "format_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.dataFormat"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "format_label"
+                            id_value: "format_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.dataFormat.label"
+                            value:
+                              _request: "record_request.data.data.attributes.dataFormat"
 ## Location
-                      - id: "location_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.dataLocation.label"
-                        blocks:
-                          - id: "format_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.dataLocation"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "location_label"
+                            id_value: "location_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.dataLocation.label"
+                            value:
+                              _request: "record_request.data.data.attributes.dataLocation"
 ## Raw Card
                   - id: "schemas"
                     type: "Card"
@@ -998,6 +854,8 @@ areas:
                           align: "right"
                           title:
                             _request: "schema_request.data.data.attributes.rawMetadata.label"
+                          style:
+                            font-weight: "bold"
                         blocks:
                           - id: "raw_paragraph"
                             type: "MarkdownWithCode"
@@ -1021,25 +879,15 @@ areas:
                                       - _request: "record_request.data.data.attributes.rawMetadata"
                                       - "\n```"
 ## Metadata Checksum
-                      - id: "checksum_label"
-                        type: "Label"
-                        properties:
-                          span: 5
-                          align: "right"
-                          title:
-                            _request: "schema_request.data.data.attributes.rawChecksum.label"
-                        blocks:
-                          - id: "checksum_text"
-                            type: "Paragraph"
-                            style:
-                              font-size: "large"
-                              margin-top:
-                                _global: "offset_medium"
-                            properties:
-                              content:
-                                _if_none:
-                                  - _request: "record_request.data.data.attributes.rawChecksum"
-                                  - _global: "unknown"
+                      - _ref:
+                          path: "templates/keyvalue.yaml"
+                          vars:
+                            id_key: "checksum_label"
+                            id_value: "checksum_text"
+                            key:
+                              _request: "schema_request.data.data.attributes.rawChecksum.label"
+                            value:
+                              _request: "record_request.data.data.attributes.rawChecksum"
 ## Export Card
                   - id: "export"
                     type: "Card"
@@ -1070,6 +918,8 @@ areas:
                                             _request: "export_datacite_request.data.data.attributes"
                         properties:
                           title: "DataCite"
+                          style:
+                            font-size: "large"
                           url: ""
 
                       - id: "export_bibjson"
@@ -1092,6 +942,8 @@ areas:
                                             _request: "export_bibjson_request.data.data.attributes"
                         properties:
                           title: "BibJSON"
+                          style:
+                            font-size: "large"
                           url: ""
 ## Right Column
               - id: "fetch_help"
@@ -1104,53 +956,56 @@ areas:
                   title: "Display Help"
                   headerStyle:
                     font-size: "large"
-                blocks:
-                  - id: "fetch_md"
-                    type: "Markdown"
-                    properties:
-                      content: |
-                        The display record site gives an overview about a record in the metadata-lake.
+                areas:
+                  content:
+                    gutter: 16
+                    blocks:
+                      - id: "fetch_md"
+                        type: "Markdown"
+                        properties:
+                          content: |
+                            The display record site gives an overview about a record in the metadata-lake.
 
-                        * **Mandatory Metadata**, core properties, typically set for all records.
-                        * **Optional Metadata**, extra properties, sometimes set for records.
-                        * **Relationships**, labeled links to other records.
-                        * **Social Metadata**, properties relating to classification and findability.
-                        * **Process Metadata**, properties relating to ingestion and parsing of this record.
-                        * **Technical Metadata**, properties relating to the underlying data-set.
-                        * **Original Metadata**, the original ingested metadata record.
-                        * **Export**, provides exports of the metadata record in other formats.
+                            * **Mandatory Metadata**, core properties, typically set for all records.
+                            * **Optional Metadata**, extra properties, sometimes set for records.
+                            * **Relationships**, labeled links to other records.
+                            * **Social Metadata**, properties relating to classification and findability.
+                            * **Process Metadata**, properties relating to ingestion and parsing of this record.
+                            * **Technical Metadata**, properties relating to the underlying data-set.
+                            * **Original Metadata**, the original ingested metadata record.
+                            * **Export**, provides exports of the metadata record in other formats.
 
-                        A value of `[ᴇᴍᴘᴛʏ]` corresponds to `NULL`.
+                            A value of `[ᴇᴍᴘᴛʏ]` corresponds to `NULL`.
 
-                  - id: "fetch_detail"
-                    type: "Collapse"
-                    properties:
-                      defaultActiveKey: "none"
-                      panels:
-                        - key: "technically"
-                          title: "Technically"
-                    areas:
-                      technically:
-                        blocks:
-                          - id: "fetch_technically"
-                            type: "Markdown"
-                            properties:
-                              content: |
-                                1. The field labels are retrieved via the database schema by a GET request to:
+                      - id: "fetch_detail"
+                        type: "Collapse"
+                        properties:
+                          defaultActiveKey: "none"
+                          panels:
+                            - key: "technically"
+                              title: "Technically"
+                        areas:
+                          technically:
+                            blocks:
+                              - id: "fetch_technically"
+                                type: "Markdown"
+                                properties:
+                                  content: |
+                                    1. The field labels are retrieved via the database schema by a GET request to:
 
-                                    ```
-                                    /api/v1/schema
-                                    ```
-                                2. The record data is retrieved by a GET request to:
+                                        ```
+                                        /api/v1/schema
+                                        ```
+                                    2. The record data is retrieved by a GET request to:
 
-                                    ```
-                                    /api/v1/metadata?id=x
-                                    ```
-                                3. The record data is exported by a GET request using the `format` option to:
+                                        ```
+                                        /api/v1/metadata?id=x
+                                        ```
+                                    3. The record data is exported by a GET request using the `format` option to:
 
-                                    ```
-                                    /api/v1/metadata?id=x&format=bibjson
-                                    ```
+                                        ```
+                                        /api/v1/metadata?id=x&format=bibjson
+                                        ```
 
   sider:
     _ref: "templates/sider.yaml"

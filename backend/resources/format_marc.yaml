@@ -7,15 +7,16 @@ processor_resources:
         mapping: 'root = this.record'
 
       - label: 'format_marc__patch_sourceid'
-        mapping: 'meta sourceid = if metadata("sourceid") == null { this.controlfield.filter(x -> x."-tag" == "001").0."#text" }'
+        mapping: 'meta sourceid = if metadata("sourceid") == null { this.controlfield.array().filter(x -> x."-tag" == "001").0."#text" }'
 
       - label: 'format_marc__parser_workflow'
         workflow:
           meta_path: ''
           order:
             - - 'rawMetadata'
+              - 'rawFormat'
               - 'dataLocation'
-              - 'name'
+              - 'title'
               - 'publisher'
               - 'publicationYear'
               - 'version'
@@ -29,10 +30,11 @@ processor_resources:
               - 'identifiers'
               - 'subjects'
               - 'synonyms'
-              - 'externalItems'
+              - 'relatedItems'
               - 'related'
             - - 'identifiers_1'
-              - 'name_1'
+              - 'synonyms_1'
+              - 'title_1'
               - 'publisher_1'
               - 'publicationYear_1'
               - 'resourceType_1'
@@ -49,6 +51,15 @@ processor_resources:
                     root.rawMetadata = { "record": this }.format_xml(no_indent: true).string()
               result_map: 'root.dataasee.rawMetadata = this.rawMetadata'
 
+            # Raw Format
+
+            'rawFormat':
+              request_map: 'root = {}'
+              processors:
+                - mapping: |
+                    root.rawFormat = "marcxml+xml"
+              result_map: 'root.dataasee.rawFormat = this.rawFormat'
+
             # Filtered or First String
 
             'dataLocation':  # TODO map over all
@@ -58,12 +69,12 @@ processor_resources:
                     root.dataLocation = this.0.subfield.array().filter(x -> x."-code" == "u").0."#text".catch(null)
               result_map: 'root.dataasee.dataLocation = this.dataLocation'
 
-            'name':
+            'title':
               request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag" == "245").not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.name = this.0.subfield.array().filter(x -> x."-code" == "a").0."#text".catch(null)
-              result_map: 'root.dataasee.name = this.name | deleted()'
+                    root.title = this.0.subfield.array().filter(x -> x."-code" == "a").0."#text".catch(null)
+              result_map: 'root.dataasee.title = this.title | deleted()'
 
             'publisher':
               request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag" == "260").not_empty().catch(deleted())'
@@ -94,10 +105,10 @@ processor_resources:
               result_map: 'root.dataasee.language = this.language | deleted()'
 
             'license':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("506|540")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(506|540)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.license = this.0.subfield.array().filter(y -> y."-code".re_match("f|u")).0."#text".catch(null)
+                    root.license = this.0.subfield.array().filter(y -> y."-code".re_match("^(f|u)$")).0."#text".catch(null)
               result_map: 'root.dataasee.license = this.license | deleted()'
 
             'resourceType':
@@ -126,50 +137,52 @@ processor_resources:
 
             # Concatenate Strings
 
-            'keywords':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag" == "653").not_empty().catch(deleted())'
-              processors:
-                - mapping: |
-                    let sep = ","
-                    root.keywords = this.map_each(x -> x.subfield.array().filter(y -> y."-code" == "a").map_each(y -> y."#text")).flatten().filter(x -> x != "").join($sep)
-              result_map: 'root.dataasee.keywords = this.keywords.not_empty().catch(deleted())'
-
             'description':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("500|520")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(500|520)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let sep = "\n---\n"
+                    let sep = " ¶ "
                     root.description = this.map_each(x -> x.subfield.array().filter(y -> y."-code" == "a").map_each(y -> y."#text")).flatten().filter(x -> x != "").join($sep)
               result_map: 'root.dataasee.description = this.description.not_empty().catch(deleted())'
 
             'rights':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("506|540")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(506|540)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    let sep = "\n---\n"
-                    root.rights = this.map_each(x -> x.subfield.array().filter(y -> y."-code".re_match("a|f")).map_each(y -> y."#text")).flatten().join($sep)
+                    let sep = " ¶ "
+                    root.rights = this.map_each(x -> x.subfield.array().filter(y -> y."-code".re_match("^(a|f)$")).map_each(y -> y."#text")).flatten().join($sep)
               result_map: 'root.dataasee.rights = this.rights.not_empty().catch(deleted())'
 
             # Array
 
+            'keywords':
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(650|653)$")).not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.keywords = this.map_each(x -> x.subfield.array().filter(y -> y."-code" == "a").map_each(y -> y."#text")).flatten().filter(x -> x != "")
+              result_map: 'root.dataasee.keywords = this.keywords.not_empty().catch(deleted())'
+
             'creators':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("100|700")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(100|700)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
                     root.creators = this.map_each(x -> x.subfield.array().fold({},y -> y.tally.assign(match y.value { this."-code" == "a" => { "name": this."#text" },
-                                                                                                                      this."-code" == "0" => { "data": this."#text" } } ) ) ).filter(x -> x != {})
+                                                                                                                      this."-code" == "0" => { "data": this."#text" },
+                                                                                                                      _                   => {} } ) ) ).filter(x -> x.exists("name"))
               result_map: 'root.dataasee.creators = this.creators | deleted()'
 
             'identifiers':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("020|024|856")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(020|022|024)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.identifiers = this.map_each(x -> { "name": if x."-tag" == "020" { "isbn" } else { null },
-                                                            "data": x.subfield.array().filter(y -> y."-code" == "a").0."#text".catch(deleted()) }).filter(x -> x.data != null)
+                    root.identifiers = this.map_each(x -> { "name": x.subfield.array().filter(y -> y."-code" == "a").0."#text".catch(deleted()),
+                                                            "data": match { x."-tag" == "020" => "isbn",
+                                                                            x."-tag" == "022" => "issn",
+                                                                            x."-tag" == "024" => x.subfield.array().filter(y -> y."-code" == "2").0."#text".catch(null) } }).filter(x -> x.name != null)
               result_map: 'root.dataasee.identifiers = this.identifiers.not_empty().catch(deleted())'
 
             'subjects':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("655|689")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(655|689)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
                     root.subjects = this.map_each(x -> { "name": x.subfield.array().filter(y -> y."-code" == "a").0."#text".catch(deleted()),
@@ -177,34 +190,36 @@ processor_resources:
               result_map: 'root.dataasee.subjects = this.subjects.not_empty().catch(deleted())'
 
             'synonyms':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("210|222|240|242|243|246|247")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(210|222|240|242|243|246|247)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.synonyms = this.map_each(x -> { "name": match x { this."-tag" == "210" => "abbreviated",
-                                                                           this."-tag" == "222" => "key Title",
+                    root.synonyms = this.map_each(x -> { "name": x.subfield.array().filter(y -> y."-code" == "a").0."#text".catch(deleted()),
+                                                         "data": match x { this."-tag" == "210" => "abbreviated",
+                                                                           this."-tag" == "222" => "key title",
                                                                            this."-tag" == "240" => "uniform",
                                                                            this."-tag" == "242" => "translated",
                                                                            this."-tag" == "243" => "translated",
                                                                            this."-tag" == "246" => "alternative",
-                                                                           this."-tag" == "247" => "former" },
-                                                         "data": x.subfield.array().filter(y -> y."-code" == "a").0."#text".catch(deleted()) }).filter(x -> x.data != null)
+                                                                           this."-tag" == "247" => "former" } }).filter(x -> x.name != null)
               result_map: 'root.dataasee.synonyms = this.synonyms.not_empty().catch(deleted())'
 
-            'externalItems':
+            'relatedItems':
               request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag" == "856" && x."-ind1" == "4" && x."-ind2" == "2").not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.externalItems = this.map_each(x -> { "name": "related",
-                                                              "data": x.subfield.array().filter(y -> y."-code" == "u").0."#text".catch(deleted()) }).filter(x -> x.data != null)
-              result_map: 'root.dataasee.externalItems = this.externalItems.not_empty().catch(deleted())'
+                    root.relatedItems = this.map_each(x -> { "name": "related",
+                                                             "data": x.subfield.array().filter(y -> y."-code" == "u").0."#text".catch(deleted()) }).filter(x -> x.data != null)
+              result_map: 'root.dataasee.relatedItems = this.relatedItems.not_empty().catch(deleted())'
 
             # Object
 
             'related':
-              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("773|780|785|786|787")).not_empty().catch(deleted())'
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag".re_match("^(760|773|774|780|785|786|787)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.related = this.fold({},x -> x.tally.merge({ match x.value { this."-tag" == "773" => "isPartOf",
+                    root.related = this.fold({},x -> x.tally.merge({ match x.value { this."-tag" == "760" => "isPartOf",
+                                                                                     this."-tag" == "773" => "isPartOf",
+                                                                                     this."-tag" == "774" => "hasPart",
                                                                                      this."-tag" == "780" => "isRelatedTo",
                                                                                      this."-tag" == "785" => "isRelatedTo",
                                                                                      this."-tag" == "786" => "isRelatedTo",
@@ -214,21 +229,29 @@ processor_resources:
             # Additionals
 
             'identifiers_1':
-              request_map: 'root = this.controlfield.array().filter(x -> x."-tag".re_match("001|003")).not_empty().catch(deleted())'
+              request_map: 'root = this.controlfield.array().filter(x -> x."-tag".re_match("^(001|003)$")).not_empty().catch(deleted())'
               processors:
                 - mapping: |
-                    root.identifiers = [{ "name": this.filter(x -> x."-tag" == "003").0."#text" | "control number",
-                                          "data": this.filter(x -> x."-tag" == "001").0."#text" }]
+                    root.identifiers = [{ "name": this.filter(x -> x."-tag" == "001").0."#text",
+                                          "data": this.filter(x -> x."-tag" == "003").0."#text" | "control number" }]
               result_map: 'root.dataasee.identifiers = this.identifiers.concat(root.dataasee.identifiers.or([]))'
+
+            'synonyms_1':
+              request_map: 'root = this.datafield.not_null().array().filter(x -> x."-tag" == "245").not_empty().catch(deleted())'
+              processors:
+                - mapping: |
+                    root.synonyms = this.map_each(x -> { "name": x.subfield.array().filter(y -> y."-code" == "b").0."#text".catch(deleted()),
+                                                         "data": "remainder title" }).filter(x -> x.name != null)
+              result_map: 'root.dataasee.synonyms = this.synonyms.concat(root.dataasee.synonyms.or([]))'
 
             # Alternates
 
-            'name_1':
-              request_map: 'root = if this.dataasee.name == null { this.datafield.not_null().array().filter(x -> x."-tag" == "130").not_empty().catch(deleted()) } else { deleted() }'
+            'title_1':
+              request_map: 'root = if this.dataasee.title == null { this.datafield.not_null().array().filter(x -> x."-tag" == "130").not_empty().catch(deleted()) } else { deleted() }'
               processors:
                 - mapping: |
-                    root.name = this.0.subfield.array().filter(x -> x."-code" == "a").0."#text".catch(null)
-              result_map: 'root.dataasee.name = this.name | deleted()'
+                    root.title = this.0.subfield.array().filter(x -> x."-code" == "a").0."#text".catch(null)
+              result_map: 'root.dataasee.title = this.title | deleted()'
 
             'publisher_1':
               request_map: 'root = if this.dataasee.publisher == null { this.datafield.not_null().array().filter(x -> x."-tag" == "264").not_empty().catch(deleted()) } else { deleted() }'

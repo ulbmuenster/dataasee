@@ -1,18 +1,19 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dataasee:api?request=ingest",
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?request=ingest",
 
-  "title": "DatAasee Ingest Endpoint Request", "type": "object", "oneOf":[{ "maxProperties": 0 }, { "required": ["source", "method", "format", "rights", "steward"] }], "properties": {
+  "title": "DatAasee Ingest Endpoint Request", "description": "The ingest endpoint returns the if an ingest is ongoing for an empty body, or starts an ingest based on a given body.",
 
-    "source": { "type": "string", "title": "Source URL", "maxLength": 4095, "format": "uri" },
+  "type": "object", "oneOf":[{ "maxProperties": 0 }, { "required": ["source", "method", "format", "rights", "steward"] }], "properties": {
 
-    "method": { "type": "string", "title": "Harvest Protocol", "enum": ["oai-pmh","s3","get","dataasee"] },
+    "source": { "type": "string", "title": "Source HTTP(S) URL", "minLength": 8, "maxLength": 4095, "format": "uri" },
 
-    "format": { "type": "string", "title": "Metadata Format", "enum": ["datacite","oai_datacite","dc","oai_dc","lido","marc21","marcxml","mods","rawmods","dataasee"] },
+    "method": { "type": "string", "title": "Harvest Protocol", "enum": ["oai-pmh", "s3", "get", "dataasee"] },
 
-    "rights": { "type": "string", "title": "Source Rights", "maxLength": 4095 },
+    "format": { "type": "string", "title": "Metadata Format", "enum": ["datacite", "oai_datacite", "dc", "oai_dc", "lido", "marc21", "marcxml", "mods", "rawmods", "dataasee"] },
 
-    "steward": { "type": "string", "title": "Data Steward URL or Email", "maxLength": 4095 },
+    "rights": { "type": "string", "title": "Source Rights", "minLength": 3, "maxLength": 4095 },
+
+    "steward": { "type": "string", "title": "Data Steward URL or Email", "minLength": 3, "maxLength": 4095 },
 
     "options": { "type": ["null","string"], "title": "Harvest Options (OAI-PMH)", "maxLength": 255 },
 

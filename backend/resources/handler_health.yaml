@@ -6,7 +6,7 @@ processor_resources:
       - branch:
           processors:
             - try:
-                - label: 'handler_health__arcadedb_probe'
+                - label: 'handler_health__arcadedb_health'
                   arcadedb:
                     host: '${DB_HOST}'
                     port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
@@ -16,35 +16,17 @@ processor_resources:
                     password: '${DB_PASS}'
                     request: |
                       root.language = "sql"
-                      root.command = "SELECT version().split(' ')[0] AS version"
+                      root.command = """SELECT {"records": count(*),
+                                                "interconnecting": ifnull($interlock, false)} AS report,
+                                               version().split(' ')[0] AS version
+                                        FROM Metadata;"""
                     response: |
+                      root.report = this.result.0.report
                       root.version = this.result.0.version
                       root.healthy = true
 
             - catch:
                 - mapping: 'root.healthy = false'
-
-            - try:
-                - label: 'handler_health__arcadedb_health'
-                  arcadedb:
-                    host: '${DB_HOST}'
-                    port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                    endpoint: 'command'
-                    database: '${DB_NAME}'
-                    username: '${DB_USER}'
-                    password: '${DB_PASS}'
-                    request: |
-                      root.language = "sqlscript"
-                      root.command = """LET $a = CHECK DATABASE;
-                                        SELECT { "warnings": $a.warnings[0].size(),
-                                                 "errors": $a.totalErrors[0],
-                                                 "corrupted": $a.corruptedRecords[0].size(),
-                                                 "invalid": $a.invalidLinks[0] } AS report;"""
-                    response: |
-                      root.report = this.result.0.report
-
-            - catch:
-                - mapping: 'root.report.notice = "Database busy!"'
 
           result_map: |
             root.database = this
@@ -53,7 +35,7 @@ processor_resources:
       - branch:
           processors:
             - try:
-                - label: 'handler_health__benthos_probe'
+                - label: 'handler_health__benthos_health'
                   http:
                     url: 'http://localhost:4195/version'
                     verb: 'GET'
@@ -61,6 +43,15 @@ processor_resources:
                 - mapping: |
                     root.version = this.version
                     root.healthy = true
+
+                - label: 'handler_health__benthos_ingesting'
+                  branch:
+                    processors:
+                      - cache:
+                          resource: 'global_cache'
+                          operator: 'exists'
+                          key: 'ingesting'
+                    result_map: 'root.report.ingesting = this'
 
             - catch:
                 - mapping: 'root.healthy = false'
@@ -70,7 +61,7 @@ processor_resources:
             root.processor.name = "Benthos"
 
       - switch:
-          - check: 'this.database.healthy && this.processor.healthy'
+          - check: 'this.processor.healthy'
             processors:
               - mapping: |
                   root.data.type = "system"
@@ -81,5 +72,5 @@ processor_resources:
           - processors:
               - mapping: |
                   meta status = "500"
-                  root.errors = [{ "title": "Server Error: Internal Server Error",
-                                   "detail": "Service not healthy." }]
+                  root.errors = [{"title": "Server Error: Internal Server Error",
+                                  "detail": "Service not healthy."}]

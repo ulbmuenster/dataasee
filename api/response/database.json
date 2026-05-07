@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?response=database",
+
+  "title": "DatAasee Database Endpoint Response", "description": "The database endpoint returns a query result.",
+
+  "type": "object", "oneOf": [ { "required": ["data", "meta", "links"] },
+
+                               { "required": ["errors", "meta", "links"] } ], "properties": {
+
+    "data": { "type": "object", "description": "See: https://jsonapi.org/format/#document-resource-objects", "required": ["type", "id", "attributes"], "properties": {
+
+                "type": { "type": "string", "const": "data" },
+
+                "id": { "type": "string", "description": "Unix timestamp", "pattern": "^[1-2][0-9]{9}$" },
+
+                "attributes": { "type": "object", "required": ["result"], "properties": {
+
+                  "result": { "type": "array", "title": "Query Result", "maxItems": 100,
+
+                    "items": { "type": "object", "title": "Result Row" } } } } } },
+
+    "errors": { "type": "array", "description": "See: https://jsonapi.org/format/#document-top-level", "minItems": 1,
+
+      "items": { "type": "object", "description": "See: https://jsonapi.org/format/#error-objects", "required": ["title", "detail"], "properties": {
+
+        "title": { "type": "string" },
+
+        "detail": { "type": "string" },
+
+        "links": { "type": "object",
+
+          "additionalProperties": { "type": "string", "format": "uri" } } } } },
+
+    "meta": { "type": "object", "description": "See: https://jsonapi.org/format/#document-meta", "required": ["name", "version"], "properties": {
+
+      "name": { "type": "string", "const": "DatAasee" },
+
+      "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$" } } },
+
+    "links": { "type": "object", "description": "See: https://jsonapi.org/format/#document-links", "required": ["self", "describedby"], "properties": {
+
+      "self": { "type": "string", "format": "uri" },
+
+      "describedby": { "type": "string", "format": "uri" } } } }
+}

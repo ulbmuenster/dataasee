@@ -3,7 +3,7 @@
 processor_resources:
   - label: 'quality'
     branch:
-      request_map: 'root = this.with("name","creators","publisher","publicationYear","resourceType","identifiers")'
+      request_map: 'root = this.with("title","creators","publisher","publicationYear","resourceType","identifiers")'
       processors:
-        - mapping: 'root.metadataQuality = if this.values().contains(null) || this.name == "" { "Incomplete" } else { "OK" }'
+        - mapping: 'root.metadataQuality = if this.values().contains(null) || this.title == "" { "Incomplete" } else { "OK" }'
       result_map: 'root.metadataQuality = this.metadataQuality'

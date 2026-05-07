@@ -3,13 +3,16 @@
 processor_resources:
   - label: 'submit'
     processors:
-      - try:
-          - mapping: |
-              root = this.filter(x -> x != {})
-              meta incount = this.length()
-              meta failed = metadata("failed") + this.filter(x -> x == {}).length()
+      - archive:
+          format: 'json_array'
 
-          - label: 'submit__arcadedb_command'
+      - mapping: |
+          root = this.filter(x -> x != {})
+          meta incount = this.length()
+          meta failed = metadata("failed") + this.filter(x -> x == {}).length()
+
+      - try:
+          - label: 'submit__arcadedb_command_batch'
             arcadedb:
               host: '${DB_HOST}'
               port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
@@ -19,20 +22,54 @@ processor_resources:
               password: '${DB_PASS}'
               request: |
                 root.language = "sqlscript"
-                root.command = this.fold("",x -> x.tally + "UPDATE metadata CONTENT %s UPSERT WHERE recordId == '%s';".format(x.value.string(),x.value.recordId))
+                root.command = this.fold("LET $d = [];",x -> x.tally + "LET $d = $d || (UPDATE Metadata CONTENT %s SET rawMetadata = (INSERT INTO Raw CONTENT %s RETURN @rid) UPSERT APPLY DEFAULTS RETURN BEFORE rawMetadata WHERE recordId = '%s').rawMetadata;".format(x.value.without("rawMetadata").string(), {"value":x.value.rawMetadata}.string(), x.value.recordId)) + " DELETE FROM $d;"
               response: |
+                meta count = metadata("count") + metadata("incount")
                 root = {}
 
-          - mapping: |
-              meta count = metadata("count") + metadata("incount")
+      - switch:
+          - check: 'errored()'
+            fallthrough: true
+            processors:
+              - catch: []
 
-          - switch:
-              - check: '(metadata("count") / 10000).floor() > ((metadata("count") - metadata("incount")) / 10000).floor()'
-                processors:
-                  - label: 'ingest_progress'
-                    log:
-                      message: '${! (10000 * (metadata("count") / 10000).floor()).string() + " Done!" }'
+              - unarchive:
+                  format: 'json_array'
 
-      - catch:
-          - mapping: |
-              meta failed = metadata("failed") + metadata("incount")
+              - try:
+                  - mapping: |
+                      meta debug = this.string()
+
+                  - label: 'submit__arcadedb_command_single'
+                    arcadedb:
+                      host: '${DB_HOST}'
+                      port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                      endpoint: 'command'
+                      database: '${DB_NAME}'
+                      username: '${DB_USER}'
+                      password: '${DB_PASS}'
+                      request: |
+                        root.language = "sqlscript"
+                        root.command = "LET $d = (UPDATE Metadata CONTENT %s SET rawMetadata = (INSERT INTO Raw CONTENT %s RETURN @rid) UPSERT APPLY DEFAULTS RETURN BEFORE rawMetadata WHERE recordId = '%s').rawMetadata;".format(this.without("rawMetadata").string(), {"value":x.rawMetadata}.string(), this.recordId) + " DELETE FROM $d;"
+                      response: |
+                        root.count = 1
+
+              - catch:
+                  - log:
+                      message: '${! metadata("debug") }'
+
+                  - mapping: |
+                      root.failed = 1
+
+              - archive:
+                  format: 'json_array'
+
+              - mapping: |
+                  meta count = this.fold(metadata("count"), x -> x.tally + x.value.count.or(0))
+                  meta failed = this.fold(metadata("failed"), x -> x.tally + x.value.failed.or(0))
+
+          - check: '(metadata("count") / 10000).floor() > ((metadata("count") - metadata("incount")) / 10000).floor()'
+            processors:
+              - label: 'ingest_progress'
+                log:
+                  message: '${! (10000 * (metadata("count") / 10000).floor()).string() + " Done!" }'

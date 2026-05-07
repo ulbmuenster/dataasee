@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<!-- Language: HTML5 & Vanilla Javascript, Project: DatAasee, License: MIT, Author: Christian Himpe -->
+
+<!-- This is a development frontend for manual testing; to be opened as local file in a browser. -->
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>DatAasee</title>
+    <link rel="icon" type="image/x-png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAA7EAAAOxAGVKw4bAAACvElEQVRYhe3Vb6jecxgG8Ot7jtk4zuZPtD+oozjJ3xB7oWgkRlbSZmUpXjApvFDenfKCEplR3smfpUkp26yl8YKj5M8US1tkSpM1p4aZs7CPF8/9dJ7pOS8WJnWuenrq+j339b2e+75+3zuZwQxm8H8EzsdKjP4Xh9+KQzr4A2M4DtcdLQMDWIEFWFNmup/lR6rX/gFDlye5LMlnrbXxv6t31NFwUZLVSeYkWdda25okWJTkgSSLkmxJ8nJrzXRCGExyZ5IlSXYleaq1tree3ZRkRZIfkzzbWtvRW7ge32NHheox3Is9+Amf1HzXYxWewDF9DJyDH7Ct6r7B7Xi+dHfiO/xc+o/ghmAWhjCIJ3GwDnwHp5f4PdhXyf8CZ0/ThRPre7SMHMJ+PIyGk7Gp+N/wTD+RE3BqH/5YLJxuBNMYmo85ffhTMLeXmI3j+/xwEMN9+IZ50xw6FwN9+CHM6lfwOH7F7zXn4eLvw0S1axwjxS/FruJ34sriL8BHxe/BquJPw4bKwf6afas/PRjcUrN/CAdK/NMqeBV3Y3eZea+MjuOumvNk5eUAvqy8bCgj71bdROmvLX5bhfTFv3bjYryA13FbD78IT2MjHuy2sto6VsF6FCcVP4DVeAPP4awerZvxGtZhcb8xHlU0DCVZlmR2kk09l8dgkqVJFiZ5u7X2Vbeo5n5hko9bax/28OcmuTrJ10ne6l5cWJDkxnQuoo2ttcn0FG0xtUwmcD3Oq3kr/qDO5XEmXnL4Alqjs5jGKh9dfjPOwB06F1OX317612AkVXxpzfkDU9iLZRjGK6ZW8CTu11nBYxXWrtG1Oq/hSvzSo/Vm6S/WCXQXmw/bhtX2JUnmJdnaWtvX8+yKJCNJ3m+tfdvDjya5JMnnrbXtPfz8JFcl2d27JXVe82uTTCbZemSJmcEMZvAv4E9VNZeUrq+0WwAAAABJRU5ErkJggg=="/>
+    <style>
+      header { text-align:center; }
+      ul { list-style-type:none; padding-left:0; }
+      li > label { font-size:1.5em; font-weight:700; line-height:normal; }
+      li > label:has(input) ~ form { display:none; }
+      li > label:has(input:checked) ~ form { display:block; }
+      form { width:50%; margin:0 auto; }
+      form button, select, output { display:block; width:100%; margin:1ex 0; }
+      form input, textarea { display:block; width:99.1%; margin:1ex 0; }
+      form input[type=radio] { display:inline-block; width:30%; margin-right:-12%; }
+      form output ul li { display:flex; justify-content:space-between; margin:.5ex 0; padding:.5ex; }
+      form table { width:100%; }
+      .paging { display:inline; width:48%; margin:1ex; }
+      .nores { background-color:silver; display:inline-block; width:99.2%; padding:.5ex; }
+      .md_ok { background-color:rgba(250,173,20,0.25); }
+      .md_ic { background-color:rgba(245,34,45,0.25); }
+      #admin { color: red; }
+      #api tr td { padding:0.5ex; }
+      #api tr:nth-child(odd) { background-color:silver; }
+      #ready { color:red; }
+      #fetch ~ output dl dt { font-weight:bold; }
+    </style>
+  </head>
+
+  <body onload="onLoad()">
+    <header>
+      <h1 id="ready" title="If server is ready, then green, otherwise red.">DatAasee<span id="marker"></span></h1>
+      <h2>Metasearch for Metadata</h2>
+    </header>
+
+    <ul onChange="clearId()">
+      <li>
+        <label><input type="radio" name="main" id="home"/> Home</label>
+        <form>
+          <a href="https://github.com/ulbmuenster/dataasee" target="_blank" title="DatAasee Sourcecode Repository at Github">DatAasee</a> - A Metadata-Lake for Libraries (Version <b id="version"></b>)
+        </form>
+      </li>
+
+      <li>
+        <label><input type="radio" name="main" id="recordbyid"/> Record By Id</label>
+        <form>
+          <input id="recordid" name="id" type="text" placeholder="RecordId"/>
+          <button type="button" onclick="recordById(form)" id="fetch">Fetch Record</button>
+          <output name="result"></output>
+        </form>
+      </li>
+
+      <li>
+        <label><input type="radio" name="main"/> Resolve DOI</label>
+        <form>
+          <input name="doi" type="text" placeholder="DOI"/>
+          <button type="button" onclick="metadata(form,1)">Resolve DOI</button>
+          <output name="result"></output>
+        </form>
+      </li>
+
+      <li>
+        <label><input type="radio" name="main"/> List Records</label>
+        <form>
+          <select id="list_sources" name="source">
+            <option value="" selected="selected">Source:</option>
+          </select>
+          <button type="button" onclick="metadata(form,1)">List</button>
+          <output name="result"></output>
+        </form>
+      </li>
+
+      <li>
+        <label><input type="radio" name="main"/> Filter Search</label>
+        <form>
+          <input id="filter_search" name="search" type="text" placeholder="Search Text"/>
+          <select id="filter_languages" name="language">
+            <option value="" selected="selected">Language:</option>
+          </select>
+          <select id="filter_resourcetypes" name="resourcetype">
+            <option value="" selected="selected">Resource Type:</option>
+          </select>
+          <select id="filter_licenses" name="license">
+            <option value="" selected="selected">License:</option>
+          </select>
+          <select id="filter_categories" name="category">
+            <option value="" selected="selected">Category:</option>
+          </select>
+          <select id="filter_formats" name="format">
+            <option value="" selected="selected">Format:</option>
+          </select>
+          <input id="filter_from" name="from" type="number" placeholder="From Year"/>
+          <input id="filter_till" name="till" type="number" placeholder="Till Year"/>
+          <label><input name="newest" value="" type="radio" checked="checked">No Sorting</label>
+          <label><input name="newest" value="true" type="radio">Newest First</label>
+          <label><input name="newest" value="false" type="radio">Oldest First</label>
+          <button type="button" onclick="metadata(form,1)">Search</button>
+          <output name="result"></output>
+        </form>
+      </li>
+
+      <li id="query">
+        <label><input type="radio" name="main"/> Custom Query</label>
+        <form method="get" action="/database" target="_blank">
+          <select name="language">
+            <option value="" disabled="disabled">Query Language:</option>
+            <option value="sql" selected="selected">SQL (default)</option>
+            <option value="opencypher">OpenCypher</option>
+            <option value="mongo">MongoQL</option>
+            <option value="graphql">GraphQL</option>
+            <option value="redis">Redis</option>
+          </select>
+          <textarea name="query" placeholder="Query" rows="3"></textarea>
+          <select id="query_properties">
+            <option value="" selected="selected">Properties: (for reference, has no effect on query)</option>
+          </select>
+          <button type="submit">Query</button>
+          <output name="result"></output>
+        </form>
+      </li>
+
+      <li>
+        <label><input type="radio" name="main"/> Interface</label>
+        <form>
+          API Base: <a id="host" href="" target="_blank"></a> <button type="button" onclick="updateBase()" style="display:inline; width:10%">Update</button>
+          <hr/>
+          <table id="api"></table>
+          <hr/>
+          API Spec: <a id="oapi" href="" target="_blank"></a>
+        </form>
+      </li>
+
+      <li id="admin">
+        <label><input type="radio" name="main"/> Admin Area</label>
+        <form method="post" action="/health" target="_blank">
+          <button type="submit">Health</button>
+          <hr/>
+        </form>
+        <form method="post" action="/ingest" target="_blank">
+          <button type="submit">Ingesting?</button>
+        </form>
+        <form method="post" action="/ingest" target="_blank">
+          <input name="source" type="url" placeholder="Source URL"/>
+          <input name="options" type="text" placeholder="Source Options"/>
+          <select name="method">
+            <option value="" selected="selected" disabled="disabled">Method:</option>
+            <option>oai-pmh</option>
+            <option>s3</option>
+            <option>get</option>
+            <option>dataasee</option>
+          </select>
+          <input name="username" type="password" placeholder="Access Key (only S3)"/>
+          <input name="password" type="password" placeholder="Secret Key (only S3)"/>
+          <select name="format">
+            <option value="" selected="selected" disabled="disabled">Format:</option>
+            <option>datacite</option>
+            <option>oai_datacite</option>
+            <option>dc</option>
+            <option>oai_dc</option>
+            <option>lido</option>
+            <option>marc21</option>
+            <option>marcxml</option>
+            <option>mods</option>
+            <option>rawmods</option>
+            <option>dataasee</option>
+          </select>
+          <input name="steward" type="text" placeholder="Data Steward"/>
+          <input name="rights" type="text" placeholder="Source Rights">
+          <button type="submit">Ingest</button>
+        </form>
+      </li>
+    </ul>
+
+    <script>
+      // Globals:
+      const nil = 'ᴇᴍᴘᴛʏ';
+      const url = new URL(window.location);
+      const local = 'http://localhost:8343/api/v1';
+      let base = 'http://localhost:8343/api/v1';
+
+      // Generic Helpers:
+      function get(id) { return document.getElementById(id); }
+
+      // Create Tag:
+      function tag(name, content, attributes) {
+        let t = document.createElement(name);
+        if(content != undefined) { t.innerHTML = content; }
+        if(attributes != undefined) { Object.entries(attributes).forEach((x) => t.setAttribute(x[0], x[1])); }
+        return t;
+      }
+
+      // Wrap in Cell:
+      function wrap(name, content, attributes) {
+        let cell = document.createElement('td');
+        cell.appendChild(tag(name, content, attributes));
+        return cell;
+      }
+
+      // GET Request:
+      async function getRequest(endpoint) {
+        try {
+          const response = await fetch(base + endpoint, { method: 'GET' });
+          if (!response.ok) { throw new Error('HTTP ' + response.status); }
+          return await response.json();
+        } catch(error) {
+          return null;
+        }
+      }
+
+      // Ready Probe:
+      async function ready() {
+        const res = await getRequest('/ready');
+        get('version').textContent = res?.meta?.version ?? '?';
+        get('ready').style.color = res?.data?.attributes?.ready ? 'green' : 'red';
+      }
+
+      // Get Record:
+      async function recordById(form) {
+        const response = await getRequest('/metadata?id=' + encodeURIComponent(form.id.value || 'ni:dataasee'));
+        let dl = tag('dl');
+        if(response?.data?.attributes) {
+          Object.entries(response.data.attributes).forEach(function(pair) {
+            let dd = tag('dd');
+            if(pair[1] == null) {
+              dd.textContent = nil;
+            } else if(Array.isArray(pair[1])) {
+              if(pair[1].length > 0) {
+                pair[1].forEach(function(x) {
+                  if(typeof x == 'string') {
+                    dd.append(tag('span', x));
+                  } else if(x?.data?.startsWith('ni:')) {
+                    dd.append(tag('a', x.name, { href: x.data.replace('ni:', '?id=ni:') }));
+                  } else if(x?.data?.startsWith('http')) {
+                    dd.append(tag('a', x.name, { href: x.data }));
+                  } else if(x?.name?.startsWith('http')) {
+                    dd.append(tag('a', x.name, { href: x.name }));
+                  } else {
+                    dd.append(tag('span', x.name + ' ' + (x?.data ? `(${x.data})` : '')));
+                  }
+                  dd.append(tag('br'));
+                });
+              } else {
+                dd.textContent = nil;
+              }
+            } else if(pair[1].toString().startsWith('ni:')) {
+              dd.append(tag('a', pair[1], { href: '?id=' + pair[1] }));
+            } else if(pair[1]?.name) {
+              if(pair[1]?.data.startsWith('http')) {
+                dd.append(tag('a', pair[1].name, { href: pair[1].data }));
+              } else {
+                dd.textContent = pair[1].name;
+              }
+            } else {
+              dd.textContent = pair[1];
+            }
+            dl.append(tag('dt', pair[0]), dd);
+          });
+          form.result.replaceChildren(dl);
+          form.result.append(tag('hr'));
+          form.result.append(tag('a', 'DataCite', { href: `${base}/metadata?id=${form.id.value || 'ni:dataasee'}&format=datacite`, target: '_blank'}));
+          form.result.append(tag('br'));
+          form.result.append(tag('a', 'BibJSON', { href: `${base}/metadata?id=${form.id.value || 'ni:dataasee'}&format=bibjson`, target: '_blank'}));
+        } else {
+          form.result.replaceChildren(tag('span', 'No Result', { class: 'nores' }));
+        }
+      }
+
+      // Populate Forms:
+      async function onLoad() {
+
+        // Set API base
+        if(url.searchParams.has('base')) { base = url.searchParams.get('base'); }
+        if(base === local) {
+          get('marker').innerHTML = '';
+          get('marker').setAttribute('title', '');
+        } else {
+          get('marker').innerHTML = '*';
+          get('marker').setAttribute('title', 'Altered base address');
+          url.searchParams.set('base', base);
+        }
+        history.replaceState(null, null, url);
+        Array.from(get('query').getElementsByTagName('form')).forEach((x) => x.action = base + x.action.substring(x.action.lastIndexOf('/')));
+        Array.from(get('admin').getElementsByTagName('form')).forEach((x) => x.action = base + x.action.substring(x.action.lastIndexOf('/')));
+
+        ready();
+
+        // populate API overview
+        get('host').setAttribute('href', base);
+        get('host').innerHTML = base;
+
+        const openapi = await getRequest('/api');
+        if(!openapi) { return; }
+
+        get('oapi').setAttribute('href', base + '/api');
+        get('oapi').innerHTML = 'OpenAPI';
+
+        for(const path in openapi.paths) {
+          const verb = openapi.paths[path]?.get ? 'get' : 'post';
+          const endpoint = openapi.paths[path][verb];
+
+          let tr = document.createElement('tr');
+          tr.appendChild(wrap('b', verb.toUpperCase()));
+          tr.appendChild(wrap('code', path));
+          tr.appendChild(wrap('span', endpoint.summary));
+          if(endpoint?.parameters) {
+            tr.appendChild(wrap('a', 'parameters', { href: endpoint.parameters[0].schema.externalDocs.url, target: "_blank" }));
+          } else {
+            tr.appendChild(wrap('span', ''));
+          }
+          if(endpoint?.requestBody) {
+            tr.appendChild(wrap('a', 'request', { href: endpoint.requestBody.content['application/json'].schema.externalDocs.url, target: "_blank" }));
+          } else {
+            tr.appendChild(wrap('span', ''));
+          }
+          tr.appendChild(wrap('a', 'response', { href: endpoint.responses.default.content['application/json'].schema.externalDocs.url, target: "_blank" }));
+          tr.appendChild(wrap('span', endpoint?.security ? '🔒' : '🔓', { title: endpoint?.security ? 'private' : 'public' }));
+          get("api").appendChild(tr);
+        }
+
+        // Populate filters and facets
+        const schema = await getRequest('/schema');
+        const attrib = schema.data.attributes;
+
+        attrib.source.facets.forEach((x) => get('list_sources').appendChild(tag('option', x, { value: encodeURIComponent(x) })));
+
+        attrib.rawFormat.facets.forEach((x) => get('filter_formats').appendChild(tag('option', x, { value: encodeURIComponent(x) })));
+        attrib.language.facets.forEach((x) => get('filter_languages').appendChild(tag('option', x, { value: encodeURIComponent(x) })));
+        attrib.resourceType.facets.forEach((x) => get('filter_resourcetypes').appendChild(tag('option', x, { value: encodeURIComponent(x) })));
+        attrib.license.facets.forEach((x) => get('filter_licenses').appendChild(tag('option', x, { value: encodeURIComponent(x) })));
+        attrib.categories.facets.forEach((x) => get('filter_categories').appendChild(tag('option', x, { value: encodeURIComponent(x) })));
+
+        attrib.rawFormat.enum.filter((x) => !attrib.rawFormat.facets.includes(x)).forEach((x) => get('filter_formats').appendChild(tag('option', x, { disabled: 'disabled' })));
+        attrib.language.enum.filter((x) => !attrib.language.facets.includes(x)).forEach((x) => get('filter_languages').appendChild(tag('option', x, { disabled: 'disabled' })));
+        attrib.resourceType.enum.filter((x) => !attrib.resourceType.facets.includes(x)).forEach((x) => get('filter_resourcetypes').appendChild(tag('option', x, { disabled: 'disabled' })));
+        attrib.license.enum.filter((x) => !attrib.license.facets.includes(x)).forEach((x) => get('filter_licenses').appendChild(tag('option', x, { disabled: 'disabled' })));
+        attrib.categories.enum.filter((x) => !attrib.categories.facets.includes(x)).forEach((x) => get('filter_categories').appendChild(tag('option', x, { disabled: 'disabled' })));
+
+        Object.keys(attrib).filter((x) => x[0] != '@').forEach((x) => get('query_properties').appendChild(tag('option', x, { disabled: 'disabled' })));
+
+        // Pinpoint Record
+        if(url.searchParams.has('id')) {
+          get('recordbyid').checked = true;
+          get('recordid').value = url.searchParams.get('id');
+          get('fetch').click();
+        }
+
+        setInterval(ready, 5000); // Probe every 5 seconds
+      }
+
+      // Update API Base Address:
+      function updateBase() {
+        base = window.prompt('API Base:', base) ?? base;
+        get('host').setAttribute('href', '');
+        get('host').innerHTML = '';
+        get('oapi').setAttribute('href', '');
+        get('oapi').innerHTML = '';
+        get('api').innerHTML = '';
+        url.searchParams.delete('base');
+        onLoad();
+      }
+
+      // Clear Identifier Parameter:
+      function clearId() {
+        url.searchParams.delete('id');
+        window.history.replaceState(null, null, url);
+        Array.from(document.getElementsByTagName('output')).forEach((x) => x.innerHTML = '');
+      }
+
+      // Query Results:
+      async function metadata(form, page) {
+        if(form?.doi?.value?.trim?.() === '') { return; }
+        const parameters = ['doi','search','language','resourcetype','license','category','format','from','till','newest','query'].map((x) => form[x]?.value ? ('&' + x + '=' + form[x].value) : '').join('');
+        const source = typeof form?.source?.value == 'string' ? '&source=' + form?.source?.value : '';
+        const response = await getRequest('/metadata?page=' + page + parameters + source);
+
+        if(response.data.length !== 0) {
+          let ul = tag('ul');
+          response.data.forEach(function(result) {
+            const attrib = result.attributes;
+            let li = tag('li', undefined, { class: attrib.metadataQuality === 'OK' ? 'md_ok' : 'md_ic' });
+            li.append(tag('a', `${attrib.title || nil} (${attrib.publicationYear || nil}) [${attrib.resourceType || nil}]`, { href: '?id=' + attrib.recordId }));
+            if(attrib?.doi) { li.append(tag('a', 'DOI', { href: attrib.doi })); }
+            ul.append(li);
+          });
+          form.result.replaceChildren(ul);
+          form.result.append(tag('hr'));
+
+          form.result.append(tag('button', '<', { class: 'paging', ...(response.links?.prev ? { onclick: `metadata(form, "${new URL(response.links.prev).searchParams.get('page')}")` } : { disabled: 'disabled' }), type: 'button' }));
+          form.result.append(tag('button', '>', { class: 'paging', ...(response.links?.next ? { onclick: `metadata(form, "${new URL(response.links.next).searchParams.get('page')}")` } : { disabled: 'disabled' }), type: 'button' }));
+        } else {
+          form.result.replaceChildren(tag('span', 'No Results', { class: 'nores' }));
+        }
+      }
+    </script>
+  </body>
+</html>

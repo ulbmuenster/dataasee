@@ -19,41 +19,38 @@ layout:
 requests:
   - _ref: "templates/ready.yaml"
 
-  - id: "enums_request"
+  - id: "schema_request"
     type: "AxiosHttp"
     connectionId: "datalake_api"
     properties:
-      url: "/enums"
+      url: "/schema"
       method: "get"
 
   - id: "search_request"
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _state: true
+      results_paging:
+        _state: "results_paging"
+      category:
+        _state: "category"
+      resourcetype:
+        _state: "resourcetype"
+      language:
+        _state: "language"
+      license:
+        _state: "license"
+      format:
+        _state: "format"
+      from:
+        _state: "from"
+      till:
+        _state: "till"
+      newest:
+        _state: "sort"
     properties:
       url:
-        _if:
-          test:
-            _eq:
-              - _payload: "results_paging"
-              - null
-          then: "metadata"
-          else:
-            _string.substring:
-              on:
-                _get:
-                  from:
-                    _payload: "results_paging"
-                  key: "url"
-              start:
-                _string.indexOf:
-                  on:
-                    _get:
-                      from:
-                        _payload: "results_paging"
-                      key: "url"
-                  searchValue: "metadata?"
+        _ref: "templates/url.yaml"
       method: "get"
       params:
         _if:
@@ -70,19 +67,21 @@ requests:
               _payload: "language"
             license:
               _payload: "license"
+            format:
+              _payload: "format"
             from:
               _payload: "from"
             till:
               _payload: "till"
             newest:
-              _payload: "sort"
+              _payload: "newest"
           else: {}
 
 events:
   onInit:
-    - id: "enums_enter"
+    - id: "schema_enter"
       type: "Request"
-      params: "enums_request"
+      params: "schema_request"
 
   onMountAsync:
     - id: "ready_enter"
@@ -124,47 +123,197 @@ areas:
                       content:
                         gutter: 16
                         blocks:
-## General Filters:
+## Resource Type Filter
                           - id: "resourcetype"
                             type: "Selector"
                             properties:
                               label:
                                 disabled: true
-                              placeholder: "Resource Types"
+                              placeholder:
+                                _request: "schema_request.data.data.attributes.resourceType.label"
                               options:
-                                _request: "enums_request.data.data.attributes.resourcetypes"
+                                _array.concat:
+                                  - _array.map:
+                                      on:
+                                        _request: "schema_request.data.data.attributes.resourceType.facets"
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: false
+                                  - _array.map:
+                                      on:
+                                        _array.filter:
+                                          on:
+                                            _request: "schema_request.data.data.attributes.resourceType.enum"
+                                          callback:
+                                            _function:
+                                              __not:
+                                                __array.includes:
+                                                  on:
+                                                    __request: "schema_request.data.data.attributes.resourceType.facets"
+                                                  value:
+                                                    __args: 0
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: true
                             events:
                               _ref: "templates/clear.yaml"
+## Category Filter
                           - id: "category"
                             type: "Selector"
                             properties:
                               label:
                                 disabled: true
-                              placeholder: "Categories"
+                              placeholder:
+                                _request: "schema_request.data.data.attributes.categories.label"
                               options:
-                                _request: "enums_request.data.data.attributes.categories"
+                                _array.concat:
+                                  - _array.map:
+                                      on:
+                                        _request: "schema_request.data.data.attributes.categories.facets"
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: false
+                                  - _array.map:
+                                      on:
+                                        _array.filter:
+                                          on:
+                                            _request: "schema_request.data.data.attributes.categories.enum"
+                                          callback:
+                                            _function:
+                                              __not:
+                                                __array.includes:
+                                                  on:
+                                                    __request: "schema_request.data.data.attributes.categories.facets"
+                                                  value:
+                                                    __args: 0
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: true
                             events:
                               _ref: "templates/clear.yaml"
+## Language Filter
                           - id: "language"
                             type: "Selector"
                             properties:
                               label:
                                 disabled: true
-                              placeholder: "Languages"
+                              placeholder:
+                                _request: "schema_request.data.data.attributes.language.label"
                               options:
-                                _request: "enums_request.data.data.attributes.languages"
+                                _array.concat:
+                                  - _array.map:
+                                      on:
+                                        _request: "schema_request.data.data.attributes.language.facets"
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: false
+                                  - _array.map:
+                                      on:
+                                        _array.filter:
+                                          on:
+                                            _request: "schema_request.data.data.attributes.language.enum"
+                                          callback:
+                                            _function:
+                                              __not:
+                                                __array.includes:
+                                                  on:
+                                                    __request: "schema_request.data.data.attributes.language.facets"
+                                                  value:
+                                                    __args: 0
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: true
                             events:
                               _ref: "templates/clear.yaml"
+## License Filter
                           - id: "license"
                             type: "Selector"
                             properties:
                               label:
                                 disabled: true
-                              placeholder: "Licenses"
+                              placeholder:
+                                _request: "schema_request.data.data.attributes.license.label"
                               options:
-                                _request: "enums_request.data.data.attributes.licenses"
+                                _array.concat:
+                                  - _array.map:
+                                      on:
+                                        _request: "schema_request.data.data.attributes.license.facets"
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: false
+                                  - _array.map:
+                                      on:
+                                        _array.filter:
+                                          on:
+                                            _request: "schema_request.data.data.attributes.license.enum"
+                                          callback:
+                                            _function:
+                                              __not:
+                                                __array.includes:
+                                                  on:
+                                                    __request: "schema_request.data.data.attributes.license.facets"
+                                                  value:
+                                                    __args: 0
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: true
                             events:
                               _ref: "templates/clear.yaml"
+## Format Filter
+                          - id: "format"
+                            type: "Selector"
+                            properties:
+                              label:
+                                disabled: true
+                              placeholder:
+                                _request: "schema_request.data.data.attributes.rawFormat.label"
+                              options:
+                                _array.concat:
+                                  - _array.map:
+                                      on:
+                                        _request: "schema_request.data.data.attributes.rawFormat.facets"
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: false
+                                  - _array.map:
+                                      on:
+                                        _array.filter:
+                                          on:
+                                            _request: "schema_request.data.data.attributes.rawFormat.enum"
+                                          callback:
+                                            _function:
+                                              __not:
+                                                __array.includes:
+                                                  on:
+                                                    __request: "schema_request.data.data.attributes.rawFormat.facets"
+                                                  value:
+                                                    __args: 0
+                                      callback:
+                                        _function:
+                                          value:
+                                            __args: 0
+                                          disabled: true
+                            events:
+                              _ref: "templates/clear.yaml"
+## Publication Year Filter
                           - id: "from"
                             type: "NumberInput"
                             properties:
@@ -263,15 +412,16 @@ areas:
                         type: "Markdown"
                         properties:
                           content: |
-                            The filter search returns a subset of metadata records determined by enumerated or numeric record properties.
+                            The facet / filter search returns a subset of metadata records determined by enumerated or numeric record properties.
                             The background color of the result items indicate comprehensive (green), sufficient (yellow) or incomplete (red) metadata.
 
-                            > Selectors list all admissible options, not only ones ocurring in records!
+                            > Selectors list only occuring options (facets), not all available options!
 
                             * **Resource Types**: Filter by the types from [DataCite](https://datacite-metadata-schema.readthedocs.io/en/4.5/appendices/appendix-1/resourceTypeGeneral/).
                             * **Categories**: Filter by a controlled vocabulary of keywords.
                             * **Languages**: Filter by the primary language.
                             * **Licenses**: Filter by license ([SPDX identifier](https://spdx.org/licenses/)).
+                            * **Formats**: Filter by metadata format.
                             * **From**: A number (-9999 ≤ x ≤ 9999) setting the minimal publication year.
                             * **Till**: A number (-9999 ≤ x ≤ 9999) setting the maximal publication year.
                             * **Order**: Sets the ordering of results: no order (default), from new to old, or old to new.
@@ -290,10 +440,10 @@ areas:
                                 type: "Markdown"
                                 properties:
                                   content: |
-                                    1. The filters "Categories", "Resource Types", "Languages", "Licenses" are filled by the GET request:
+                                    1. The facets / filters "Categories", "Resource Types", "Languages", "Licenses" are filled by the GET request:
 
                                         ```
-                                        /api/v1/enums
+                                        /api/v1/schema
                                         ```
                                     2. Clicking "Search" sends the GET request:
 

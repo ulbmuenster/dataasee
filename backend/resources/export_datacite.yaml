@@ -3,25 +3,25 @@
 processor_resources:
   - label: "export_datacite"
     mapping: |
-      root.doi = this.identifiers.filter(x -> x.name == "doi").0.data.catch(null)
+      root.doi = this.identifiers.filter(x -> x.data == "doi").0.data.catch(null)
 
-      root.creators = this.creators.map_each(x -> { "name": x.name }).catch(null)
+      root.creators = this.creators.map_each(x -> {"name": x.name}).catch(null)
 
-      root.titles =  [{ "title": this.name }].concat(this.synonyms.or([]).map_each(x -> { "title": x.data,
-                                                                                          "titleType": x.name }))
+      root.titles =  [{"title": this.title}].concat(this.synonyms.or([]).map_each(x -> {"title": x.name,
+                                                                                        "titleType": x.data}))
 
-      root.publisher = { "name": this.publisher }
+      root.publisher = {"name": this.publisher}
 
       root.publicationYear = this.publicationYear.string()
 
-      root.types = { "resourceType": this.resourceType }
+      root.types = {"resourceType": this.resourceType}
 
-      root.subjects = this.subjects.map_each(x -> { "subject": x.name }).not_empty().catch(deleted())
+      root.subjects = this.subjects.map_each(x -> {"subject": x.name}).not_empty().catch(deleted())
 
       root.language = this.language.not_null().catch(deleted())
 
-      root.alternateIdentifiers = this.identifiers.filter(x -> x.name != "doi").map_each(x -> { "alternateIdentifierType": x.name,
-                                                                                                "alternateIdentifier": x.data }).not_empty().catch(deleted())
+      root.alternateIdentifiers = this.identifiers.filter(x -> x.data != "doi").map_each(x -> {"alternateIdentifierType": x.data,
+                                                                                               "alternateIdentifier": x.name }).not_empty().catch(deleted())
 
       # root.relatedIdentifiers = []  # TODO: add once generic relation is available, i.e. `isRelatedTo`
 
@@ -31,10 +31,10 @@ processor_resources:
 
       root.version = this.version.not_null().catch(deleted())
 
-      root.rightsList = [{ "rights": this.license.name.not_null(),
-                           "rightsUri": this.license.data.not_null() }].catch(deleted())
+      root.rightsList = [{"rights": this.license.name.not_null(),
+                          "rightsUri": this.license.data.not_null()}].catch(deleted())
 
-      root.descriptions = [{ "description": this.description.not_empty() }].catch(deleted())
+      root.descriptions = [{"description": this.description.not_empty()}].catch(deleted())
 
-      root.fundingReferences = this.fundings.map_each(x -> { "awardNumber": x.name,
-                                                             "funderName": x.data }).catch(deleted())
+      root.fundingReferences = this.fundings.map_each(x -> {"awardNumber": x.name,
+                                                            "funderName": x.data}).catch(deleted())

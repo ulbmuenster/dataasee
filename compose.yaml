@@ -1,27 +1,27 @@
-# DatAasee 0.5
+# DatAasee 0.9
 # ============
 #
 # Infos: https://github.com/ulbmuenster/dataasee
 #
 # Setup:
-#  0. Move this compose file to a dedicated directory
+#  0. Move this compose file ("compose.yaml") to a dedicated directory
 #  1. Make (or mount) a directory named "backup" with write permissions for root
 #  2. Run: $  DL_PASS=password1 DB_PASS=password2 docker compose up -d
 
 name: "dataasee"
 
 networks:
-  "persistence":
-  "application":
+  persistence:
+  application:
 
 secrets:
-  "database":
+  database:
     environment: "DB_PASS"
-  "datalake":
+  datalake:
     environment: "DL_PASS"
 
 volumes:
-  "backup":
+  backup:
     driver: "local"
     driver_opts:
       type: "none"
@@ -32,7 +32,7 @@ services:
 
 ## Database ####################################################################
 
-  "database":
+  database:
     deploy:
       replicas: 1
       resources:
@@ -43,11 +43,11 @@ services:
           cpus: "2.0"
           memory: "2G"
     environment:
-      TZ: "${TZ-CET}"
+      TZ: "${TZ-Europe/Berlin}"
       DB_PASS: "/db/secret"
     expose:
       - "2480"
-    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.5}"
+    image: "harbor.uni-muenster.de/dataasee/database:${DL_VERSION-0.9}"
     init: true
     networks:
       - "persistence"
@@ -56,13 +56,13 @@ services:
       - source: "database"
         target: "/db/secret"
         mode: "444"
-    stop_grace_period: "300s"
+    stop_grace_period: "200s"
     volumes:
       - "backup:/backup"
 
 ## Backend #####################################################################
 
-  "backend":
+  backend:
     depends_on:
       - "database"
     deploy:
@@ -75,20 +75,21 @@ services:
           cpus: "1.0"
           memory: "1G"
     environment:
-      TZ: "${TZ-CET}"
-      DL_BASE: "${DL_BASE-}"
+      TZ: "${TZ-Europe/Berlin}"
+      DL_BASE: "http://${DL_BASE-localhost}:${DL_PORT-8343}"
       DL_USER: "${DL_USER-admin}"
       DL_PASS: "/dl/secret"
       DB_PASS: "/db/secret"
+      DL_SAFE: "${DL_SAFE-false}"
     expose:
       - "4195"
-    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.5}"
+    image: "harbor.uni-muenster.de/dataasee/backend:${DL_VERSION-0.9}"
     init: true
     networks:
       - "persistence"
       - "application"
     ports:
-      - "${DL_PORT-8343}:8343"
+      - "0.0.0.0:${DL_PORT-8343}:8343"
     restart: "unless-stopped"
     secrets:
       - source: "database"
@@ -100,7 +101,7 @@ services:
 
 ## Frontend ####################################################################
 
-  "frontend":
+  frontend:
     deploy:
       replicas: 1
       resources:
@@ -111,11 +112,11 @@ services:
           cpus: "1.0"
           memory: "1G"
     environment:
-      TZ: "${TZ-CET}"
-    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.5}"
+      TZ: "${TZ-Europe/Berlin}"
+    image: "harbor.uni-muenster.de/dataasee/frontend:${DL_VERSION-0.9}"
     init: true
     networks:
       - "application"
     ports:
-      - "${FE_PORT-8000}:8000"
+      - "0.0.0.0:${FE_PORT-8000}:8000"
     restart: "unless-stopped"

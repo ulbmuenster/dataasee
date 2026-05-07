@@ -9,11 +9,11 @@ export DL_VERSION := $(shell cat VERSION)
 default:
 	@echo ""
 	@echo "make        # List available make targets"
-	@echo "make setup  # Set up servers (builds development images)"
+	@echo "make setup  # Build development server container images"
 	@echo "make start  # Start servers"
 	@echo "make stop   # Stop servers"
 	@echo "make reset  # Stop and start servers"
-	@echo "make build  # Build release images"
+	@echo "make build  # Build release container images (pass REGISTRY= to set registry)"
 	@echo "make empty  # Delete database backups"
 	@echo "make logs   # Show backend processor logs (requires grep)"
 	@echo "make peak   # Report peak database memory usage (requires grep)"
@@ -62,7 +62,7 @@ test:
 	@$(MAKE) -C tests
 
 tidy:
-	@yamllint .
+	@yamllint . && echo "All tidy!"
 
 todo:
 	@grep --color --exclude-dir=.git -Rnw . -e "TODO"

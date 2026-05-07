@@ -3,56 +3,62 @@
 processor_resources:
   - label: 'normalize'
     try:
-      - mutation: |  # NOTE: This is not a workflow because of the many extra nesting objects and huge amount of duplicate code (particularly, the maps cannot be resources due their scalar arguments)
+      - label: 'normalize__cleaner'
+        mutation: |  # NOTE: This is not a workflow because of the many extra nesting objects and huge amount of duplicate code (particularly, the maps cannot be resources due their scalar arguments)
           # Local Functions
 
           map prep_str {
-            root = this.or("").string().trim().replace_all_many(["\\","\\\\","'","\\'","\"","\\\"",";","\u037E","--","\u2013"])
+            root = this.or("").string().trim().replace_all_many(["\\","\\\\","'","\\'","\"","\\\"",";","","--","\u2013","\r\n","¶","\n","¶"])
           }
 
           map prep_uri {
             let url = this.or("").string().trim().replace_all_many(["\\","%5C","'","%27","\"","%22",";","%3B"," ","%20"])
-            root = if $url.re_match("^(http)[s]?(:\\/\\/)[^\\s\\/$.?#].[^\\s]*$") && $url.length() < 4096 { $url } else { null }
+            root = if $url.re_match("^https?:\\/\\/[^\\s\\/$.?#].[^\\s]*$") && $url.length() < 4096 { $url } else { null }
           }
 
           map strip_id {
-            root = match this.or("").string() { this.has_prefix("http://dx.doi.org/") => this.lowercase().trim_prefix("http://dx.doi.org/"),
-                                                this.has_prefix("http://doi.org/")    => this.lowercase().trim_prefix("http://doi.org/"),
-                                                this.lowercase().has_prefix("doi:")   => this.lowercase().trim_prefix("doi:"),
-                                                _                                     => this
+            root = match this.or("").string() { this.lowercase().has_prefix("http://dx.doi.org/") => this.lowercase().trim_prefix("http://dx.doi.org/"),
+                                                this.lowercase().has_prefix("http://doi.org/")    => this.lowercase().trim_prefix("http://doi.org/"),
+                                                this.lowercase().has_prefix("https://doi.org/")   => this.lowercase().trim_prefix("https://doi.org/"),
+                                                this.lowercase().has_prefix("doi:")               => this.lowercase().trim_prefix("doi:"),
+                                                this.lowercase().has_prefix("urn:doi:")           => this.lowercase().trim_prefix("urn:doi:"),
+                                                _                                                 => this
                                               }
           }
 
           map name_id {
-            root = match this.or("").string() { this.lowercase().re_match("^10\\.1002\\/[^\\s]+|10\\.\\d{4,9}\\/[-.;()\\/:a-zA-Z0-9]+$") => "doi",
-                                                this.has_prefix("http://dx.doi.org/") => "doi",
-                                                this.has_prefix("http://doi.org/")    => "doi",
-                                                this.lowercase().has_prefix("doi:")   => "doi",
-                                                this.lowercase().has_prefix("arxiv:") => "arxiv",
-                                                _                                     => null
-                                              }
+            root = match this.or("").string().lowercase() { this.re_match("^10\\.1002\\/[^\\s]+|10\\.\\d{4,9}\\/[-.;()\\/:a-zA-Z0-9]+$") => "doi",
+                                                            this.has_prefix("http://dx.doi.org/") => "doi",
+                                                            this.has_prefix("http://doi.org/")    => "doi",
+                                                            this.has_prefix("https://doi.org/")   => "doi",
+                                                            this.has_prefix("doi:")               => "doi",
+                                                            this.has_prefix("urn:doi:")           => "doi",
+                                                            this.has_prefix("arxiv:")             => "arxiv",
+                                                            _                                     => null
+                                                          }
           }
 
           map id2url {
-            root = match this.or("").string() { this.has_prefix("http://dx.doi.org/") => "https://doi.org/" + this.lowercase().trim_prefix("http://dx.doi.org/"),
-                                                this.has_prefix("http://doi.org/")    => "https://doi.org/" + this.lowercase().trim_prefix("http://doi.org/"),
-                                                this.lowercase().has_prefix("doi:")   => "https://doi.org/" + this.lowercase().trim_prefix("doi:"),
-                                                this.lowercase().has_prefix("orcid:") => "https://orcid.org/" + this.lowercase().trim_prefix("orcid:"),
-                                                this.lowercase().has_prefix("arxiv:") => "https://arxiv.org/abs/" + this.lowercase().trim_prefix("arxiv:"),
-                                                _                                     => this
+            root = match this.or("").string() { this.lowercase().has_prefix("http://dx.doi.org/") => "https://doi.org/" + this.lowercase().trim_prefix("http://dx.doi.org/"),
+                                                this.lowercase().has_prefix("http://doi.org/")    => "https://doi.org/" + this.lowercase().trim_prefix("http://doi.org/"),
+                                                this.lowercase().has_prefix("doi:")               => "https://doi.org/" + this.lowercase().trim_prefix("doi:"),
+                                                this.lowercase().has_prefix("urn:doi:")           => "https://doi.org/" + this.lowercase().trim_prefix("urn:doi:"),
+                                                this.lowercase().has_prefix("orcid:")             => "https://orcid.org/" + this.lowercase().trim_prefix("orcid:"),
+                                                this.lowercase().has_prefix("arxiv:")             => "https://arxiv.org/abs/" + this.lowercase().trim_prefix("arxiv:"),
+                                                _                                                 => this
                                               }
           }
 
           map tiny_str {
-            root = if this.length() < 256 { this } else { this.slice(0,254) + "…" }
+            root = if this.length() < 256 { this } else { this.slice(0,252) + "…" }
           }
 
           map small_str {
-            root = if this.length() < 4096 { this } else { this.slice(0,4094) + "…" }
+            root = if this.length() < 4096 { this } else { this.slice(0,4092) + "…" }
           }
 
           map text_str {
-            root = if this.length() < 65536 { this } else { this.slice(0,65534) + "…" }
+            root = if this.length() < 65536 { this } else { this.slice(0,65532) + "…" }
           }
 
           map optional {
@@ -71,6 +77,9 @@ processor_resources:
           root.publicationYear = match { this.publicationYear.type() == "number" && this.publicationYear > -10000 && this.publicationYear < 10000 => this.publicationYear,
                                          this.publicationYear.type() == "string" && this.publicationYear.length() > 0 && this.publicationYear.trim().trim_prefix("[").trim_prefix("ca.").trim().slice(0,4).re_match("^-?[1-9]\\d{0,3}") => this.publicationYear.trim().trim_prefix("[").trim_prefix("ca.").trim().re_find_all("^-?[1-9]\\d{0,3}").0.number(),
                                          _ => null }
+
+          # Data Size (Integer, Optional)
+          root.sizeBytes = this.sizeBytes.number().catch("").apply("optional")
 
           #
           # String properties
@@ -100,52 +109,48 @@ processor_resources:
           # Rights (String, Normal, Optional)
           root.rights = this.rights.apply("prep_str").apply("text_str").apply("optional")
 
-          # Message (String, Normal, Optional)
-          root.message = this.message.apply("prep_str").apply("text_str").apply("optional")
+          # Raw Format (String, Normal, Optional)
+          root.rawFormat = this.rawFormat.apply("prep_str").apply("text_str").apply("optional")
 
           #
-          # Full-text properties
+          # Full-text properties (have to be empty string if not available)
           #
 
-          # Name (String, Tiny, Mandatory, Notnull)
-          root.name = this.name.apply("prep_str").apply("tiny_str")
+          # Title (String, Tiny, Mandatory, Notnull)
+          root.title = this.title.apply("prep_str").apply("tiny_str")
 
           # Description (String, Normal, Optional, Notnull)
           root.description = this.description.apply("prep_str").apply("text_str")
 
-          # Keywords (String, Tiny, Optional, Notnull)
-          root.keywords = this.keywords.or("").split(",").map_each(x -> x.trim()).filter(x -> x != "").join(",").apply("prep_str").apply("tiny_str")
+          #
+          # Array properties
+          #
+
+          # TODO: assign categories here
+          # Categories (Array of Strings, Optional)
+          root.categories = this.categories.or([]).slice(0,3).map_each(x -> x.apply("prep_str").apply("tiny_str").lowercase()).filter(x -> x != "").apply("optional")
+
+          # Keywords (Array of String, Optional)
+          root.keywords = this.keywords.or([]).slice(0,15).map_each(x -> x.apply("prep_str").apply("tiny_str").lowercase()).filter(x -> x != "").apply("optional")
 
           #
           # Pair-array properties
           #
 
-          # TODO: assign categories here
-          # Categories (Array of Strings, Optional)
-          root.categories = this.categories.or([]).slice(0,4).map_each(x -> x.apply("prep_str").apply("tiny_str")).filter(x -> x != "").apply("optional")
-
           # Creators (Array of Pairs, Mandatory)
-          root.creators = this.creators.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(null),
+          root.creators = this.creators.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(""),
                                                                             "data": if x.exists("data") { x.data.apply("id2url").apply("prep_uri") | deleted() } else { deleted() },
                                                                             "@type": "pair" }).filter(x -> x.name != "").apply("mandatory")
 
           # Identifiers (Array of Pairs, Mandatory)
-          root.identifiers = this.identifiers.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase().not_empty().catch(x.data.apply("name_id")),
-                                                                                  "data": x.data.apply("strip_id").apply("prep_str").apply("small_str"),
-                                                                                  "@type": "pair" }).filter(x -> x.data != "").map_each(x -> if x.data.has_prefix("https://doi.org/")
-                                                                                                                                               { x.assign({"name":"doi"}) }
-                                                                                                                                             else
-                                                                                                                                               { x }).apply("mandatory")
+          root.identifiers = this.identifiers.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("strip_id").apply("prep_str").apply("tiny_str"),
+                                                                                  "data": x.data.apply("prep_str").apply("small_str").not_empty().catch(x.name.apply("name_id")).not_null().lowercase().catch(deleted()),
+                                                                                  "@type": "pair" }).filter(x -> x.name != "").apply("mandatory")
 
           # Synonyms (Array of Pairs, Optional)
-          root.synonyms = this.synonyms.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase().not_empty().catch(null),
-                                                                            "data": x.data.apply("prep_str").apply("small_str"),
+          root.synonyms = this.synonyms.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str"),
+                                                                            "data": x.data.apply("prep_str").apply("small_str").lowercase().not_empty().catch(null),
                                                                             "@type": "pair" }).apply("optional")
-
-          # Append over-long title as synonym
-          root.synonyms = if this.name.or("").length() > 255 { [{ "name": "fulltitle",
-                                                                  "data": this.name.apply("prep_str").apply("small_str"),
-                                                                  "@type": "pair" }].concat(root.synonyms.or([]).slice(0,254)) }
 
           # Subjects (Array of Pairs, Optional)
           root.subjects = this.subjects.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").lowercase().not_empty().catch(null),
@@ -158,25 +163,22 @@ processor_resources:
                                                                             "@type": "pair" }).apply("optional")
 
           # External Items (Array of Pairs, Optional)
-          root.externalItems = this.externalItems.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(null),
-                                                                                      "data": x.data.apply("id2url").apply("prep_uri"),
-                                                                                      "@type": "pair" }).filter(x -> x.data != null).apply("optional")
+          root.relatedItems = this.relatedItems.or([]).slice(0,255).map_each(x -> { "name": x.name.apply("prep_str").apply("tiny_str").not_empty().catch(null),
+                                                                                    "data": x.data.apply("id2url").apply("prep_uri"),
+                                                                                    "@type": "pair" }).filter(x -> x.data != null).apply("optional")
 
           #
           # Special properties
           #
 
           # Raw Metadata (String)
-          root.rawMetadata = if root.rawMetadata != null && root.rawMetadata.length() < 262144
-                               { this.rawMetadata.or("").string().trim().replace_all_many(["'","\\'","\"","\\\""]) }
+          root.rawMetadata = if this.rawMetadata != null && this.rawMetadata.length() < 262144
+                               { this.rawMetadata.or("").string().trim() }
                              else
                                { "" }
 
           # Related (Map of Array of String)
-          root.related = this.related.or({}).map_each(x -> x.value.array().map_each(y -> y.apply("strip_id").apply("prep_str").apply("small_str")))
-
-          # Selfies (List of Strings)
-          root.selfies = root.identifiers.or([]).map_each(x -> x.data)
+          root.related = this.related.or({}).map_each(x -> x.value.array().map_each(y -> y.apply("strip_id").apply("prep_str").apply("tiny_str")))
 
       - label: 'normalize__arcadedb_query'
         arcadedb:
@@ -188,33 +190,39 @@ processor_resources:
           password: '${DB_PASS}'
           request: |
             root.language = "sql"
-            root.params.category = this.categories.or([]).join("|")
-            root.params.resourcetype = this.resourceType.or("").string().replace_all("-"," ")
+            root.params.categories = this.categories.or([])
+            root.params.resourcetype = this.resourceType.or("").string().replace_all(" ","-")
+            root.params.rawformat = this.rawFormat.or("").string()
             root.params.language = this.language.or("").string()
             root.params.license = this.license.or("").string().replace_all(" ","-")
             root.command = """SELECT $resourceType[0].@rid AS resourceType,
                                      $categories.@rid AS categories,
+                                     $rawFormat[0].@rid AS rawFormat,
                                      $language[0].@rid AS language,
                                      $license[0].@rid AS license
                               LET $resourceType = (SELECT @rid
-                                                   FROM resourcetypes
+                                                   FROM Resourcetypes
                                                    WHERE name ILIKE :resourcetype OR
-                                                         data MATCHES '(?i)(|.*\\s)' + :resourcetype + '(\\s.*|)'),
+                                                         data ILIKE '% ' + :resourcetype + ' %'),
                                   $categories = (SELECT @rid
-                                                 FROM categories
-                                                 WHERE name MATCHES '(?i)(' + :category + ')'),
+                                                 FROM Categories
+                                                 WHERE data.split(' ') CONTAINSANY :categories),
+                                  $rawFormat = (SELECT @rid
+                                                FROM Schemas
+                                                WHERE name = :rawformat),
                                   $language = (SELECT @rid
-                                               FROM languages
+                                               FROM Languages
                                                WHERE name ILIKE :language OR
-                                                     data MATCHES '(?i)(|.*\\s)' + :language + '(\\s.*|)'),
+                                                     data ILIKE '% ' + :language + ' %'),
                                   $license = (SELECT @rid
-                                              FROM licenses
-                                              WHERE name.replace('-',' ') ILIKE :license.replace('-',' ') OR
+                                              FROM Licenses
+                                              WHERE name.replace(' ','-') ILIKE :license OR
                                                     data ILIKE :license)"""
           response: |
+            root.rawFormat = this.result.0.rawFormat | null
             root.resourceType = this.result.0.resourceType | null
             root.language = this.result.0.language | deleted()
             root.license = this.result.0.license | deleted()
-            root.categories = if this.result.0.categories.length() > 0 { this.result.0.categories } else { deleted() }
+            # root.categories = if this.result.0.categories.length() > 0 { this.result.0.categories } else { deleted() }
 
       - resource: 'quality'

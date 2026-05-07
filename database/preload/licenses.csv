@@ -7,6 +7,7 @@ GPL-3.0-only,https://spdx.org/licenses/GPL-3.0-only.html
 GPL-3.0-or-later,https://spdx.org/licenses/GPL-3.0-or-later.html
 MIT,https://spdx.org/licenses/MIT
 ODbL-1.0,https://spdx.org/licenses/ODbL-1.0
+ODC-By-1.0,https://spdx.org/licenses/ODC-By-1.0.html
 Zlib,https://spdx.org/licenses/Zlib.html
 zlib-acknowledgement,https://spdx.org/licenses/zlib-acknowledgement
 CC-PDDC,https://spdx.org/licenses/CC-PDDC
@@ -23,8 +24,8 @@ CC-BY-NC-SA-3.0,https://spdx.org/licenses/CC-BY-NC-SA-3.0
 CC-BY-NC-SA-4.0,https://spdx.org/licenses/CC-BY-NC-SA-4.0
 CC-BY-NC-ND-3.0,https://spdx.org/licenses/CC-BY-NC-ND-3.0
 CC-BY-NC-ND-4.0,https://spdx.org/licenses/CC-BY-NC-ND-4.0
-Public Domain,https://creativecommons.org/publicdomain/mark/1.0/
-In Copyright,https://rightsstatements.org/vocab/InC/1.0/
+Public-Domain,https://creativecommons.org/publicdomain/mark/1.0/
+In-Copyright,https://rightsstatements.org/vocab/InC/1.0/
 InC-OW-EU-1.0,http://rightsstatements.org/vocab/InC-OW-EU/1.0/
 InC-EDU-1.0,https://rightsstatements.org/vocab/InC-EDU/1.0/
 InC-RUU-1.0,https://rightsstatements.org/vocab/InC-RUU/1.0/

@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "json:api?success",
+
+  "title": "JSON:API Success Response", "type": "object", "required": ["data", "meta", "links"]
+}

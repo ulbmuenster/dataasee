@@ -5,42 +5,39 @@ processor_resources:
     while:
       at_least_once: true
       max_loops: 0
-      check: 'metadata("page") != null'
+      check: 'metadata("page") != null && !errored()'
       processors:
-        - try:
-            - http:
-                url: '${! metadata("ingest").source + "/api/v1/metadata?source=%25&format=%25&page=" + metadata("page").or(0).string() }'
-                verb: 'GET'
-                timeout: '10s'
-                retries: 3
+        - http:
+            url: '${! metadata("ingest").source + "/api/v1/metadata?source=&page=" + metadata("page").or(0).string() }'
+            verb: 'GET'
+            timeout: '10s'
+            retries: 3
 
-            - mapping: |
-                meta page = if this.data.length() < 100 { null } else { metadata("page").or(0) + 1 }
+        - switch:
+            - check: '!errored()'  # for HTTP error
+              processors:
+                - mapping: |
+                    meta page = this.links.next.split("page=").index(1).catch(null)
 
-                root = this.data
+                    root = this.data
 
-            - unarchive:
-                format: 'json_array'
+                - unarchive:
+                    format: 'json_array'
 
-            - mapping: 'root = this.attributes'
+                - mapping: 'root = this.attributes'
 
-            - mapping: 'meta sourceid = this.recordId'
+                - try:
+                    - resource: 'normalize'
 
-            - try:
-                - resource: 'normalize'
+                    - mutation: |
+                        root.source = metadata("source_rid")
+                        root.visited = false
 
-                - resource: 'process'
+                - catch:
+                    - log:
+                        message: |
+                          ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
 
-            - catch:
-                - log:
-                    message: |
-                      ${! error() + " : " + this.rawMetadata.or("").replace_all_many(["\"","'","\\u003c","<","\\u003e",">"]) }
+                    - mapping: 'root = {}'
 
-                - mapping: 'root = {}'
-
-            - archive:
-                format: 'json_array'
-
-            - resource: 'submit'
-
-        - catch: []
+                - resource: 'submit'

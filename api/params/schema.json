@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?params=schema",
+
+  "title": "DatAasee Schema Endpoint Parameters", "description": "The schema endpoint returns the full schema for no parameter, or the respective property schema given the property name as parameter value.",
+
+  "type": "object", "properties": {
+
+    "prop": { "type": "string", "title": "Property", "maxLength": 63 } }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "dataasee:api?params=database",
+
+  "title": "DatAasee Database Endpoint Parameters", "description": "The database endpoint sends a read-only query in a supported query language directly to the database.",
+
+  "type": "object", "required": ["query"], "properties": {
+
+    "language": { "type": "string", "title": "Query language", "default": "sql", "enum": ["sql", "opencypher", "mongo", "graphql", "redis"] },
+
+    "query": { "type": "string", "title": "Query string", "maxLength": 4095 } }
+}

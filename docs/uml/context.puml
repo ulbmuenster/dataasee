@@ -6,12 +6,6 @@ DatAasee
 
 ]
 
-cloud services [
-
-Services
-
-]
-
 database sources [
 
 Sources
@@ -23,6 +17,7 @@ cloud consumers [
 Consumers
 
 ]
+
 frame frontend [
 
 Frontend
@@ -34,8 +29,6 @@ person admin [
 Admin
 
 ]
-
-dataasee-->>services : Forward (HTTP)
 
 dataasee-->>sources : Import (HTTP)
 

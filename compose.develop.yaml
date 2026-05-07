@@ -3,17 +3,17 @@
 name: "dataasee"
 
 networks:
-  "persistence":
-  "application":
+  persistence:
+  application:
 
 secrets:
-  "database":
+  database:
     environment: "DB_PASS"
-  "datalake":
+  datalake:
     environment: "DL_PASS"
 
 volumes:
-  "backup":
+  backup:
     driver: "local"
     driver_opts:
       type: "none"
@@ -24,7 +24,7 @@ services:
 
 ## Database ####################################################################
 
-  "database":
+  database:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -32,12 +32,11 @@ services:
         VERSION: "$DB_VERSION"
         DB_NAME: "$DB_NAME"
         DL_VERSION: "$DL_VERSION"
-      cache_from:
-        - "$REGISTRY/$DL_REPO/database"
       context: "."
       dockerfile: "container/Dockerfile.db"
       tags:
         - "$REGISTRY/$DL_REPO/database:$DL_VERSION"
+      # sbom: true
       target: "develop"
     deploy:
       replicas: 1
@@ -49,8 +48,9 @@ services:
           cpus: "2.0"
           memory: "2G"
     environment:
-      TZ: "${TZ-CET}"
+      TZ: "${TZ-Europe/Berlin}"
       DB_PASS: "/run/secrets/database"
+      DB_OPTS: ""
     image: "$REGISTRY/$DL_REPO/database:$DL_VERSION"
     init: true
     networks:
@@ -58,16 +58,17 @@ services:
     ports:
       - "2480:2480"
       - "9999:9999"
+    pull_policy: "never"
     restart: "unless-stopped"
     secrets:
       - "database"
-    stop_grace_period: "300s"
+    stop_grace_period: "200s"
     volumes:
       - "backup:/backup"
 
 ## Backend #####################################################################
 
-  "backend":
+  backend:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -80,10 +81,9 @@ services:
         DB_HOST: "database"
         DB_PORT: "2480"
         DB_NAME: "$DB_NAME"
-      cache_from:
-        - "$REGISTRY/$DL_REPO/backend"
       context: "."
       dockerfile: "container/Dockerfile.be"
+      # sbom: true
       tags:
         - "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
       target: "develop"
@@ -99,11 +99,12 @@ services:
           cpus: "1.0"
           memory: "1G"
     environment:
-      TZ: "${TZ-CET}"
-      DL_BASE: "${DL_BASE-}"
+      TZ: "${TZ-Europe/Berlin}"
+      DL_BASE: "http://${DL_BASE-localhost}:${DL_PORT-8343}"
       DL_USER: "${DL_USER-admin}"
       DL_PASS: "/run/secrets/datalake"
       DB_PASS: "/run/secrets/database"
+      DL_SAFE: "${DL_SAFE}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     image: "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
@@ -113,6 +114,7 @@ services:
       - "application"
     ports:
       - "${DL_PORT-8343}:8343"
+    pull_policy: "never"
     restart: "unless-stopped"
     secrets:
       - "database"
@@ -123,7 +125,7 @@ services:
 
 ## Frontend ####################################################################
 
-  "frontend":
+  frontend:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -133,10 +135,9 @@ services:
         DL_PORT: "8343"
         DL_PATH: "$DL_PATH"
         DL_VERSION: "$DL_VERSION"
-      cache_from:
-        - "$REGISTRY/$DL_REPO/frontend"
       context: "."
       dockerfile: "container/Dockerfile.fe"
+      # sbom: true
       tags:
         - "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
       target: "develop"
@@ -150,13 +151,14 @@ services:
           cpus: "1.0"
           memory: "1G"
     environment:
-      TZ: "${TZ-CET}"
+      TZ: "${TZ-Europe/Berlin}"
     image: "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
     init: true
     networks:
       - "application"
     ports:
       - "${FE_PORT-8000}:8000"
+    pull_policy: "never"
     restart: "unless-stopped"
     volumes:
       - "./frontend:/yaml:ro"

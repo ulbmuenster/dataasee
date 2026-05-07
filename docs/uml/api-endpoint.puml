@@ -10,7 +10,7 @@ Backend
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>api/v1/api</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/api</b>)"
 backend -->> backend : " Load File"
 
 @enduml

@@ -17,29 +17,49 @@ processor_resources:
                 password: '${DB_PASS}'
                 request: |
                   root.language = "sql"
-                  root.command = """SELECT map(schemas) AS `schema`
-                                    FROM (SELECT $edges.edges || $props.props || $infos.infos AS schemas
-                                          LET $props = (SELECT map(name, custom) AS props
-                                                        FROM (SELECT expand(properties)
-                                                              FROM schema:types
-                                                              WHERE name = 'metadata')
-                                                        WHERE name <> 'related' AND
-                                                              name <> 'visited' AND
-                                                              name <> 'selfies'),
-                                              $edges = (SELECT map("@" + name, custom) AS edges
-                                                        FROM schema:types
-                                                        WHERE type = 'edge'),
-                                              $infos = (SELECT map("@comment",custom.comment,"@version",custom.version) AS infos
-                                                        FROM schema:types
-                                                        WHERE name = 'metadata')
-                                    UNWIND schemas)"""
+                  root.command = """SELECT list(if((type = 'edge'),
+                                                   [map('@' + name, custom), map('@' + name + '_i', custom)],
+                                                   [map('@comment',custom.comment), map('@version',custom.version)])) || $props.props AS dbschema
+                                    FROM schema:types
+                                    LET $props = (SELECT map(name, map('label', custom.label,
+                                                                       'comment', custom.comment,
+                                                                       'enum', first((SELECT unionall(name) AS enum
+                                                                                      FROM Pair
+                                                                                      WHERE @type = $parent.$current.custom.enum)).enum,
+                                                                       'facets', if((custom.enum IS NOT NULL),
+                                                                                    (SELECT @this.field($parent.$current.name) AS facets
+                                                                                     FROM Facets).facets[0],
+                                                                                    null))) AS props
+                                                  FROM (SELECT expand(properties) FROM schema:types WHERE name = 'Metadata')
+                                                  WHERE name NOT IN ['related','visited'])
+                                    WHERE name = 'Metadata' OR type = 'edge';"""
                 response: |
+                  root = this.result.0.dbschema.squash()
+
+      - switch:
+          - check: 'metadata("prop") == null'
+            processors:
+              - mapping: |
                   root.data.type = "support"
                   root.data.id = timestamp_unix().string()
-                  root.data.attributes = this.result.0.schema
+                  root.data.attributes = this
+
+          - check: 'this.keys().contains(metadata("prop").string())'
+            processors:
+              - mapping: |
+                  root.data.type = "support"
+                  root.data.id = timestamp_unix().string()
+                  root.data.attributes = this.with(metadata("prop"))
+                  meta params = "?prop=" + metadata("prop")
+
+          - processors:
+              - mapping: |
+                  meta status = "404"
+                  root.errors = [{"title": "Request Error: Not Found",
+                                  "detail": "Requested property not found."}]
 
       - catch:
           - mapping: |
               meta status = "500"
-              root.errors = [ { "title": "Server Error: Internal Server Error",
-                                "detail": "Database error." } ]
+              root.errors = [{"title": "Server Error: Internal Server Error",
+                              "detail": "Database error."}]

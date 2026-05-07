@@ -3,130 +3,109 @@
 processor_resources:
   - label: 'handler_metadata'
     switch:
-      - check: '["id","search","language","license","resourcetype","category","format","doi","from","till","page","newest"].any(x -> metadata(x).or("").length() > 255) || metadata("query").or("").length() > 4096'
+      - check: '["id","language","source","license","resourcetype","category","format","doi","search","from","till","page","newest"].any(x -> metadata(x).or("").length() > 256)'
         processors:
           - mapping: |
               meta status = "414"
-              root.errors = [ { "title": "Request Error: Request-Uri Too Long",
-                                "detail": "Custom query parameter exceeds 4KiB or other query parameters exceed 256B" } ]
+              root.errors = [{"title": "Request Error: Request-Uri Too Long",
+                              "detail": "At least one query parameter exceeds 256B"}]
 
       - processors:
           - try:
               - switch:
-                  - check: 'metadata("id") == "dataasee"'
+                  - check: 'metadata("id").or("").string().trim() != ""'
                     processors:
                       - mapping: |
-                          root.schemaVersion = 1
-                          root.recordId = "dataasee"
-                          root.name = "DatAasee"
-                          root.creators = [{ "name": "C. Himpe"}]
-                          root.publisher = "ULB Münster"
-                          root.publicationYear = null
-                          root.resourceType = "Software"
-                          root.identifiers = [{ "name": "doi", "data": "10.5281/zenodo.13734194" }]
-                          root.version = env("DL_VERSION")
-                          root.relations = []
-
-                      - resource: 'exports'
-
-                  - check: 'metadata("id") != null'
-                    processors:
-                      - label: 'handler_metadata__arcadedb_query_id'
-                        arcadedb:
-                          host: '${DB_HOST}'
-                          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                          endpoint: 'query'
-                          database: '${DB_NAME}'
-                          username: '${DB_USER}'
-                          password: '${DB_PASS}'
-                          request: |
-                            root.language = "sql"
-                            root.params.recordid = metadata("id").string()
-                            root.command = """SELECT *:{!@rid,!@type},
-                                                     categories.transform('asRID').name AS categories,
-                                                     source.data AS source,
-                                                     resourceType.name AS resourceType,
-                                                     language.name AS language,
-                                                     license:{name,data} AS license,
-                                                     description.ifempty(null) AS description,
-                                                     keywords.ifempty(null) AS keywords,
-                                                     $out[0].out || $inc[0].inc AS relations
-                                              FROM metadata
-                                              LET $out = (SELECT inE():{@type AS type,
-                                                                        true AS isOut,
-                                                                        outV().recordId AS recordId,
-                                                                        outV().name AS name,
-                                                                        outV().publicationYear AS publicationYear,
-                                                                        outV().resourceType.name AS resourceType} AS out
-                                                          FROM metadata
-                                                          WHERE recordId = :recordid),
-                                                  $inc = (SELECT outE():{@type AS type,
-                                                                         false AS isOut,
-                                                                         inV().recordId AS recordId,
-                                                                         inV().name AS name,
-                                                                         inV().publicationYear AS publicationYear,
-                                                                         inV().resourceType.name AS resourceType} AS inc
-                                                          FROM metadata
-                                                          WHERE recordId = :recordid)
-                                              WHERE recordId = :recordid;"""
-                          response: |
-                            root = this.result
+                          meta id = metadata("id").string().trim().replace_all("'","\\'")
+                          meta format = metadata("format").or("").string()
 
                       - switch:
-                          - check: 'this.length() == 0'
+                          - check: '!metadata("format").re_match("^(?i)(datacite|bibjson)?$")'
                             processors:
                               - mapping: |
-                                  meta status = "404"
-                                  root.errors = [ { "title": "Request Error: Not Found",
-                                                    "detail": "Metadata record for requested identifier was not found." } ]
+                                  meta status = "400"
+                                  root.errors = [{"title": "Request Error: Unknown Format",
+                                                  "detail": "Requested Export format is unknown."}]
 
-                          - processors:
+                          - check: 'metadata("id") == "ni:dataasee"'
+                            processors:
                               - mapping: |
-                                  root = this.0.without("related","selfies","visited")
+                                  root.schemaVersion = 1
+                                  root.recordId = "ni:dataasee"
+                                  root.metadataQuality = null
+                                  root.dataSteward = "dataasee"
+                                  root.source = "dataasee"
+                                  root.createdAt = now().ts_format("2006-01-02 15:04:05")
+                                  root.title = "DatAasee"
+                                  root.creators = [{"name": "C. Himpe"}]
+                                  root.publisher = "ULB Münster"
+                                  root.publicationYear = null
+                                  root.resourceType = "Software"
+                                  root.identifiers = [{"name": "10.5281/zenodo.13734194",
+                                                       "data": "doi"}]
+                                  root.relatedItems = [{"name": "repository",
+                                                        "data": "https://github.com/ulbmuenster/dataasee"}]
+                                  root.version = env("DL_VERSION")
+                                  root.rawFormat = "dataasee"
+                                  root.rawChecksum = null
+
+                                  meta params = "?id=ni:dataasee" + if metadata("format") != "" { "&format=" + metadata("format") } else { "" }
 
                               - resource: 'exports'
 
-                      - branch:
-                          request_map: 'root = if this."@rid" != null { { "rid": this."@rid" } } else { deleted() }'
-                          processors:
-                            - label: 'handler_metadata__arcadedb_command_inc'
-                              arcadedb:
-                                host: '${DB_HOST}'
-                                port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                                endpoint: 'command'
-                                database: '${DB_NAME}'
-                                username: '${DB_USER}'
-                                password: '${DB_PASS}'
-                                request: |
-                                  root.language = "sql"
-                                  root.command = "UPDATE %s SET numberViews += 1".format(this.rid)
+                          - processors:
+                              - label: 'handler_metadata__arcadedb_query_id'
+                                arcadedb:
+                                  host: '${DB_HOST}'
+                                  port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+                                  endpoint: 'query'
+                                  database: '${DB_NAME}'
+                                  username: '${DB_USER}'
+                                  password: '${DB_PASS}'
+                                  request: |
+                                    root.language = "sql"
+                                    root.params.recordid = metadata("id")
+                                    root.command = """SELECT *,
+                                                             categories.transform('asRID').name AS categories,
+                                                             source.name AS source,
+                                                             resourceType.name AS resourceType,
+                                                             language.name AS language,
+                                                             license:{name,data} AS license,
+                                                             rawFormat.name AS rawFormat,
+                                                             rawMetadata.value AS rawMetadata,
+                                                             title.ifempty(null) AS title,
+                                                             description.ifempty(null) AS description,
+                                                             keywords.ifempty(null) AS keywords,
+                                                             (inE():{ map('@' + @type, [{'name':@out.title, 'data':@out.recordId}]) AS ine }).ine ||
+                                                             (outE():{ map('@' + @type + '_i', [{'name':@in.title, 'data':@in.recordId}]) AS oute }).oute AS relations
+                                                      FROM Metadata
+                                                      WHERE recordId = :recordid;"""
+                                  response: |
+                                    root = this.result
 
-                  - check: 'metadata("query") != null && metadata("language").lowercase().re_match("sql|mongo|gremlin|cypher|graphql")'
-                    processors:
-                      - label: 'handler_metadata__arcadedb_query_custom'
-                        arcadedb:
-                          host: '${DB_HOST}'
-                          port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
-                          endpoint: 'query'
-                          database: '${DB_NAME}'
-                          username: '${DB_USER}'
-                          password: '${DB_PASS}'
-                          silent: true
-                          request: |
-                            root.language = metadata("language")
-                            root.limit = 100
-                            root.command = metadata("query")
-                          response: |
-                            if this.result != null {
-                              root.result = this.result.array()
-                            } else {
-                              meta status = "400"
-                              root.errors = [ { "title": this.error,
-                                                "detail": this.detail } ]
-                            }
+                                    meta params = "?id=" + metadata("id") + if metadata("format") != "" { "&format=" + metadata("format") } else { "" }
+
+                              - switch:
+                                  - check: 'this.length() == 0'
+                                    processors:
+                                      - mapping: |
+                                          meta status = "404"
+                                          root.errors = [{"title": "Request Error: Not Found",
+                                                          "detail": "Metadata record for requested identifier was not found."}]
+
+                                  - processors:
+                                      - mapping: |
+                                          let relations = this.0.relations.squash()
+                                          root = this.0.without("relations","visited","related").merge($relations)
+
+                                      - resource: 'exports'
 
                   - check: 'metadata("source") != null'
                     processors:
+                      - mapping: |
+                          meta source = metadata("source").string().trim().replace_all("'","\\'")
+                          meta page = metadata("page").or("").string().trim()
+
                       - label: 'handler_metadata__arcadedb_query_source'
                         arcadedb:
                           host: '${DB_HOST}'
@@ -138,29 +117,51 @@ processor_resources:
                           request: |
                             root.language = "sql"
                             root.limit = 101
-                            root.params.source = metadata("source").string().not_empty().catch("%")
-                            root.params.format = metadata("format").or("").string().not_empty().catch("%")
-                            root.params.skip = 100 * metadata("page").number(0)
-                            root.command = """SELECT *:{!@rid,!@type},
-                                                     related,
+                            root.params.source = metadata("source")
+                            let rid = metadata("page").decode("base64rawurl").string().catch("")
+                            let rid = if $rid.re_match("#[1-9][0-9]*:(?:0|[1-9][0-9]*)") { $rid } else { "#-1:-1" }
+                            root.params.cursor = $rid
+                            meta page = $rid.encode("base64rawurl")
+                            root.command = """SELECT *,
                                                      categories.transform('asRID').name AS categories,
+                                                     source.name AS source,
                                                      resourceType.name AS resourceType,
                                                      language.name AS language,
-                                                     license:{name,data} AS license
-                                              FROM metadata
-                                              WHERE (source.data LIKE :source) AND
-                                                    (metadataFormat LIKE :format)
-                                              SKIP :skip"""
+                                                     license:{name,data} AS license,
+                                                     rawFormat.name AS rawFormat,
+                                                     rawMetadata.value AS rawMetadata,
+                                                     title.ifempty(null) AS title,
+                                                     description.ifempty(null) AS description,
+                                                     keywords.ifempty(null) AS keywords
+                                              FROM Metadata
+                                              WHERE source.name LIKE :source + '%' AND @rid > (:cursor).asRID()"""
                           response: |
                             root = this.result.slice(0,100).map_each(x -> x.without("visited"))
-                            let query = "${DL_BASE}${DL_PATH}/metadata?source=" + metadata("source").string().escape_url_query()
-                            let query = if metadata("format") != null { $query + "&format=" + metadata("format").string().escape_url_query() }
-                            let query = $query + "&page="
-                            meta links = { "first": $query + "0",
-                                           "prev": if metadata("page").number(0) > 0 { $query +  [0,metadata("page").number(0) - 1].max().string() } else { deleted() },
-                                           "next": if this.result.length() > 100 { $query + [0,metadata("page").number(0) + 1].max().string() } else { deleted() } }
+                            let query = "?source=" + metadata("source").escape_url_query() + "&page="
+                            meta params = $query + metadata("page")
+                            let query = "${DL_BASE}${DL_PATH}/metadata" + $query
+                            meta links = {"first": $query + "#-1:-1".encode("base64rawurl"),
+                                          "next": if this.result.length() > 100 { $query + this.result.index(100)."@rid".encode("base64rawurl") } else { deleted() }}
 
                   - processors:
+                      - mapping: |
+                          map prep_string {
+                            root = this.or("").string().trim().replace_all("'","")
+                          }
+
+                          meta from = metadata("from").number().round().string().catch("")
+                          meta till = metadata("till").number().round().string().catch("")
+                          meta resourcetype = metadata("resourcetype").apply("prep_string")
+                          meta license = metadata("license").apply("prep_string")
+                          meta format = metadata("format").apply("prep_string")
+                          meta language = metadata("language").apply("prep_string")
+                          meta category = metadata("category").apply("prep_string")
+                          meta doi = metadata("doi").apply("prep_string").trim_prefix("doi:").trim_prefix("https://doi.org/").trim_prefix("http://dx.doi.org/")
+                          meta search = metadata("search").apply("prep_string").replace_all_many(["\"","","~","","/","",":",""]).lowercase().re_replace("([a-z0-9]+(?:_[a-z0-9]+)+)","\"$1\"").replace_all("_"," ")
+
+                          meta newest = metadata("newest").bool().catch(null)
+                          meta page = [50,[1, metadata("page").number(1).round()].max()].min()
+
                       - label: 'handler_metadata__arcadedb_query_normal'
                         arcadedb:
                           host: '${DB_HOST}'
@@ -170,82 +171,75 @@ processor_resources:
                           username: '${DB_USER}'
                           password: '${DB_PASS}'
                           request: |
-                            map prep_string {
-                              root = this.or("").string().trim().replace_all("'","\\'")
-                            }
-
-                            # These bindings are made to ensure the prepared string is not empty
-                            let resourcetype = metadata("resourcetype").apply("prep_string")
-                            let language = metadata("language").apply("prep_string")
-                            let license = metadata("license").apply("prep_string")
-                            let category = metadata("category").apply("prep_string")
-                            let format = metadata("format").apply("prep_string")
-                            let doi = metadata("doi").apply("prep_string").trim_prefix("doi:").trim_prefix("https://doi.org/").trim_prefix("http://dx.doi.org/")
-                            let search = metadata("search").apply("prep_string").not_empty().split(" ").map_each(x -> "(?=.*" + x.replace_all_many(["*",".*","_","\\\\s"]) + ")").join("").catch("")
-                            let from = metadata("from").number().string().catch("")
-                            let till = metadata("till").number().string().catch("")
-
-                            let filter = "true "
-                            let filter = if $resourcetype != "" { $filter + " AND (resourceType.name ILIKE '%s')".format($resourcetype) }
-                            let filter = if $language != "" { $filter + " AND (language.name + language.data ILIKE '%%%s%%')".format($language) }
-                            let filter = if $license != "" { $filter + " AND (license.name ILIKE '%s')".format($license) }
-                            let filter = if $category != "" { $filter + " AND (ifnull(categories,[]).transform('asRID') CONTAINS (name ILIKE '%s'))".format($category) }
-                            let filter = if $format != "" { $filter + " AND (metadataformat ILIKE '%s')".format($format) }
-                            let filter = if $doi != "" { $filter + " AND (selfies CONTAINSANY ['%s'])".format($doi) }  # TODO: simplify DOI filter once CONTAINS uses by-item index
-                            let filter = if $search != "" { $filter + " AND ((name MATCHES '(?is)%s.*') OR (keywords MATCHES '(?is)%[1]s.*') OR (description MATCHES '(?is)%[1]s.*'))".format($search) }
-                            let filter = if $from != "" { $filter + " AND (publicationYear >= %s)".format($from) }
-                            let filter = if $till != "" { $filter + " AND (publicationYear <= %s)".format($till) }
-
-                            let newest = match metadata("newest").bool().catch(null) { true  => "ORDER BY publicationYear DESC",
-                                                                                       false => "ORDER BY publicationYear ASC",
-                                                                                       null  => "" }
+                            let filter = "true"
+                            let filter = if metadata("from") != "" { $filter + " AND (publicationYear >= %s)".format(metadata("from")) }
+                            let filter = if metadata("till") != "" { $filter + " AND (publicationYear <= %s)".format(metadata("till")) }
+                            let filter = if metadata("resourcetype") != "" { $filter + " AND (resourceType.name ILIKE '%s')".format(metadata("resourcetype")) }
+                            let filter = if metadata("license") != "" { $filter + " AND (license.name ILIKE '%s')".format(metadata("license")) }
+                            let filter = if metadata("format") != "" { $filter + " AND (rawFormat.name ILIKE '%s')".format(metadata("format")) }
+                            let filter = if metadata("language") != "" { $filter + " AND ((language.name ILIKE '%s') OR (language.data ILIKE '%%%[1]s%%'))".format(metadata("language")) }
+                            let filter = if metadata("category") != "" { $filter + " AND (ifnull(categories,[]).transform('asRID') CONTAINS (name ILIKE '%s'))".format(metadata("category")) }
+                            let filter = if metadata("doi") != "" { $filter + " AND (identifiers.name CONTAINS '%s')".format(metadata("doi")) }
+                            let filter = if metadata("search") != "" { $filter + " AND ((SEARCH_INDEX('Metadata[title]','%s') = true) OR (SEARCH_INDEX('Metadata[keywordsbyitem]','%[1]s') = true) OR (SEARCH_INDEX('Metadata[description]','%[1]s') = true) OR (SEARCH_INDEX('Metadata[synonyms.namebyitem]','%[1]s') = true))".format(metadata("search")) }
+                            let newest = match metadata("newest") { true  => "ORDER BY publicationYear DESC",
+                                                                    false => "ORDER BY publicationYear ASC",
+                                                                    null  => "" }
 
                             root.language = "sql"
                             root.limit = 21
-                            root.params.skip = 20 * metadata("page").number(0)
+                            root.params.skip = 20 * (metadata("page") - 1)
                             root.command = """SELECT recordId,
-                                                     name,
+                                                     title,
                                                      publicationYear,
                                                      resourceType.name AS resourceType,
-                                                     identifiers[name = 'doi'][0].data.prefix("https://doi.org/") AS doi,
+                                                     identifiers[data = 'doi'][0].name.prefix('https://doi.org/') AS doi,
                                                      metadataQuality
-                                              FROM metadata
+                                              FROM Metadata
                                               WHERE %s
                                               %s
                                               SKIP :skip""".format($filter,$newest)
                           response: |
                             root = this.result.slice(0,20)
-                            let query = "${DL_BASE}${DL_PATH}/metadata?"
-                            let query = if metadata("resourcetype") != null { $query + "resourcetype=" + metadata("resourcetype").string().escape_url_query() + "&" }
-                            let query = if metadata("language") != null { $query + "language=" + metadata("language").string().escape_url_query() + "&" }
-                            let query = if metadata("license") != null { $query + "license=" + metadata("license").string().escape_url_query() + "&" }
-                            let query = if metadata("format") != null { $query + "format=" + metadata("format").string().escape_url_query() + "&" }
-                            let query = if metadata("category") != null { $query + "category=" + metadata("category").string().escape_url_query() + "&" }
-                            let query = if metadata("doi") != null { $query + "doi=" + metadata("doi").string().escape_url_query() + "&" }
-                            let query = if metadata("search") != null { $query + "search=" + metadata("search").string().escape_url_query() + "&" }
-                            let query = if metadata("from") != null { $query + "from=" + metadata("from").string() + "&" }
-                            let query = if metadata("till") != null { $query + "till=" + metadata("till").string() + "&" }
+                            let query = "?"
+                            let query = if metadata("from") != "" { $query + "from=" +  metadata("from").string() + "&" }
+                            let query = if metadata("till") != "" { $query + "till=" +  metadata("till").string() + "&" }
+                            let query = if metadata("resourcetype") != "" { $query + "resourcetype=" + metadata("resourcetype").escape_url_query() + "&" }
+                            let query = if metadata("license") != "" { $query + "license=" + metadata("license").escape_url_query() + "&" }
+                            let query = if metadata("format") != "" { $query + "format=" + metadata("format").escape_url_query() + "&" }
+                            let query = if metadata("language") != "" { $query + "language=" + metadata("language").escape_url_query() + "&" }
+                            let query = if metadata("category") != "" { $query + "category=" + metadata("category").escape_url_query() + "&" }
+                            let query = if metadata("doi") != "" { $query + "doi=" + metadata("doi").escape_url_query() + "&" }
+                            let query = if metadata("search") != "" { $query + "search=" + metadata("search").escape_url_query() + "&" }
                             let query = if metadata("newest") != null { $query + "newest=" + metadata("newest").string() + "&" }
                             let query = $query + "page="
-                            meta links = { "first": $query + "0",
-                                           "prev": if metadata("page").number(0) > 0 { $query + [0,metadata("page").number(0) - 1].max().string() } else { deleted() },
-                                           "next": if this.result.length() > 20 { $query + [0,metadata("page").number(0) + 1].max().string() } else { deleted() } }
+                            meta params = $query + metadata("page").string()
+                            let query = "${DL_BASE}${DL_PATH}/metadata" + $query
+                            meta links = { "first": $query + "1",
+                                           "prev": if metadata("page") > 1 { $query + [1, metadata("page") - 1].max().string() } else { deleted() },
+                                           "next": if this.result.length() > 20 && metadata("page") < 50 { $query + [1, metadata("page") + 1].max().string() } else { deleted() } }
 
               - label: 'handler_metadata__clean_results'
                 mapping: |
+                  map rem_at {
+                    root = match {
+                      this.type() == "object" => this.without("@type","@cat","@rid").map_each(x -> x.value.apply("rem_at"))
+                      this.type() == "array"  => this.map_each(x -> x.apply("rem_at"))
+                    }
+                  }
+
                   map add_wrapper {
                     root = match {
-                      this.type() == "object" => { "type": "data",
-                                                   "id": timestamp_unix().string(),
-                                                   "attributes": this.without("@rid","@type","@cat") }
+                      this.type() == "object" => {"type": "data",
+                                                  "id": this.recordId | metadata("id"),
+                                                  "attributes": this.apply("rem_at")}
                       this.type() == "array" => this.map_each(z -> z.apply("add_wrapper"))
                     }
                   }
 
-                  root = if this.errors == null { { "data": this.apply("add_wrapper") } } else { this }
+                  root = if this.errors == null { {"data": this.apply("add_wrapper")} } else { this }
 
           - catch:
               - mapping: |
                   meta status = "500"
-                  root.errors = [ { "title": "Server Error: Internal Server Error",
-                                    "detail": "Database error." } ]
+                  root.errors = [{"title": "Server Error: Internal Server Error",
+                                  "detail": "Database error."}]

@@ -18,7 +18,7 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>/api/v1/ingest</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/ingest</b>)"
 
 backend -->> src : " OAI-PMH / S3"
 backend -->> backend : " JSON Schema \n Start Async Ingest"

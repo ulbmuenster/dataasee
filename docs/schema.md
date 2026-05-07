@@ -19,24 +19,25 @@ definitions:
   normal: "max 65535"
   integer: "long"
   nonnegative: "min 0"
-  url: "regexp"
+  url: "regexp '...'"
 
 documents:
-  pair:
-    name: "string (mandatory, notnull, tiny, min 1)"
+  Pair:
+    name: "string (mandatory, notnull, tiny, min 1, max 255)"
     data: "string (small, url)"
 
-vertexes:
-  metadata:
+  Raw:
+    value: "string (mandatory, notnull, default '')"
 
+vertexes:
+  Metadata:
     # Process
     schemaVersion: "integer (notnull, min 1, max 1, default 1)"
-    recordId: "string (mandatory, notnull, readonly, max 31)"
-    metadataFormat: "string (tiny)"
+    recordId: "string (mandatory, notnull, readonly, max 47)"
     metadataQuality: "string (mandatory, notnull, tiny)"
     dataSteward: "string (mandatory, notnull, small)"
-    source: "link of pair (mandatory)"
-    sourceRights: "string (mandatory, notnull, readonly, small)"
+    source: "link of Pair (mandatory, notnull)"
+    sourceRights: "string (mandatory, notnull, small)"
     createdAt: "datetime (mandatory, notnull, default sysdate)"
 
     # Technical
@@ -45,42 +46,41 @@ vertexes:
     dataLocation: "string (small, url)"
 
     # Social
-    numberViews: "integer (mandatory, notnull, nonnegative, default 0)"
-    keywords: "string (tiny, default '')"
-    categories: "list of string (max 4)"
+    categories: "list of link (max 3)"
+    keywords: "list of string (max 15)"
 
     # Descriptive (Mandatory)
-    name: "string (mandatory, tiny, default '')"
-    creators: "list of pair (mandatory, max 255)"
-    publisher: "string (mandatory, tiny)"
-    publicationYear: "integer (mandatory, min -9999, max 9999)"
-    resourceType: "link of pair (mandatory)"
-    identifiers: "list of pair (mandatory, max 255)"
+    title: "string (mandatory, tiny, default '')"
+    creators: "list of Pair (mandatory, max 255, default null)"
+    publisher: "string (mandatory, tiny, default null)"
+    publicationYear: "integer (mandatory, min -9999, max 9999, default null)"
+    resourceType: "link of Pair (mandatory, default null)"
+    identifiers: "list of Pair (mandatory, max 255, default null)"
 
     # Descriptive (Optional)
-    synonyms: "list of pair (max 255)"
-    language: "link of pair"
-    subjects: "list of pair (max 255)"
+    synonyms: "list of Pair (max 255)"
+    language: "link of Pair"
+    subjects: "list of Pair (max 255)"
     version: "string (tiny)"
-    license: "link of pair"
+    license: "link of Pair"
     rights: "string (normal)"
-    fundings: "list of pair (max 255)"
+    fundings: "list of Pair (max 255)"
     description: "string (mandatory, normal, default '')"
-    externalItems: "list of pair (max 255)"
+    relatedItems: "list of Pair (max 255)"
 
     # Raw Metadata
-    rawMetadata: "string (mandatory, max 262144, default '')"
+    rawMetadata: "link of Raw"
+    rawFormat: "link of Pair"
     rawChecksum: "string (tiny)"
 
     # Internal
     related: "map of list (default null)"
-    selfies: "list of string (default [])"
     visited: "boolean (default false)"
 
 edges:
   isRelatedTo:
-    out: "link of metadata"
-    in: "link of metadata"
+    out: "link of Metadata"
+    in: "link of Metadata"
 
   isNewVersionOf:
     @extends: "isRelatedTo"
@@ -104,26 +104,27 @@ edges:
     @extends: "isRelatedTo"
 
 indexes:
-  unique:
-    - "metadata.recordId"
+  unique_hash:
+    - "Metadata.recordId"
+
+  notunique_hash:
+    - "Metadata.identifiers.name by item"
 
   notunique:
-    - "metadata.numberViews"
-    - "metadata.categories"
-    - "metadata.publicationYear"
-    - "metadata.resourceType"
-    - "metadata.language"
-    - "metadata.license"
-    - "metadata.metadataFormat"
-    - "metadata.source"
-    - "metadata.identifiers"
-    - "metadata.subjects"
-    - "metadata.selfies"
+    - "Metadata.publicationYear"
+    - "Metadata.resourceType"
+    - "Metadata.language"
+    - "Metadata.license"
+    - "Metadata.source"
+    - "Metadata.rawFormat"
+    - "Metadata.categories by item"
+    - "Metadata.subjects.data by item"
 
   full_text:
-    - "metadata.keywords"
-    - "metadata.name"
-    - "metadata.description"
+    - "Metadata.title"
+    - "Metadata.keywords"
+    - "Metadata.description"
+    - "Metadata.synonyms.data by item"
 
 @endyaml
 ```

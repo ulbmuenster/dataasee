@@ -1,0 +1,57 @@
+# Language: Benthos YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+processor_resources:
+  - label: 'handler_database'
+    switch:
+      - check: 'metadata("language").or("").length() > 256 || metadata("query").or("").length() > 4096'
+        processors:
+          - mapping: |
+              meta status = "414"
+              root.errors = [{"title": "Request Error: Request-Uri Too Long",
+                              "detail": "Query parameter exceeds 4KiB or other parameters exceed 256B"}]
+
+      - check: 'metadata("query").or("").string().trim() == ""'
+        processors:
+          - mapping: |
+              meta status = "400"
+              root.errors = [{"title": "Request Error: Bad Request",
+                              "detail": "Invalid query string."}]
+
+      - check: '!metadata("language").or("sql").string().trim().re_match("^(?i)(sql|mongo|opencypher|graphql|redis)?$")'
+        processors:
+          - mapping: |
+              meta status = "400"
+              root.errors = [{"title": "Request Error: Bad Request",
+                              "detail": "Unknown query language."}]
+
+      - processors:
+          - mapping: |
+              meta language = metadata("language").or("sql").string().trim().lowercase().not_empty().catch("sql")
+              meta query = metadata("query").string().trim()
+
+          - label: 'handler_database__arcadedb_query_custom'
+            arcadedb:
+              host: '${DB_HOST}'
+              port: ${DB_PORT}  # yamllint disable-line rule:quoted-strings
+              endpoint: 'query'
+              database: '${DB_NAME}'
+              username: '${DB_USER}'
+              password: '${DB_PASS}'
+              silent: true
+              request: |
+                root.language = metadata("language")
+                root.limit = 100
+                root.command = metadata("query")
+              response: |
+                if this.result != null {
+                  root.result = this.result.array()
+                  meta params = "?language=" + metadata("language") + "&query=" + metadata("query").escape_url_query()
+                } else {
+                  meta status = "400"
+                  root.errors = [{"title": this.error,
+                                  "detail": this.detail}]
+                }
+
+                root.data.type = "data"
+                root.data.id = timestamp_unix().string()
+                root.data.attributes = this.with("result")

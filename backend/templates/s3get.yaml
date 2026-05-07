@@ -39,7 +39,7 @@ mapping: |
                             """.format(this.url,$get,this.access,this.secret)
 
   root.branch.processors = [{}]
-  oot.branch.processors.0.label = @label + "_http"
+  root.branch.processors.0.label = if @label != null { @label + "_http" } else { deleted() }
   root.branch.processors.0.http.url = "${! this.url }"
   root.branch.processors.0.http.verb = "GET"
   root.branch.processors.0.http.timeout = "30s"

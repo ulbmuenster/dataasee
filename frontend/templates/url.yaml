@@ -1,0 +1,23 @@
+# Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
+
+_if:
+  test:
+    _eq:
+      - _payload: "results_paging"
+      - null
+  then: "/metadata"
+  else:
+    _string.substring:
+      on:
+        _get:
+          from:
+            _payload: "results_paging"
+          key: "url"
+      start:
+        _string.indexOf:
+          on:
+            _get:
+              from:
+                _payload: "results_paging"
+              key: "url"
+          searchValue: "/metadata?"

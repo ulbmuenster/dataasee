@@ -1,237 +1,309 @@
 HOST=localhost
 
-POST="--post-data="
+POST=--post-data
 FILE=--post-file
 
 AUTH:=--user=admin --password=$(shell . ../secrets.env; echo $$DL_PASS)
+NOAU=--user= --password=
 UNAU=--user=admin --password=xfail
 
-PASS=-eq
-FAIL=-ne
+RUN := echo && $(MAKE) --no-print-directory
 
-# Test file on schema
-define test_schema
+# Test JSON file on JSON schema
+define test_schemafile
 	@echo $(strip $2)
 	@check-jsonschema --schemafile $1 $2
 endef
 
-# Test endpoint response on schemas
+# Test endpoint response for HTTP status and response on three JSON schemas
 define test_endpoint
-	@echo $(strip $4)
-	@TMP=mktemp ;\
-	wget --content-on-error -qO $$TMP $5 $6 http://${HOST}:8343/api/v1$(strip $4) ; RET0=$$? ;\
+	@echo $(strip $5)
+	@TMP=$$(mktemp) ;\
+	trap 'rm -f $$TMP' EXIT ;\
+	HTTP=$$(wget --content-on-error -qSO $$TMP $6 $7 http://${HOST}:8343/api/v1$(strip $5) 2>&1 | grep HTTP | tail -1 | cut -d' ' -f4) ;\
 	check-jsonschema --schemafile $2 $$TMP ; RET1=$$? ;\
 	check-jsonschema --schemafile $3 $$TMP ; RET2=$$? ;\
+	check-jsonschema --schemafile $4 $$TMP ; RET3=$$? ;\
 	rm $$TMP ;\
-	test $$RET0 $1 0 && test $$RET1 -eq 0 && test $$RET2 -eq 0
+	test $$HTTP -eq $1 && test $$RET1 -eq 0 && test $$RET2 -eq 0 && test $$RET3 -eq 0
 endef
 
 # Wait for ingest to finish
 define wait_ingest
-	@until wget -qO- http://${HOST}:8343/api/v1/ingest ${POST} ${AUTH} | grep -q '"started":false' ; do echo -n "." && sleep 1; done
-	@echo
+	@until wget -qO- http://${HOST}:8343/api/v1/ingest ${POST}='' ${AUTH} | grep -q '"started":false' ; do echo -n "." && sleep 1; done
 endef
 
+.PHONY: test
+
 test:
-	@echo
+	@echo && echo "SCHEMA TESTS"
 
-	@echo "SCHEMA TESTS"
+	@$(RUN) test_openapi
 
-	@echo
+	@$(RUN) test_params
 
-	$(call test_schema, schema/openapi.json, ../api/openapi.yaml)
+	@$(RUN) test_request
 
-	@echo
+	@$(RUN) test_response
 
-	$(call test_schema, schema/jsonschema.json, ../api/params/api.json)
-	$(call test_schema, schema/jsonschema.json, ../api/params/enums.json)
-	$(call test_schema, schema/jsonschema.json, ../api/params/metadata.json)
+	@echo && echo "SYSTEM TESTS (service must have been started)"
 
-	@echo
+	@$(RUN) test_unknown
 
-	$(call test_schema, schema/jsonschema.json, ../api/request/insert.json)
-	$(call test_schema, schema/jsonschema.json, ../api/request/ingest.json)
+	@$(RUN) test_ready
 
-	@echo
+	@$(RUN) test_api
 
-	$(call test_schema, schema/jsonschema.json, ../api/response/api.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/enums.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/backup.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/error.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/ingest.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/insert.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/health.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/metadata.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/ready.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/schema.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/sources.json)
-	$(call test_schema, schema/jsonschema.json, ../api/response/stats.json)
+	@$(RUN) test_schema
 
-	@echo
+	@$(RUN) test_metadata
 
-	@echo "SYSTEM TESTS (service needs to be started)"
+	@$(RUN) test_database
 
-	@echo
+	@$(RUN) test_ingest
 
-	$(call test_endpoint, ${PASS}, ../api/response/ready.json, schema/jsonapi.json, /ready)
+	@$(RUN) test_health
 
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/api.json, schema/jsonapi.json, /api?response=xfail)
-	$(call test_endpoint, ${FAIL}, ../api/response/api.json, schema/jsonapi.json, /api?request=xfail)
-	$(call test_endpoint, ${FAIL}, ../api/response/api.json, schema/jsonapi.json, /api?params=xfail)
-
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/openapi.json, /api)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=api)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=enums)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=backup)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=health)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=ingest)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=insert)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=metadata)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=ready)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=schema)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=stats)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=sources)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?response=error)
-
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?request=ingest)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?request=insert)
-
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?params=api)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?params=enums)
-	$(call test_endpoint, ${PASS}, ../api/response/api.json, schema/jsonschema.json, /api?params=metadata)
-
-	@echo
-
-	$(call test_endpoint, ${PASS}, ../api/response/schema.json, schema/jsonapi.json, /schema)
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=xfail)
-
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=resourcetypes)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=languages)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=licenses)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=synonyms)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=externalitems)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=categories)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=schemas)
-	$(call test_endpoint, ${PASS}, ../api/response/enums.json, schema/jsonapi.json, /enums?type=relations)
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/insert.json, schema/jsonapi.json, /insert, ${POST}, ${AUTH})
-	$(call test_endpoint, ${FAIL}, ../api/response/insert.json, schema/jsonapi.json, /insert, ${FILE}=requests/insert-minimal.json, ${UNAU})
-	$(call test_endpoint, ${FAIL}, ../api/response/insert.json, schema/jsonapi.json, /insert, ${FILE}=requests/insert-xfail-title.json, ${AUTH})
-
-	$(call test_endpoint, ${PASS}, ../api/response/insert.json, schema/jsonapi.json, /insert, ${FILE}=requests/insert-minimal.json, ${AUTH})
-	$(call test_endpoint, ${PASS}, ../api/response/insert.json, schema/jsonapi.json, /insert, ${FILE}=requests/insert-maximal.json, ${AUTH})
-	$(call test_endpoint, ${PASS}, ../api/response/insert.json, schema/jsonapi.json, /insert, ${FILE}=requests/insert-maxlength.json, ${AUTH})
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-dummy.json, ${UNAU})
-	$(call test_endpoint, ${FAIL}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-xfail-source.json, ${AUTH})
-
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${POST}, ${AUTH})
-
-	@echo
-
-	$(call test_endpoint, ${PASS}, ../api/response/stats.json, schema/jsonapi.json, /stats)
-
-	@echo
-
-	$(call test_endpoint, ${PASS}, ../api/response/sources.json, schema/jsonapi.json, /sources)
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?id=ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ)
-	$(call test_endpoint, ${FAIL}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?id=0)
-
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?id=dataasee)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?id=dataasee\&format=datacite)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?id=dataasee\&format=bibjson)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?language=sql\&query=SELECT%201)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?search=test)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?language=en)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?resourcetype=article)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?license=public%20domain)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?category=mathematics)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?doi=10.0000%2Fabcdef)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?from=2010)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?till=2010)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?newest=true)
-	$(call test_endpoint, ${PASS}, ../api/response/metadata.json, schema/jsonapi.json, /metadata?newest=false)
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/backup.json, schema/jsonapi.json, /backup)
-	$(call test_endpoint, ${FAIL}, ../api/response/backup.json, schema/jsonapi.json, /backup, ${POST}, ${UNAU})
-
-	$(call test_endpoint, ${PASS}, ../api/response/backup.json, schema/jsonapi.json, /backup, ${POST}, ${AUTH})
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/health.json, schema/jsonapi.json, /health)
-	$(call test_endpoint, ${FAIL}, ../api/response/health.json, schema/jsonapi.json, /health, ${POST}, ${UNAU})
-
-	$(call test_endpoint, ${PASS}, ../api/response/health.json, schema/jsonapi.json, /health, ${POST}, ${AUTH})
-
-	@echo
-
-	$(call test_endpoint, ${FAIL}, ../api/response/error.json, schema/jsonapi.json , /xfail)
-
-	@echo
-
-	@echo "INGEST TESTS (via get)"
-
-	@echo
+	@echo && echo "INGEST TESTS (via get)"
 
 	@busybox httpd -h datasets -p 0.0.0.0:9876 || httpd -h datasets -p 0.0.0.0:9876 || true
 	@sleep 1
 
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-datacite.json, ${AUTH})
+	@$(RUN) test_datacite
+
+	@$(RUN) test_dc
+
+	@$(RUN) test_mods
+
+	@$(RUN) test_marc
+
+	@$(RUN) test_lido
+
+	@$(RUN) test_form
+
+	@$(RUN) test_data
+
+	@echo && echo "ALL TESTS PASSED"
+
+	@echo
+
+test_openapi:
+	$(call test_schemafile, schema/openapi.json, ../api/openapi.yaml)
+
+test_params:
+	$(call test_schemafile, schema/jsonschema.json, ../api/params/api.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/params/schema.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/params/metadata.json)
+
+test_request:
+	$(call test_schemafile, schema/jsonschema.json, ../api/request/ingest.json)
+
+test_response:
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/api.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/database.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/error.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/ingest.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/health.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/metadata.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/ready.json)
+	$(call test_schemafile, schema/jsonschema.json, ../api/response/schema.json)
+
+test_unknown:
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /xfail)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /XFAIL0)
+
+test_ready:
+	$(call test_endpoint, 406, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /ready, --header='Accept: text/xml')
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/ready.json, /ready)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/ready.json, /ready?ignored=ignored)
+
+test_api:
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/api.json, /api?response=xfail)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/api.json, /api?request=xfail)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/api.json, /api?params=xfail)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/api.json, /api?response=)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/api.json, /api?request=)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/api.json, /api?params=)
+
+	$(call test_endpoint, 200, schema/any.json, schema/openapi.json, ../api/response/api.json, /api)
+	$(call test_endpoint, 200, schema/any.json, schema/openapi.json, ../api/response/api.json, /api?ignored=ignored)
+
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=api)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=database)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=health)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=ingest)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=metadata)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=ready)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=schema)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?response=error)
+
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?request=ingest)
+
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?params=api)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?params=database)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?params=schema)
+	$(call test_endpoint, 200, schema/any.json, schema/jsonschema.json, ../api/response/api.json, /api?params=metadata)
+
+test_schema:
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/schema.json, /schema?prop=xfail)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/schema.json, /schema?prop=)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/schema.json, /schema?prop=recordid)  # fails because case
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?ignored=ignored)
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@version)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@comment)
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=schemaVersion)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=recordId)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=metadataQuality)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=dataSteward)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=source)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=createdAt)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=sizeBytes)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=dataLocation)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=dataFormat)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=keywords)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=categories)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=title)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=creators)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=publisher)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=publicationYear)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=resourceType)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=identifiers)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=synonyms)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=language)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=subjects)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=version)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=license)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=rights)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=fundings)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=description)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=relatedItems)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=rawMetadata)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=rawChecksum)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=rawFormat)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@isRelatedTo)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@isNewVersionOf)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@isDerivedFrom)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@hasPart)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@isPartOf)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@isDescribedBy)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@commonExpression)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/schema.json, /schema?prop=@commonManifestation)
+
+test_metadata:
+	$(call test_endpoint, 414, schema/jsonapi.json, schema/failure.json, ../api/response/metadata.json, /metadata?id=ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/metadata.json, /metadata?id=0)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/metadata.json, /metadata?id=ni:)
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/metadata.json, /metadata?id=ni:xfail)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/metadata.json, /metadata?id=ni:dataasee\&format=xfail)
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?id=ni:dataasee)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?id=ni:dataasee\&format=datacite)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?id=ni:dataasee\&format=bibjson)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?source=)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?doi=xfail)
+
+test_database:
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?query=)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?query=xfail)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=xfail\&query=xfail)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=xfail\&query=SELECT+1)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=sql\&query=fail)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=sql\&query=DROP+TYPE+Metadata)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=sql\&query=UPDATE+Metadata+REMOVE+title)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=sql\&query=INSERT+INTO+Metadata)
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/database.json, /database?language=sql\&query=DELETE+FROM+Metadata)
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?query=SELECT%201)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?language=sql\&query=SELECT%201)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?language=opencypher\&query=RETURN%201)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?language=mongo\&query=%7B%27collection%27%3A%27Metadata%27%2C%27query%27%3A%7B%7D%7D)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?language=redis\&query=PING)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?language=graphql\&query={__typename})
+
+INGEST_NO_SOURCE='{"method":"oai-pmh","format":"datacite","steward":"x@example.invalid","rights":"CC0"}'
+INGEST_NO_METHOD='{"source":"http://example.invalid","format":"datacite","steward":"x@example.invalid","rights":"CC0"}'
+INGEST_NO_FORMAT='{"source":"http://example.invalid","method":"oai-pmh","steward":"x@example.invalid","rights":"CC0"}'
+INGEST_NO_STEWARD='{"source":"http://example.invalid","method":"oai-pmh","format":"datacite","rights":"CC0"}'
+INGEST_NO_RIGHTS='{"source":"http://example.invalid","method":"oai-pmh","format":"datacite","steward":"x@example.invalid"}'
+INGEST_BAD_METHOD='{"source":"http://example.invalid","method":"xfail","format":"datacite","steward":"x@example.invalid","rights":"CC0"}'
+INGEST_BAD_FORMAT='{"source":"http://example.invalid","method":"oai-pmh","format":"xfail","steward":"x@example.invalid","rights":"CC0"}'
+
+test_ingest:
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest)
+	$(call test_endpoint, 403, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}='{}', ${NOAU})
+	$(call test_endpoint, 403, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}='{}', ${UNAU})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}='{', ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_NO_SOURCE}, ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_NO_METHOD}, ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_NO_FORMAT}, ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_NO_STEWARD}, ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_NO_RIGHTS}, ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_BAD_METHOD}, ${AUTH})
+	$(call test_endpoint, 400, schema/jsonapi.json, schema/failure.json, ../api/response/ingest.json, /ingest, ${POST}=${INGEST_BAD_FORMAT}, ${AUTH})
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${POST}='', ${AUTH})
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${POST}='{}', ${AUTH})
+
+test_health:
+	$(call test_endpoint, 404, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /health)
+	$(call test_endpoint, 403, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /health, ${POST}='', ${NOAU})
+	$(call test_endpoint, 403, schema/jsonapi.json, schema/failure.json, ../api/response/error.json, /health, ${POST}='', ${UNAU})
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/health.json, /health, ${POST}='', ${AUTH})
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/health.json, /health, ${POST}='{}', ${AUTH})
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/health.json, /health, ${POST}='{', ${AUTH})
+
+test_datacite:
+	$(call test_endpoint, 202, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${FILE}=requests/ingest-datacite.json, ${AUTH})
 
 	$(call wait_ingest)
 
-	@sleep 1
-
-	@echo
-
-test_datacite:
-	@busybox httpd -h datasets -p 0.0.0.0:9876 || true
-	@sleep 1
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-datacite.json, ${AUTH})
-	@lsof -nti:9876 | xargs kill -9
-	@echo
-
 test_dc:
-	@busybox httpd -h datasets -p 0.0.0.0:9876 || true
-	@sleep 1
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-dc.json, ${AUTH})
-	@lsof -nti:9876 | xargs kill -9
-	@echo
+	$(call test_endpoint, 202, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${FILE}=requests/ingest-dc.json, ${AUTH})
+
+	$(call wait_ingest)
 
 test_mods:
-	@busybox httpd -h datasets -p 0.0.0.0:9876 || true
-	@sleep 1
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-mods.json, ${AUTH})
-	@lsof -nti:9876 | xargs kill -9
-	@echo
+	$(call test_endpoint, 202, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${FILE}=requests/ingest-mods.json, ${AUTH})
+
+	$(call wait_ingest)
 
 test_marc:
-	@busybox httpd -h datasets -p 0.0.0.0:9876 || true
-	@sleep 1
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-marc.json, ${AUTH})
-	@lsof -nti:9876 | xargs kill -9
-	@echo
+	$(call test_endpoint, 202, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${FILE}=requests/ingest-marc.json, ${AUTH})
+
+	$(call wait_ingest)
 
 test_lido:
-	@busybox httpd -h datasets -p 0.0.0.0:9876 || true
-	@sleep 1
-	$(call test_endpoint, ${PASS}, ../api/response/ingest.json, schema/jsonapi.json, /ingest, ${FILE}=requests/ingest-lido.json, ${AUTH})
-	@lsof -nti:9876 | xargs kill -9
-	@echo
+	$(call test_endpoint, 202, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${FILE}=requests/ingest-lido.json, ${AUTH})
+
+	$(call wait_ingest)
+
+test_form:
+	$(call test_endpoint, 202, schema/jsonapi.json, schema/success.json, ../api/response/ingest.json, /ingest, ${POST}="source=http://host.docker.internal:9876/ingest-datacite.xml&method=get&format=datacite&steward=little&rights=CC0", ${AUTH})
+
+	$(call wait_ingest)
+
+test_data:
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?source=)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?newest=true)
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?newest=false)
+
+	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/database.json, /database?query=SELECT%20FROM%20Metadata)
+
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?search=test)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?language=en)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?resourcetype=article)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?license=public%20domain)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?category=mathematics)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?doi=10.0000%2Fabcdef)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?from=2010)
+#	$(call test_endpoint, 200, schema/jsonapi.json, schema/success.json, ../api/response/metadata.json, /metadata?till=2010)

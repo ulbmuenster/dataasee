@@ -1,32 +1,35 @@
 name,data
 Audiovisual,movingImage mov moving image
-Book,
-Book Chapter,chapter bookPart bookChapter
-Collection,col mix mixed material
-Computational Notebook,computationalNotebook
-Conference Paper,proceedings conferencePaper
-Conference Proceedings,conferenceProceedings
-Data Paper,dataPaper
-Data Set,dat dataset
+Award,
+Book,info:eu-repo/semantics/book
+BookChapter,book-chapter chapter bookPart info:eu-repo/semantics/bookpart
+Collection,col mix mixed material issue
+ComputationalNotebook,computational-notebook
+ConferencePaper,conference-paper proceedings
+ConferenceProceedings,conference-proceedings
+DataPaper,data-paper
+Dataset,data-set dat
 Dissertation,bachelorThesis masterThesis doctoralThesis
 Event,
-Image,stillImage img still image car cartographic
+Image,stillImage img still car cartographic
 Instrument,
-Interactive Resource,interactiveResource mul multimedia
-Journal,
-Journal Article,article journalArticle
+InteractiveResource,interactive-resource mul multimedia
+Journal,newspaper
+JournalArticle,journal-article newspaper-article article info:eu-repo/semantics/article
 Model,
-Output Management Plan,outputManagementPlan
-Peer Review,review peerReview
-Physical Object,physicalObject art artifact tac tactile
+OutputManagementPlan,output-management-plan
+PeerReview,peer-review review info:eu-repo/semantics/review
+PhysicalObject,physical-object art artifact tac tactile
 Poster,conferenceObject
-Preprint,workingPaper
-Report,
+Preprint,workingPaper info:eu-repo/semantics/workingPaper
+Presentation,
+Project,
+Report,info:eu-repo/semantics/report info:eu-repo/semantics/technicalDocumentation
 Service,
 Software,
 Sound,aud audio
 Standard,
-Study Registration,
+StudyRegistration,study-registration
 Text,txt not notated music man manuscript
 Workflow,
-Other,patent contributionToPeriodical annotation lecture dig digital unk unspecified
+Other,patent contributionToPeriodical annotation lecture dig digital unk unspecified info:eu-repo/semantics/other

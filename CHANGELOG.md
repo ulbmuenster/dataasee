@@ -1,5 +1,56 @@
 # Changelog
 
+## Version 0.9 (2026-05-07)
+
+Pilot release
+
+* **UPDATED** ArcadeDB to 26.4.2
+* **UPDATED** Benthos to 4.72.0
+* **UPDATED** Lowdefy to 4.7.3
+* **ADDED** `prop` parameter to `schema` endpoint to select single property
+* **ADDED** static frontend for local testing (`index.html`)
+* **ADDED** CORS header to backend server
+* **ADDED** facets to schema
+* **ADDED** facets to frontends
+* **ADDED** `redis` query language
+* **ADDED** allow URL encoded form as `/ingest` request body
+* **ADDED** `/database` endpoint for metadata queries
+* **ADDED** number of records to health report
+* **ADDED** ingest and interconnect status to health report
+* **ADDED** sample proxy configuration (`compose.proxy.yaml`)
+* **ADDED** environment variable `DL_SAFE` to disable `/database` endpoint
+* **CHANGED** record identifier hash from `xxhash64` to `sha256` and added `ni:` prefix
+* **CHANGED** test record id from `dataasee` to `ni:dataasee`
+* **CHANGED** rename `externalItems` to `relatedItems`
+* **CHANGED** rename `metadataFormat` to `rawFormat`
+* **CHANGED** make `backup` endpoint async
+* **CHANGED** `schema` endpoint (properties provide enumerations and facets)
+* **CHANGED** property naming from `name` to `title`
+* **CHANGED** edge property names from `relations/.*` to `@.*`
+* **CHANGED** `name` and `data` contents for `identifiers` and `synonyms` items
+* **CHANGED** `cypher` query language name to `opencypher`
+* **CHANGED** maximum incoming API payload to 12KiB
+* **CHANGED** `/schema` endpoint response
+* **CHANGED** `/metadata` endpoint response for edge properties and remove query mode
+* **CHANGED** make paging one-based instead of zero-based
+* **CHANGED** `keywords` property to list of string
+* **CHANGED** paging for source listings to cursor-based
+* **CHANGED** `rawChecksum` hash from `md5` to `sha256` and added `sha256:` prefix
+* **IMPROVED** raw format by consistent labels
+* **IMPROVED** `health` endpoint (simpler response without `CHECK DATABASE`)
+* **IMPROVED** interconnect script
+* **IMPROVED** full-text search
+* **REMOVED** `insert` endpoint (replaced by `ingest` via `GET`)
+* **REMOVED** `enums` endpoint (enumerations and facets via `schema` endpoint)
+* **REMOVED** `sources` endpoint (sources via `schema` endpoint)
+* **REMOVED** `synonyms`, `relations`, `relatedItems` from enums
+* **REMOVED** `gremlin` query language
+* **REMOVED** backup on shutdown
+* **REMOVED** `/stats` endpoint (is now custom query in frontend)
+* **REMOVED** `numberViews` property
+* **REMOVED** `/backup` endpoint (is not needed anymore due to static data)
+* **FIXED** many bugs and security concerns
+
 ## Version 0.5 (2025-11-13)
 
 Advanced development release

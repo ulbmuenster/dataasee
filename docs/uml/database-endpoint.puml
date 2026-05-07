@@ -1,4 +1,4 @@
-@startuml stats-endpoint
+@startuml database-endpoint
 
 interface endpoint [
 Endpoint
@@ -16,8 +16,7 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>/api/v1/stats</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/database</b>)"
 backend -->> database : " HTTP Client (<b>/query</b>)"
-backend -->> backend : " Cache Query"
 
 @enduml

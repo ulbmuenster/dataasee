@@ -4,6 +4,9 @@ yaml-files:
   - '*.yaml'
   - '*.yml'
 
+ignore:
+  - '*.yml'
+
 rules:
   braces:
     forbid: "non-empty"

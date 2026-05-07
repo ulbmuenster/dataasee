@@ -1,6 +1,6 @@
 # Language: Lowdefy YAML, Project: DatAasee, License: MIT, Author: Christian Himpe
 
-lowdefy: "4.5.2"
+lowdefy: "4.7.3"
 name: "DatAasee"
 
 cli:
@@ -46,6 +46,9 @@ connections:
       timeout: 0
       baseURL:
         _secret: "DL_API"
+      validateStatus:
+        _function:
+          true
 
 menus:
   - id: "main"
@@ -99,14 +102,6 @@ menus:
           title: "Interface"
         pageId: "about"
 
-      - id: "insert"
-        type: "MenuLink"
-        properties:
-          icon: "AiFillEdit"
-          title: "Insert"
-          danger: true
-        pageId: "insert"
-
       - id: "admin"
         type: "MenuLink"
         properties:
@@ -121,7 +116,6 @@ pages:
   - _ref: "pages/resolve.yaml"
   - _ref: "pages/list.yaml"
   - _ref: "pages/query.yaml"
-  - _ref: "pages/insert.yaml"
   - _ref: "pages/stats.yaml"
   - _ref: "pages/about.yaml"
   - _ref: "pages/fetch.yaml"

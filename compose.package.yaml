@@ -6,7 +6,7 @@ services:
 
 ## Database ####################################################################
 
-  "database":
+  database:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -17,14 +17,14 @@ services:
       context: "."
       dockerfile: "container/Dockerfile.db"
       no_cache: true
+      # sbom: true
       tags:
         - "$REGISTRY/$DL_REPO/database:$DL_VERSION"
       target: "release"
-    image: "$REGISTRY/$DL_REPO/database:$DL_VERSION"
 
 ## Backend #####################################################################
 
-  "backend":
+  backend:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -40,16 +40,16 @@ services:
       context: "."
       dockerfile: "container/Dockerfile.be"
       no_cache: true
+      # sbom: true
       tags:
         - "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
       target: "release"
     depends_on:
       - "database"
-    image: "$REGISTRY/$DL_REPO/backend:$DL_VERSION"
 
 ## Frontend ####################################################################
 
-  "frontend":
+  frontend:
     build:
       args:
         BUILDKIT_INLINE_CACHE: 1
@@ -62,7 +62,7 @@ services:
       context: "."
       dockerfile: "container/Dockerfile.fe"
       no_cache: true
+      # sbom: true
       tags:
         - "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"
       target: "release"
-    image: "$REGISTRY/$DL_REPO/frontend:$DL_VERSION"

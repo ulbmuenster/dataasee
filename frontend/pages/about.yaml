@@ -145,13 +145,15 @@ areas:
                         properties:
                           newTab: true
                           url:
-                            _string.concat:
-                              - _location: "protocol"
-                              - "//"
-                              - _location: "hostname"
-                              - ":"
-                              - "8343"  # TODO use dynamic value
-                              - "/api/v1"
+                            _string.slice:
+                              on:
+                                _request: "ready_request.data.links.self"
+                              start: 0
+                              end:
+                                _string.lastIndexOf:
+                                  on:
+                                    _request: "ready_request.data.links.self"
+                                  searchValue: "/"
                         style:
                           font-weight: "bold"
 ## API Endpoints
@@ -193,6 +195,7 @@ areas:
                                       then: "#85c1e9"
                                   default: "#C0C0C0"
                             blocks:
+## Method Column
                               - id: "method.$"
                                 type: "Title"
                                 style:
@@ -215,6 +218,7 @@ areas:
                                   level: 4
                                   content:
                                     _state: "endpoints.$.path"
+## Summary Column
                               - id: "summary.$"
                                 type: "Span"
                                 layout:
@@ -224,6 +228,7 @@ areas:
                                     font-size: "large"
                                   content:
                                     _state: "endpoints.$.summary"
+## Parameter Schema Column
                               - id: "parameters.$"
                                 type: "Anchor"
                                 layout:
@@ -260,6 +265,7 @@ areas:
                                                 _json.stringify:
                                                   on:
                                                     _request: "api_schema_request.data"
+## Request Schema Column
                               - id: "request.$"
                                 type: "Anchor"
                                 layout:
@@ -296,6 +302,7 @@ areas:
                                                 _json.stringify:
                                                   on:
                                                     _request: "api_schema_request.data"
+## Response Schema Column
                               - id: "response.$"
                                 type: "Anchor"
                                 layout:
@@ -332,6 +339,7 @@ areas:
                                                 _json.stringify:
                                                   on:
                                                     _request: "api_schema_request.data"
+## Secured Column
                               - id: "secure.$"
                                 type: "Icon"
                                 style:

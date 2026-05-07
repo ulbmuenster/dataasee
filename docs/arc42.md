@@ -1,12 +1,12 @@
 # DatAasee Architecture Documentation
 
-**Version: 0.5**
+**Version: 0.9**
 
 The principal goal of **DatAasee** is to provision a library-focused one-stop
-shop for research data discovery and a metadata hub.
+shop for research data discovery as well as a library-wide metadata hub.
 **DatAasee** is a Metadata-Lake (MDL) that aggregates and interconnects research
-metadata and bibliographic data from various data sources and interacts via an
-HTTP API which is prototypically utilized by a web front-end.
+metadata and bibliographic data from various data sources and interacts via a
+JSON HTTP API, which in turn is prototypically utilized by a web frontend.
 
 **Sections:**
 
@@ -27,11 +27,13 @@ HTTP API which is prototypically utilized by a web front-end.
 
 * Data Architecture: Data-Lake with Metadata Catalog
 * Software Architecture: 3-Tier Architecture
-  * Data-Tier Model: Wide, denormalized One-Big-Table (Graph)
+  * Data-Tier Model: Graph with star schema node properties
   * Logic-Tier Type: Semantic layer
-  * Presentation-Tier Type: HTTP-API (and Web-Frontend)
+  * Presentation-Tier Type: HTTP API (and Web-Frontend)
 
-> **NOTE:** For background information on data and software architecture, see: https://arxiv.org/abs/2409.05512 and references therein
+> **NOTE:** For the specific data model, see: [YASQL schema](schema.md)
+
+For background information on data and software architecture, see: https://arxiv.org/abs/2409.05512 and references therein.
 
 --------------------------------------------------------------------------------
 
@@ -39,35 +41,35 @@ HTTP API which is prototypically utilized by a web front-end.
 
 ### 1.1 Requirements Overview
 
-Given research and bibliographic (meta)data is maintained in various distributed
-databases and there is no central access point to browse, search, or locate
+Given: research and bibliographic (meta)data maintained in various
+distributed databases and no central access point to browse, search, or locate
 data-sets. The metadata-lake ...
 
-* ... allows users to search, filter and browse metadata (and data).
 * ... incorporates metadata of research outputs as well as bibliographic metadata.
 * ... cleans, normalizes, and provides metadata.
-* ... facilitates exports of data/metadata bundles to external repositories.
+* ... allows users to search, filter and browse metadata (and locate underlying data).
+* ... facilitates exports of metadata.
 * ... integrates with other services and processes.
 
 ![System Landscape](images/overview.svg)
 
-* The database is the core component (included)
-* The backend encapsulates the database and spans the API (included)
-* A frontend uses the API (optionally included)
-* All external and internal communication via HTTP
-* Imports of sources to the database via the backend (through the API)
-* Exports to services are triggered externally (through the API)
-* Users and downstream services can interact (through the API)
+* The database is the core component.
+* The backend encapsulates the database and spans the API.
+* An optional web frontend uses the API.
+* All external and internal communication via HTTP.
+* Imports of sources into the database triggered via the backend.
+* Exports to services are requested externally.
+* Users or downstream services can interact through the API.
 
 ### 1.2 Quality Goals
 
 | Quality Goal           | Associated Scenarios
 |------------------------|----------------------
-| Functional Suitability | [F0](#10-2-quality-scenarios)
-| Transferability        | [T0](#10-2-quality-scenarios)
-| Compatibility          | [C0](#10-2-quality-scenarios)
-| Operability            | [O0](#10-2-quality-scenarios)
-| Maintainability        | [M0](#10-2-quality-scenarios), [M1](#102-quality-scenarios)
+| Functional Suitability | [F0](#102-quality-scenarios)
+| Transferability        | [T0](#102-quality-scenarios)
+| Compatibility          | [C0](#102-quality-scenarios)
+| Operability            | [O0](#102-quality-scenarios)
+| Maintainability        | [M0](#102-quality-scenarios), [M1](#102-quality-scenarios)
 
 --------------------------------------------------------------------------------
 
@@ -75,48 +77,49 @@ data-sets. The metadata-lake ...
 
 ### 2.1 Technical Constraints
 
-| Constraint | Explanation
-|------------|-------------
-| Cloud Deployability | To integrate into existing infrastructure and operation environments, a containered service is required.
-| Interoperability | Data pipelining is required to be compatible to existing systems such as databases.
-| Extensibility | Components such as metadata schemas, data pipelines, and metadata exports are required to be extensible.
+| Constraint          | Explanation
+|---------------------|-------------
+| Cloud Deployability | To integrate into existing infrastructure and operation environments, a containerized service is required.
+| Interoperability    | Data pipelining is required to be compatible to existing database interfaces.
+| Extensibility       | Components such as metadata schemas, data pipelines, and metadata exports are required to be extensible.
 
 ### 2.2 Organizational Constraints
 
 | Constraint | Explanation
-|------------|--------------
-| [OAI-PMH](http://www.openarchives.org/OAI/2.0/openarchivesprotocol.htm) | Many existing data sources provide a OAI-PMH API which needs to be supported.
-| [S3](https://docs.ceph.com/en/quincy/radosgw/s3/) | File-based ingest has to be also performed via object storage, particularly Ceph's S3 API.
-| [K8](https://kubernetes.io/) | If possible Kubernetes should be supported (in addition to Compose).
+| - | -
+| [OAI-PMH](http://www.openarchives.org/OAI/2.0/openarchivesprotocol.htm) | Many existing data sources provide an OAI-PMH endpoint which needs to be supported.
+| [XML](https://www.w3.org/XML/) | All source metadata is expected to be in XML.
+| [S3](https://docs.aws.amazon.com/s3/) | File-based ingest has to be also performed via object storage, particularly [Ceph's S3 API](https://docs.ceph.com/en/quincy/radosgw/s3/).
+| [K8s](https://kubernetes.io/) | If possible Kubernetes should be supported (in addition to Compose).
 
 ### 2.3 Conventions
 
 #### Technical
 
 | Standard | Function
-|----------|---------
+| - | -
 | [JSON](https://www.json.org) | Serialization language for **all** external messages
 | [JSON:API](https://jsonapi.org) | External message format standardization
 | [JSON Schema](https://json-schema.org) | External message content validation
 | [YAML](https://yaml.org) | Internal processor (and prototype frontend) declaration language
 | [StrictYAML](https://hitchdev.com/strictyaml) | Preferred declaration language dialect
 | [OpenAPI](https://www.openapis.org) | External API definition and documentation format
-| [MD5](https://en.wikipedia.org/wiki/MD5) | Raw metadata checksums
-| [XXH64](https://github.com/Cyan4973/xxHash) | Identifier Hashing
+| [SHA256](https://web.archive.org/web/20130526224224/https://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf) | Identifier Hashing and Checksums
 | [Base64URL](https://base64.guru/standards/base64url) | Identifier Encoding
+| [Naming Things with Hashes](https://datatracker.ietf.org/doc/html/rfc6920) | Identifier Marking
 | [Compose](https://www.compose-spec.io) | Deployment and orchestration
 
 #### Content
 
 | Standard | Function
-|----------|---------
+| - | -
 | [DataCite](https://schema.datacite.org) | Core metadata vocabulary
 | [OpenWEMI](https://www.dublincore.org/specifications/openwemi/specification/) | Entity relationships
 | [Fields of Science](https://en.wikipedia.org/wiki/Fields_of_Science_and_Technology) | Scientific classification
 | [SPDX License List](https://spdx.org/licenses/) | Software license names
 | [Creative Commons](https://creativecommons.org/) | License names
 | [RightsStatements.org](https://rightsstatements.org) | Copyright classification
-| [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) | Data and time formatting
+| [ISO 8601](https://en.wikipedia.org/wiki/ISO_8601) | Date and time formatting
 | [ISO 639-1](https://iso639-3.sil.org/) | Language name abbreviations
 | [DOI](https://doi.org) | Preferred resource identifier
 | [ORCID](https://orcid.org) | Preferred creator identifier
@@ -127,11 +130,12 @@ data-sets. The metadata-lake ...
 | [BibJSON](https://github.com/rufuspollock-okfn/bibjson) | Export format
 
 #### Documentation
+
 | Standard | Function
-|----------|---------
-| [Tech Stack Canvas](https://techstackcanvas.io/) | Product tech stack (README)
-| [Diataxis](https://diataxis.fr/) | Software documentation structure
-| [arc42](https://docs.arc42.org) | Software architecture documentation
+| - | -
+| [Tech Stack Canvas](https://techstackcanvas.io/) | Product tech stack (see [README](../README.md))
+| [Diataxis](https://diataxis.fr/) | Software documentation structure (see [docs](docs.md))
+| [arc42](https://docs.arc42.org) | Software architecture documentation (this document)
 | [yasql](https://github.com/aryelgois/yasql) | Database schema documentation (can be rendered with PlantUML)
 
 --------------------------------------------------------------------------------
@@ -143,21 +147,19 @@ data-sets. The metadata-lake ...
 ### 3.1 Business Context
 
 | Channel  | Description
-|----------|----------------------------------------------------
+|----------|-------------
 | Interact | All unprivileged functionality
-| Search   | Query metadata records
+| Search   | Directly query metadata records (typically privileged)
 | Control  | Monitor, trigger ingests and backups (privileged)
-| Forward  | Send metadata record(s) to service
 | Import   | Ingest metadata records from source system
 
 ### 3.2 Technical Context
 
 | Channel  | Description
-|----------|--------------------------------------------
+|----------|-------------
 | Interact | Unprivileged `HTTP` API
 | Search   | Requested and responded through `HTTP` API
 | Control  | Privileged `HTTP` API
-| Forward  | Performed via `HTTP`
 | Import   | Pulled via `HTTP`
 
 --------------------------------------------------------------------------------
@@ -165,11 +167,11 @@ data-sets. The metadata-lake ...
 ## 4. Solution Strategy
 
 * Three-tier architecture:
-    * HTTP-API is the primary presentation layer (part of the backend)
+    * HTTP API is the primary presentation layer (part of the backend)
     * Web frontend (exclusively using API) is secondary presentation tier
 * Two main components:
     * Database (data tier)
-    * Backend (state-less application tier)
+    * Backend (stateless application tier)
 * All components are packaged in containers for:
     * Infrastructure compatibility
     * Cloud deployability
@@ -177,14 +179,11 @@ data-sets. The metadata-lake ...
     * Metadata records are key-value documents (intra-metadata)
     * Metadata records are interrelated based on permanent identifiers (inter-metadata)
 * All messaging happens via HTTP APIs:
-    * Internal between components (containers)
-    * External via endpoints (including frontend)
-*  Source codes and external messages are in plain text and in standardized formats:
-    * External messages are in JSON, formatted as JSON-API, and documented by JSON-Schemas.
+    * Internally between components (containers)
+    * Externally via endpoints (including frontend)
+* Source codes and external messages are in plain text and in standardized formats:
+    * External messages are in JSON, formatted as JSON:API, and documented by JSON-Schemas.
     * Declarative sources are in YAML, following StrictYAML.
-* Separate horizontal scaling of database and backend for high availability:
-    * Database has replication capability
-    * Backend has no state, hence less problematic
 * Further components are optional:
     * Storage not necessary since only metadata is handled, payload data only referenced
     * Web-frontend uses HTTP API (prototype is included)
@@ -196,6 +195,15 @@ data-sets. The metadata-lake ...
 
 ## 5. Building Block View
 
+**DatAasee** uses a [three-tier architecture](https://en.wikipedia.org/wiki/Multitier_architecture#Three-tier_architecture)
+with these separately containerized components which are orchestrated by [Compose](https://compose-spec.io):
+
+| Function         | Abstraction                      | Tier                    | Product
+|------------------|----------------------------------|-------------------------|----------------------------------
+| Metadata Catalog | Multi-Model Database             | Data (Database)         | [ArcadeDB](https://arcadedb.com)
+| EtLT Processor   | Declarative Streaming Processor  | Logic (Backend)         | [Benthos](https://github.com/redpanda-data/benthos)
+| Web Frontend     | Declarative Web Framework        | Presentation (Frontend) | [Lowdefy](https://lowdefy.com)
+
 ### Level 0 (Outside View)
 
 ![Outside View](images/outside-view.svg)
@@ -204,19 +212,19 @@ data-sets. The metadata-lake ...
 
 * Imports metadata from source systems via pull
 * Provides API to interact with metadata via endpoints
-* Exports metadata to other services triggered via endpoints
+* Frontend translates user input to API calls
 
 #### Source Databases (External)
 
-* Known URLs (ie service or database endpoints) holding metadata
+* Known URLs (i.e., service or database endpoints) holding metadata
 * Bulk ingested
 * Pollable regularly for updates
 
 #### Backup Storage (External)
 
 * Loaded from on service startup
+* Database backup on finished ingest
 * Database backup on finished interconnect
-* Database backup on service shutdown
 
 #### Prototype Web-Frontend (Optional)
 
@@ -228,35 +236,35 @@ data-sets. The metadata-lake ...
 
 ![Inside View](images/inside-view.svg)
 
-#### Database
+#### Database Container
 
-* Container holding a _ArcadeDB_ database system
+* Container holding an _ArcadeDB_ database system
 * This core component stores and serves all metadata
 * A system backup saves its database
 
-#### Backend
+#### Backend Container
 
 * Container holding a _Benthos_ stream processor
-* This component spans the external API endpoints and translates between data formats as well as between API and database
-* Has no state (except temporary cache, which caches queries and refreshes once an hour, as well as ingest status)
+* This component exposes the external API endpoints and translates between data formats as well as between API and database
+* Has no state (except temporary cache, which caches queries and refreshes, as well as ingest status)
 
-#### Prototype Web-Frontend (Optional)
+#### Frontend Container (Optional)
 
 * Container holding a _Lowdefy_ web-frontend
 * This optional component renders a web-based user interface
-* Uses API endpoints, (but from the internal network, thus the frontend does not use the external port)
+* Uses API endpoints (but from the internal network, thus the frontend does not use the external port)
 
 ### Level 2 (Container View)
 
-#### Database
+#### Database Container Internals
 
 ![Database](images/database-container.svg)
 
 * The native schema is created via SQL (during build)
 * Enumerated types are inserted via SQL (during build)
-* The initialization script restores the database on start from the latest back-up and backs up the database before shutdown.
+* The initialization script restores the database on start from the latest backup.
 
-#### Backend
+#### Backend Container Internals
 
 ![Backend](images/backend-container.svg)
 
@@ -264,13 +272,13 @@ data-sets. The metadata-lake ...
 * Custom configurable components (templates) are defined
 * Reusable fixed components (resources) are defined
 
-#### Prototype Web-Frontend
+#### Frontend Container Internals
 
 ![Frontend](images/frontend-container.svg)
 
-* Pages are defined via YAML
-* Static assets (images and styles) are loaded
+* Pages are defined declaratively
 * Reused template blocks are loaded
+* Static assets (images and styles) are loaded
 
 --------------------------------------------------------------------------------
 
@@ -284,37 +292,27 @@ data-sets. The metadata-lake ...
 
 ![API Endpoint](images/api-endpoint.svg)
 
-See `api` [endpoint docu](docs.md#api-endpoint) and [source file](../backend/resources/handler_api.yaml).
+See `api` [endpoint documentation](docs.md#api-endpoint) and [source file](../backend/resources/handler_api.yaml).
 
 ---
 
 #### `/ready` Endpoint (Public)
 
-> **NOTE:** This endpoint only reports ready if processor **and** database are ready.
+> **NOTE:** This endpoint reports ready if processor **and** database are ready.
 
 ![Ready Endpoint](images/ready-endpoint.svg)
 
-See `ready` [endpoint docu](docs.md#ready-endpoint) and [source file](../backend/resources/handler_ready.yaml).
+See `ready` [endpoint reference](docs.md#ready-endpoint) and [source file](../backend/resources/handler_ready.yaml).
 
 ---
 
 #### `/health` Endpoint (Private)
 
-> **NOTE:** This is a POST endpoint since a command (not a query) is required to get database health; also, the returned information is only useful to an operator, not to a user.
+> **NOTE:** Since the returned information is only useful to an operator, not to a user, this is a private and thus POST endpoint.
 
 ![Health Endpoint](images/health-endpoint.svg)
 
-See `health` [endpoint docu](docs.md#health-endpoint) and [source file](../backend/resources/handler_health.yaml).
-
----
-
-#### `/backup` Endpoint (Private, External Write)
-
-> **NOTE:** The backup process is synchronous; the request returns success if a backup is completed.
-
-![Backup Endpoint](images/backup-endpoint.svg)
-
-See `backup` [endpoint docu](docs.md#backup-endpoint) and [source file](../backend/resources/handler_backup.yaml).
+See `health` [endpoint reference](docs.md#health-endpoint) and [source file](../backend/resources/handler_health.yaml).
 
 ---
 
@@ -324,27 +322,7 @@ See `backup` [endpoint docu](docs.md#backup-endpoint) and [source file](../backe
 
 ![Ingest Endpoint](images/ingest-endpoint.svg)
 
-See `ingest` [endpoint docu](docs.md#ingest-endpoint) and [source file](../backend/resources/handler_ingest.yaml).
-
----
-
-### Data Endpoints
-
-#### `/metadata` Endpoint (Public)
-
-> **NOTE:** The database command updates the record usage (social metadata).
-
-![Metadata Endpoint](images/metadata-endpoint.svg)
-
-See `metadata` [endpoint docu](docs.md#metadata-endpoint) and [source file](../backend/resources/handler_metadata.yaml).
-
----
-
-#### `/insert` Endpoint (Private)
-
-![Insert Endpoint](images/insert-endpoint.svg)
-
-See `insert` [endpoint docu](docs.md#insert-endpoint) and [source file](../backend/resources/handler_insert.yaml).
+See `ingest` [endpoint reference](docs.md#ingest-endpoint) and [source file](../backend/resources/handler_ingest.yaml).
 
 ---
 
@@ -354,49 +332,43 @@ See `insert` [endpoint docu](docs.md#insert-endpoint) and [source file](../backe
 
 ![Schema Endpoint](images/schema-endpoint.svg)
 
-See `schema` [endpoint docu](docs.md#schema-endpoint) and [source file](../backend/resources/handler_schema.yaml).
+See `schema` [endpoint reference](docs.md#schema-endpoint) and [source file](../backend/resources/handler_schema.yaml).
 
 ---
 
-#### `/enums` Endpoint (Public, Cached)
+### Data Endpoints
 
-![Enums Endpoint](images/enums-endpoint.svg)
+#### `/metadata` Endpoint (Public)
 
-See `enums` [endpoint docu](docs.md#enums-endpoint) and [source file](../backend/resources/handler_enums.yaml).
+![Metadata Endpoint](images/metadata-endpoint.svg)
 
----
-
-#### `/stats` Endpoint (Public, Cached)
-
-![Stats Endpoint](images/stats-endpoint.svg)
-
-See `stats` [endpoint docu](docs.md#stats-endpoint) and [source file](../backend/resources/handler_stats.yaml).
+See `metadata` [endpoint reference](docs.md#metadata-endpoint) and [source file](../backend/resources/handler_metadata.yaml).
 
 ---
 
-#### `/sources` Endpoint (Public, Cached)
+#### `/database` Endpoint (Public)
 
-![Sources Endpoint](images/sources-endpoint.svg)
+> **NOTE:** This endpoint allows idempotent read operations since it uses the `query` endpoint of ArcadeDB.
 
-See `sources` [endpoint docu](docs.md#sources-endpoint) and [source file](../backend/resources/handler_sources.yaml).
+![Database Endpoint](images/database-endpoint.svg)
 
+See `database` [endpoint reference](docs.md#database-endpoint) and [source file](../backend/resources/handler_database.yaml).
 
 --------------------------------------------------------------------------------
 
 ## 7. Deployment View
 
-### Level 0
+### Level 0 (Technical View)
 
 ![Overview](images/deploy.svg)
 
 See [`compose.yaml`](../compose.yaml) for deployment details.
 
-
-### Level 1
+### Level 1 (Data-Flow View)
 
 ![EtLT](images/etlt.svg)
 
-EtLT: Ingest vs. Read
+EtLT (Extract-transform-Load-Transform): Ingest vs. Read
 
 --------------------------------------------------------------------------------
 
@@ -405,32 +377,72 @@ EtLT: Ingest vs. Read
 ### Internal Concepts
 
 * All components are separately containerized.
-* All communication between components is performed via HTTP and in JSON.
+* All communication between components is performed over HTTP using JSON.
+* HTTP and JSON:API conventions are used and parameters, requests, and responses provide JSON schemas.
 
 ### Security Concepts
 
-* **Read access** is granted to every user without limitation.
-* **Write access** (trigger ingest or backup, insert record) is only granted to the "admin" user.
+* **Read access** is granted to every user without limitation (expects external rate limits).
+* **Write access** (trigger ingest or check health) is only granted to the `admin` user.
+* Basic authentication is used by the backend for the "admin" user for private endpoints (expects external TLS termination).
 
 ### Development Concepts
 
-* Container images are multi-stage with a generic base stage and a custom develop and release stage.
-* All images run a health check.
+* Container images are multi-stage with a generic base stage and a custom development and release stage.
+* All images run their own health check.
+* The default API base path communicates the API version.
 
 ### Operational Concepts
 
 * All components provide (internal) `ready` endpoints and write logs to the standard output.
-* Secrets are read from environment variables on the host and mounted as files inside the containers.
+* Secrets are read (safely) from environment variables on the host and mounted as files inside the containers.
+* Logs are written according to the defaults of the employed container engine.
 
 --------------------------------------------------------------------------------
 
 ## 9. Architectural Decisions
 
-| Timestamp    | Title
-|--------------|-------
+| Timestamp    | Template
+|--------------|----------
 | Status       | ...
 | Decision     | ...
 | Consequences | ...
+
+| 2026-04-17   | Remove backup endpoint
+|--------------|------------------------
+| Status       | Approved
+| Decision     | Remove manual backups since data does not change between ingests
+| Consequences | Backup endpoint not needed any more.
+
+| 2026-04-08   | Remove view tracking
+|--------------|----------------------
+| Status       | Approved
+| Decision     | Remove the tracking of record views.
+| Consequences | Simpler and faster database, no data loss between ingests.
+
+| 2026-02-20   | No Backup on Shutdown
+|--------------|-----------------------
+| Status       | Approved
+| Decision     | The database shutdown does not trigger a backup, as it takes too long for large databases.
+| Consequences | Faster shutdown and simpler database init script; backups after ingest preserve most of state.
+
+| 2026-01-27   | Use NI for record identifiers
+|--------------|-------------------------------
+| Status       | Approved
+| Decision     | Record identifiers are prefixed with the NI URI scheme and use base64url-encoded SHA256 hash.
+| Consequences | Frontends can detect record identifiers without parsing the key field.
+
+| 2026-01-22   | Remove Gremlin query language
+|--------------|-------------------------------
+| Status       | Approved
+| Decision     | Remove Gremlin module from ArcadeDB
+| Consequences | The Gremlin query language is not supported anymore in DatAasee and hence SPARQL will not be overlaid.
+
+| 2025-12-17   | Streamline HTTP API
+|--------------|---------------------
+| Status       | Approved
+| Decision     | Remove `enums` and `sources` endpoints and integrate their information into `schema` endpoint
+| Consequences | More uniform API handling, and less endpoints for easier usability.
 
 | 2025-09-19   | Frontend Container Image
 |--------------|--------------------------
@@ -447,7 +459,7 @@ EtLT: Ingest vs. Read
 | 2024-10-23   | Container Base Images
 |--------------|-----------------------
 | Status       | Approved
-| Decision     | Base containers for database and backend are the current Ubuntu LTS (ie: 24.04).
+| Decision     | Base containers for database and backend are the current Ubuntu LTS (ie: 26.04).
 | Consequences | Full `libc` support compared to Alpine and obvious release date and support horizon from version number compared to Debian.
 
 | 2024-07-04   | Indirect Processor Dependency Updates
@@ -466,7 +478,7 @@ EtLT: Ingest vs. Read
 |--------------|---------------------------------------------
 | Status       | Approved
 | Decision     | Non-OAI variants of the DC and DataCite formats are supported.
-| Consequences | More lenient, and less strict ingest of fields.
+| Consequences | More lenient, and less strict with fields configuring ingest.
 
 | 2024-01-17   | Compose-only Deployment
 |--------------|-------------------------
@@ -482,7 +494,7 @@ EtLT: Ingest vs. Read
 
 | 2023-08-24   | Record Identifier
 |--------------|-------------------
-| Status       | Approved
+| Status       | Approved (Superseded)
 | Decision     | Use xxhash64 / SHA256 of ingested or inserted raw record.
 | Consequences | Identifier is reproducible but not a URL.
 
@@ -508,13 +520,13 @@ EtLT: Ingest vs. Read
 |--------------|----------------------
 | Status       | Approved
 | Decision     | No explicit storage component for data, only metadata is managed.
-| Consequences | No interface or instance ie to Ceph is developed, but URL references (to data storage) are stored.
+| Consequences | No interface or instance to e.g. Ceph is developed, but URL references (to data storage) are stored.
 
 | 2022-10-05   | API-only Frontend
 |--------------|-------------------
 | Status       | Approved
 | Decision     | The HTTP API is the sole frontend, further frontends are only expressions of the API.
-| Consequences | Web frontend can only use API frontend
+| Consequences | Web frontend can only use the API.
 
 | 2022-10-04   | Declarative First
 |--------------|-------------------
@@ -554,47 +566,47 @@ EtLT: Ingest vs. Read
 |   M0   | Extending the compatibility to new systems
 |   M1   | Development of a follow-up project to DatAasee
 
-----------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 ## 11. Risks & Technical Debt
 
 | Risk | Description | Mitigation
-|------|-------------|------------
-| DBMS project might cease | [`ArcadeDB`](https://github.com/ArcadeData/arcadedb) is a small project which has small-project risks | However, since SQL is used internally to interact with `ArcadeDB`, in principle RDBMs could be a replacement.
-| Processor project might complicate | [`Benthos`](https://github.com/redpanda-data/benthos) was acquired by "Red Panda" who may change its license or of the [connectors](https://github.com/redpanda-data/connect) | Using hard fork [`bento`](https://github.com/warpstreamlabs/bento) or self-maintain.
-| Processor dependency hell | [`Benthos`](https://github.com/redpanda-data/benthos) has many dependencies. | Consider rewrite with minimal dependencies in [`Clojure`](https://clojure.org) (using only `Ring`, `Ring-JDK-Adapter`, `data.JSON`, `java.JDBC`).
+| - | - | -
+| Unsecure deployment | There is no bultin in TLS termination or rate limiting, and the `database` endpoint is not meant for public consumption | Comprehensive documentation with warnings and guidelines.
+| DBMS project might cease | [`ArcadeDB`](https://github.com/ArcadeData/arcadedb) is a small project which has small-project risks | However, since SQL is used internally to interact with `ArcadeDB`, in principle RDBMs could be a replacement, but it is a core architectural dependency.
+| Processor project might complicate | [`Benthos`](https://github.com/redpanda-data/benthos) was acquired by "Redpanda" who may change its license or licenses of the [connectors](https://github.com/redpanda-data/connect) | Using hard fork [`bento`](https://github.com/warpstreamlabs/bento).
 
 --------------------------------------------------------------------------------
 
 ## 12. Glossary
 
 | Term | Acronym | Definition
-|------|---------|------------
-| Administrative Metadata |  | Metadata about accessibility.
+| - | - | -
+| Administrative Metadata | | Metadata about accessibility.
 | Application Programming Interface | **API** | Specification and implementation of a way for software to interact (here HTTP API).
 | Backend | **BE** | Software component encoding the internal logic.
-| Command-Query-Responsibility-Segregation | **CQRS** | API pattern separating read and write requests.
 | Container | **CTR** | Software packaged into standardized unit for operating-system-level virtualization.
 | Create-Read-Update-Delete | **CRUD** | Basic operations when interacting with a database (or storage).
 | Database | **DB** | Collection of related records.
 | Database Management System | **DBMS** | The software running the databases.
 | Data Catalog | **DCAT** | Inventory of databases.
-| Data Lake | **DL** | Structured, semi-structures, and unstructured data architecture.
-| Declarative Low-Code |  | Defining an application only by configuration of components (and minimal explicit transformations).
-| Declarative Programming |  | Programming style of expressing logic without prescribing control flow ("what", not "how").
-| Descriptive Metadata |  | Metadata describing the underlying data.
+| Data-Lake | **DL** | Structured, semi-structured, and unstructured data architecture.
+| Declarative Low-Code | | Defining an application only by configuration of components (and minimal explicit transformations).
+| Declarative Programming | | Programming style of expressing logic without prescribing control flow ("what", not "how").
+| Descriptive Metadata | | Metadata describing the underlying data.
 | Domain Specific Language | **DSL** | A formal language designed for a particular application.
 | Extract-Load-Transform | **ELT** | A typical ingestion process for unstructured data.
 | Extract-Transform-Load | **ETL** | A typical ingestion process for structured data.
 | Extract-transform-Load-Transform | **EtLT** | An ingestion process for semi-structured data.
 | Frontend | **FE** | (Web-based) software component presenting a user interface.
-| Inter-Metadata |  | Metadata about data related to the underlying data.
-| Intra-Metadata |  | Metadata about the underlying data.
-| Low-Code |  | Functionality assembly using high-level prefabricated components.
+| Inter-Metadata | | Metadata about data related to the underlying data.
+| Intra-Metadata | | Metadata about the underlying data.
+| Low-Code | | Functionality assembly using high-level prefabricated components.
 | Metadata | **MD** | All statements about a (tangible or digital) information object.
-| Metadata Catalog | **MDCAT** | Inventory of databases of metadata.
-| Metadata-Lake | **MDL** | Structured, semi-structures, and unstructured data architecture for metadata management.
-| Metadata-Set |  | A record containing metadata.
-| Process Metadata |  | Metadata about lineage.
-| Social Metadata |  | Metadata about usage and discoverability.
-| Technical Metadata |  | Metadata about format and structure.
+| Metadata Catalog | **MDCAT** | Inventory of metadata databases.
+| Metadata-Lake | **MDL** | Structured, semi-structured, and unstructured data architecture for metadata management.
+| Metadata-Set | | A record containing metadata.
+| Named Identifier | **NI** | Protocol for record identifiers.
+| Process Metadata | | Metadata about lineage.
+| Social Metadata | | Metadata about usage and discoverability.
+| Technical Metadata | | Metadata about format and structure.

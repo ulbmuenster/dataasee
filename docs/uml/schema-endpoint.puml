@@ -16,7 +16,7 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>/api/v1/schema</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/schema</b>)"
 backend -->> database : " HTTP Client (<b>/query</b>)"
 backend -->> backend : " Cache Query"
 

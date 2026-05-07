@@ -16,8 +16,8 @@ Database
 
 ]
 
-endpoint <<-->> backend : " HTTP Server (<b>/api/v1/health</b>)"
+endpoint <<-->> backend : " HTTP Server (<b>/health</b>)"
 backend -->> backend : " HTTP Client (<b>/version</b>)"
-backend -->> database : " HTTP Client (<b>/command</b>)"
+backend -->> database : " HTTP Client (<b>/query</b>)"
 
 @enduml

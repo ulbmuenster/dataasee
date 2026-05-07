@@ -21,30 +21,13 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _state: true
+      results_paging:
+        _state: "results_paging"
+      doi_text:
+        _state: "doi_text"
     properties:
       url:
-        _if:
-          test:
-            _eq:
-              - _payload: "results_paging"
-              - null
-          then: "metadata"
-          else:
-            _string.substring:
-              on:
-                _get:
-                  from:
-                    _payload: "results_paging"
-                  key: "url"
-              start:
-                _string.indexOf:
-                  on:
-                    _get:
-                      from:
-                        _payload: "results_paging"
-                      key: "url"
-                  searchValue: "metadata?"
+        _ref: "templates/url.yaml"
       method: "get"
       params:
         _if:

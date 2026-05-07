@@ -23,30 +23,13 @@ requests:
     type: "AxiosHttp"
     connectionId: "datalake_api"
     payload:
-      _state: true
+      results_paging:
+        _state: "results_paging"
+      search_text:
+        _state: "search_text"
     properties:
       url:
-        _if:
-          test:
-            _eq:
-              - _payload: "results_paging"
-              - null
-          then: "metadata"
-          else:
-            _string.substring:
-              on:
-                _get:
-                  from:
-                    _payload: "results_paging"
-                  key: "url"
-              start:
-                _string.indexOf:
-                  on:
-                    _get:
-                      from:
-                        _payload: "results_paging"
-                      key: "url"
-                  searchValue: "metadata?"
+        _ref: "templates/url.yaml"
       method: "get"
       params:
         _if:
@@ -90,7 +73,7 @@ areas:
               text-align: "center"
             properties:
               src: "icon.svg"
-              height: 512
+              width: 512
           - id: "main_title"
             type: "Title"
             style:

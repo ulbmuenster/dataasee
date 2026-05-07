@@ -1,6 +1,6 @@
-name
-DataCite
-DublinCore
-LIDO
-MARC
-MODS
+name,data
+datacite+xml,datacite oai_datacite
+dublincore+xml,dc oai_dc
+lido+xml,lido
+marcxml+xml,marcxml marc21
+mods+xml,mods rawmods

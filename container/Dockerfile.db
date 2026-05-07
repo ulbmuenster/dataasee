@@ -2,14 +2,15 @@ ARG IMGREPO
 
 ## Development Target
 
-FROM ${IMGREPO}ubuntu:24.04 AS develop
+FROM ${IMGREPO}ubuntu:26.04 AS develop
 
-RUN apt-get update \
- && apt-get -y --no-install-recommends install tzdata wget openjdk-21-jre-headless \
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+ && apt-get -y --no-install-recommends install tzdata wget openjdk-25-jre-headless \
  && apt-get clean \
- && rm -rf /var/lib/apt/lists/*
+ && rm -rf /var/lib/apt/lists/* \
+ && rm -f /etc/localtime /etc/timezone
 
-RUN useradd -m arcadedb
+RUN useradd -m -U arcadedb
 
 RUN mkdir /backup && chown arcadedb:arcadedb /backup
 
@@ -17,34 +18,39 @@ WORKDIR /home/arcadedb
 
 USER arcadedb
 
-VOLUME /backup
-
 ARG VERSION
 
-# RUN --mount=type=bind,source=arcadedb-25.10.1-SNAPSHOT.tar.gz,target=arcadedb.tar.gz : "Activate this line for testing." \
+# RUN wget -q https://central.sonatype.com/repository/maven-snapshots/com/arcadedb/arcadedb-package/26.4.1-SNAPSHOT/arcadedb-package-26.4.1-20260423.061810-297.tar.gz -O arcadedb.tar.gz \
 RUN wget -q https://github.com/ArcadeData/arcadedb/releases/download/$VERSION/arcadedb-$VERSION.tar.gz -O arcadedb.tar.gz \
-  && tar -xf arcadedb.tar.gz && mv arcadedb-*/* . \
-  && rm -Rf arcadedb-*/* \
+  && tar -xf arcadedb.tar.gz \
+  && rm arcadedb.tar.gz \
+  && mv arcadedb-*/* . \
+  && rm -R arcadedb-* \
   && rm lib/js-language-*.jar \
-  && rm lib/prometheus-metrics-*.jar \
-  && rm lib/arcadedb-grpcw-*.jar \
-  && rm bin/*.bat
+        lib/arcadedb-bolt-*.jar \
+        lib/arcadedb-grpcw-*.jar \
+        lib/arcadedb-gremlin-*.jar \
+        lib/arcadedb-metrics-*.jar \
+        lib/arcadedb-ha-raft-*.jar \
+        bin/*.bat
 
 ARG DB_NAME
 ENV DB_NAME=$DB_NAME
 
-COPY --chown=arcadedb database/init.sh database/restore.sh database/backup.sh ./
+COPY --chown=arcadedb:arcadedb database/init.sh ./
 
 RUN --mount=type=bind,source=database/schema.sql,target=schema.sql \
     --mount=type=bind,source=database/preload.sql,target=preload.sql \
     --mount=type=bind,source=database/preload,target=preload \
     ./bin/console.sh -Darcadedb.dateFormat="yyyy-MM-dd HH:mm:ss" -b "CREATE DATABASE $DB_NAME; LOAD schema.sql; LOAD preload.sql;"
 
+VOLUME /backup
+
 ENV ARCADEDB_PID="/tmp/arcadedb.pid"
 
-ENV ARCADEDB_OPTS_MEMORY="-XX:+UseG1GC -XX:MaxRAMPercentage=75.0"
+ENV ARCADEDB_OPTS_MEMORY="-XX:MaxRAMPercentage=75.0"
 
-ENV JAVA_OPTS="$JAVA_OPTS -Darcadedb.server.backupDirectory=/backup -Darcadedb.command.warningsEvery=10000 -Darcadedb.bucketDefaultPageSize=524288"
+ENV JAVA_OPTS="$JAVA_OPTS -Darcadedb.server.backupDirectory=/backup -Darcadedb.command.warningsEvery=10000 -Darcadedb.bucketDefaultPageSize=262144 -Darcadedb.txWalFlush=0"
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s CMD wget --no-verbose --tries=1 http://localhost:2480/api/v1/ready || exit 1
 
@@ -55,7 +61,7 @@ CMD ["./init.sh"]
 
 FROM develop AS release
 
-RUN rm lib/arcadedb-studio-*.jar
+RUN rm -f lib/arcadedb-studio-*.jar
 
 ARG DL_VERSION
 

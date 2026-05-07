@@ -23,7 +23,7 @@ processor_resources:
                       url: '${! "https://api.crossref.org/works/" + metadata("doi") }'
                       verb: 'GET'
                 result_map: |
-                  root.name = this.message.title.0
+                  root.title = this.message.title.0
                   root.creators = this.message.author.map_each(x -> { "name": x.family + ", " + x.given,
                                                                       "data": x.ORCID | deleted(),
                                                                       "@type": "pair" })
@@ -40,7 +40,7 @@ processor_resources:
                 password: '${DB_PASS}'
                 request: |
                   root.language = "sql"
-                  root.command = """SELECT @rid FROM resourcetypes WHERE name ILIKE '%s' OR also.asString() MATCHES '(?i).*(%s).*'""".format(this.resourceType.or(""),this.resourceType.or(""))
+                  root.command = """SELECT @rid FROM Resourcetypes WHERE name ILIKE '%s' OR also.asString() MATCHES '(?i).*(%s).*'""".format(this.resourceType.or(""),this.resourceType.or(""))
                 response: |
                   root.resourceType = this.result.0.resourceType | null
 
