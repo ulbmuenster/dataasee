@@ -571,7 +571,7 @@ EtLT (Extract-transform-Load-Transform): Ingest vs. Read
 ## 11. Risks & Technical Debt
 
 | Risk | Description | Mitigation
-| - | - | -
+|---|---|---
 | Unsecure deployment | There is no bultin in TLS termination or rate limiting, and the `database` endpoint is not meant for public consumption | Comprehensive documentation with warnings and guidelines.
 | DBMS project might cease | [`ArcadeDB`](https://github.com/ArcadeData/arcadedb) is a small project which has small-project risks | However, since SQL is used internally to interact with `ArcadeDB`, in principle RDBMs could be a replacement, but it is a core architectural dependency.
 | Processor project might complicate | [`Benthos`](https://github.com/redpanda-data/benthos) was acquired by "Redpanda" who may change its license or licenses of the [connectors](https://github.com/redpanda-data/connect) | Using hard fork [`bento`](https://github.com/warpstreamlabs/bento).
@@ -581,7 +581,7 @@ EtLT (Extract-transform-Load-Transform): Ingest vs. Read
 ## 12. Glossary
 
 | Term | Acronym | Definition
-| - | - | -
+|---|---|---
 | Administrative Metadata | | Metadata about accessibility.
 | Application Programming Interface | **API** | Specification and implementation of a way for software to interact (here HTTP API).
 | Backend | **BE** | Software component encoding the internal logic.
